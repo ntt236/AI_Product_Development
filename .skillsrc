@@ -1,0 +1,65 @@
+registry: https://github.com/HoangNguyen0403/agent-skills-standard
+agents:
+  - antigravity
+skills:
+  nextjs:
+    ref: nextjs-v1.4.7
+    exclude:
+      - nextjs-pages-router
+      - nextjs-server-components
+      - nextjs-server-actions
+      - nextjs-data-fetching
+      - nextjs-i18n
+  react:
+    ref: react-v1.4.2
+    exclude:
+      - react-styling
+      - react-state-management
+      - react-testing
+  typescript:
+    ref: typescript-v1.3.4
+  javascript:
+    ref: javascript-v1.3.5
+  common:
+    ref: common-v2.8.7
+    exclude:
+      - common-observability
+      - common-mobile-animation
+      - common-mobile-ux-core
+      - common-store-changelog
+  quality-engineering:
+    ref: quality-engineering-v1.6.0
+custom_overrides: []
+workflows:
+  - sdlc
+  - brainstorm-feature
+  - code-review
+  - codebase-review
+  - system-design-session
+  - review-system-design
+  - design-solution
+  - deploy-release
+  - plan-feature
+  - implementation-readiness
+  - review-ticket
+  - traceability-audit
+  - session-report
+  - publish-notes
+  - retro-learn
+  - skill-benchmark
+  - pentest
+  - dev-fix
+  - implement-feature
+  - verify-work
+  - verify-bug
+  - test-loop
+  - security-test
+  - uat-signoff
+  - incident-hotfix
+  - monitor-respond
+mcp:
+  enabled: true
+  scope: project
+  prompted: true
+workflows_ref: workflows-v1.1.5
+specialists_ref: specialists-v1.5.0

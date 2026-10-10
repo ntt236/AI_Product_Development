@@ -1,0 +1,2831 @@
+{
+  "version": 2,
+  "registry": "https://github.com/HoangNguyen0403/agent-skills-standard",
+  "generatedAt": "2026-10-10T04:12:38.809Z",
+  "sources": {
+    "skills/nextjs": {
+      "ref": "nextjs-v1.4.7",
+      "commit": "1fb0537c339c1e135167f4c15ba603b8849da5bc"
+    },
+    "skills/react": {
+      "ref": "react-v1.4.2",
+      "commit": "73422bdeff746281177d55ccb7d2169471eb475a"
+    },
+    "skills/typescript": {
+      "ref": "typescript-v1.3.4",
+      "commit": "9f695e8e2c3e423dfcd420a0e6b80e0e99044088"
+    },
+    "skills/javascript": {
+      "ref": "javascript-v1.3.5",
+      "commit": "9f695e8e2c3e423dfcd420a0e6b80e0e99044088"
+    },
+    "skills/common": {
+      "ref": "common-v2.8.7",
+      "commit": "c72ce6d4afd3ce73420613921cb3fa871e5411d9"
+    },
+    "skills/quality-engineering": {
+      "ref": "quality-engineering-v1.6.0",
+      "commit": "fa8f0ec07ba76445350090f08e2b80d6e283bbae"
+    },
+    "workflows": {
+      "ref": "workflows-v1.1.5",
+      "commit": "c72ce6d4afd3ce73420613921cb3fa871e5411d9"
+    },
+    "specialists": {
+      "ref": "specialists-v1.5.0",
+      "commit": "6532066c04ff3710c5943d554b7aa92f362d7898"
+    }
+  },
+  "entries": {
+    ".agents/rules/agent-skill-standard-rule.md": {
+      "owner": "bridge",
+      "source": "bridge:antigravity",
+      "agent": "antigravity",
+      "sha256": "f901238063af89f241d845952fb7dd86b3d9525612c6f578170526fd71f235c1"
+    },
+    ".agents/skills/common/_INDEX.md": {
+      "owner": "index",
+      "source": "index:common",
+      "agent": "antigravity",
+      "sha256": "a62d87fe28e7bf5142b3d17f7ebafbe2c3d525bcd87a984c0624339ecbd56b13"
+    },
+    ".agents/skills/common/common-accessibility/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-accessibility@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-accessibility/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-accessibility@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8ce6d4f589a694c7b73446db104f95a8713ac0679dc32f8558b5380682626444"
+    },
+    ".agents/skills/common/common-accessibility/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:common/common-accessibility@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "3a28abaa36637b411ccc0d6da8d1be1713ef47bb968f37f771f5499a3f3b1abf"
+    },
+    ".agents/skills/common/common-agent-guardrails/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-agent-guardrails@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-agent-guardrails/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-agent-guardrails@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "066122da6f3539fa50492b5f1fd3834fdaac78a8b8b94ffb2291195f3996e2db"
+    },
+    ".agents/skills/common/common-agent-guardrails/references/guardrails-template.yaml": {
+      "owner": "skill",
+      "source": "skill:common/common-agent-guardrails@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "06a2ac67f70fe0f386ad401cd33969be8a6e7565c404ec2a261048516796b1e4"
+    },
+    ".agents/skills/common/common-agent-guardrails/references/runtime-adapters.md": {
+      "owner": "skill",
+      "source": "skill:common/common-agent-guardrails@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a98f02c3e29fa04a21147f12c947fb97899d3b674ab6ceec37a27840033c29b3"
+    },
+    ".agents/skills/common/common-api-design/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-api-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-api-design/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-api-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cd1c5613f01a3958ae3bd30d9439d541f66a45449072a7e202a7064757f08b53"
+    },
+    ".agents/skills/common/common-api-design/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:common/common-api-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "918fec7bd3d9065c89796c0d475ac15d1ad54b9402f4f2e1cb2bf27177533a77"
+    },
+    ".agents/skills/common/common-architecture-audit/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-architecture-audit/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "f2d4ea28d4288114e3a55432a915586a9d4b2d53401555055369d8399991811a"
+    },
+    ".agents/skills/common/common-architecture-audit/references/PATTERNS.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "940efe9d869df801b035daf30ce026ef5efdaa91373aafc54fb54e8d4e07e1ed"
+    },
+    ".agents/skills/common/common-architecture-audit/references/detection.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9d3af47e0e7c473df16721dc33dbbfbfef1b5c10c3d82a0bd5fc3c73b13dd541"
+    },
+    ".agents/skills/common/common-architecture-audit/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "73bd40a621c3c003a2ad2c02ac2bcae32d4f8dab982cd4d1e41792e6d83e733b"
+    },
+    ".agents/skills/common/common-architecture-diagramming/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-architecture-diagramming/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0ea84fb78e9f46fc318e84c400d2674c771c39f350a31a24b20d65af8c0a9427"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/component.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0ceba562b308426fd3be95920782f24b53e610f1f7ba6eed2f0c5f1182147c51"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/component.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "011809c795e758bcbf2eff117fdaab3c5b17dd4475cdac3d16c94cc8d0c20274"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/container.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c9bb12e0502e8dc667981c0f5d0bd48c348191732cf9514758ed6fc59d920bb0"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/container.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "42868d61400c8a82ec98d8cf158dfec857e9f2d6abd2bdcb3789db287d06c072"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/context.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "57a43a861074f9efedbe5f493f95727f81812de14773a263140b9c1312be47df"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/context.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9e0cd75f8e22756ea969ad31cdcd6301e06922d94746b61220890d371bc9116f"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/dataflow.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "daefa36eed79023d67e7f2cd5146a865c8085a79235ff8d4208ee23fbed9d522"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/dataflow.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "1ab9936d67adb4ccb8e203f36445cb437764ffa6aa5502e4dae6d5edb5dfd906"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/deployment.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4df229e28fb356958020aa6b8084070572c7613f7a725e0ca91f9e2d9418768e"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/deployment.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cb176da29921b4ce0406ee31340019f8bdc220bd3075ac8b3c1f768136bb851e"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/erd.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0ca92e12648a00dc1adc6a04dfbf0ae122f2b6dba967a9e32722a06e43000001"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/erd.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "718eec41bc2812283fc455dc46824449efedcc8195fcbb0b2b95dacbad7cab55"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/evidence/component-view.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e28150330c46dac86d03b5793bda25e06a423ecd4491d6c7ec146f6990bc7f67"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/evidence/orders_api.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "02cae4c9aacce387ee00619989c5bd3338e5abe5365542fbfa8a323729b53f38"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/evidence/orders_retry.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "48e67c61faad357b0b6376b1260f1218e42581376311a13482384567399916bb"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/evidence/orders_schema.sql": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e5c7876aff46b23a63ff972f09d9359b5540411fcf7b7cfb8538584a2a633581"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.entity.ts": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b04d529cb4917e2b33da18b211e205612674ec01e219f0d8e104ee9bc5a47a38"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.entity.ts.expected.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "935dae3e03bd4cf113702c84cc7e76991ac473d8a801cbb20c9a02af1c87a5c3"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.prisma": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "177da88578edbb884913a9aac10d47a19ddd25db7d75de9ed28b4ecf6e4bdde5"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.prisma.expected.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "aea1728d5247c7b0a9254624161f87c4a9d8251885afafc42235765fb764c753"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.sql": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "506a49fb3e7a6215bca263c8e6af8933d0eaec0436eeebe349f46db6f94ced56"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders.sql.expected.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8f887322c4fc44521c37914bb59c7f0c56f276bd63ca95f74fb32c4c33e35bd9"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders_models.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "3bfc1f33332a0bcc2f7789aeb0f92f4ff71016b2f30ded030c89b22413d7f5d7"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/schemas/orders_models.py.expected.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "616d344555ca773b085608fd2b59b9462ade6f88f5b27d70f3b117031c39e48f"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/sequence.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "57b9912d78386892d1c14a942b03cc6d917b16e4d7d9f4cad1a9b825f64e5951"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/sequence.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d74605ae8569a684051d2e60827cc3576df8e6a4cfe1fb2dcf947a4e91aa054b"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/state.drawio": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "75609542ffbdbf6bb0c0e2532e37bc713432a56e4911f78ee98c3d1be2ca233c"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/state.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "84f602be52c0d13fdb5b910870ba8dc3ce4f9087842ed2d47dfc329c6d371004"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/view-manifest.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "1acc5a853cfca89266001eca053e76a9815f2d16c554c93ef83edd5378837c7b"
+    },
+    ".agents/skills/common/common-architecture-diagramming/assets/fixtures/views/orders-containers.spec.json": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "5fee4fd29307c69936589c046d2fc53082f05530b5dbcba64f24ec23688af5c5"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/best-practices.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cce9e7be635fdab3dbb8e0a010dee933875d62471bef5009053ecc5f1e7dcf39"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/c4-model.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "580fd7cb0d950246f676c24e4d34475e036682d0aaf2beccfb2bf08aeeff2d1c"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "382b2409e11c42ee5451a658c7f6f9af9253faffc105f6c285dc3bec26a60f75"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/cloud-architecture.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "44f6840a4794f5f10a0ce113fdbd24245178c551d0a2c24b1a4ed1e8fa3599ab"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/diagram-selection.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "f25a8804cd6264e66ed0805d6f975212f1fd2b9cdf59e5f727a6b6557817acf6"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/diagram-spec.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8e0d76ab2df7d3d6735c3c1b1435efb292c20cf3ff35a659c70cacdc29387f39"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/exec-readability.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "47f7db30988610434e7765a343dd25eb4ed46f5b812c21383af7b7bb53f04443"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/house-style.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "71c9eea3871a5f48de80591a4e87f3c2b2832f1feb98c4f839232534359f7edb"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/layout-rules.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d886335abc62ff8e6ef0d336f40507acd77ea0af31a620f6f2385e8b8633b429"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/mermaid-fallback.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "7fd8efae54dfdf0f1cf1e8b3e407edfb35accdd79702ba3516bd71647413d6b1"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/source-extraction.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "5e8c14fb1cde1da352999dec6c921d8eed565b0ed279d7d18dd7296786b25ea8"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/style-catalog.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "552bc6dd4403b33fea8f538b8761a24db1070a6ee0ae07ef41c6d5de19ed617c"
+    },
+    ".agents/skills/common/common-architecture-diagramming/references/view-manifest.md": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a6f6935bc3409084a44dd2900ccc6b97b597dd5417db6d9c3dbff3103d982cd1"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/check_layout.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c4affa0f23658f504ba45246b9622fb3d5401a339220b2674f41193d9a25e795"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/export_drawio.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "db39f6680ad589478f109becc4396efc21a47337443bc8482b6511ac06f938e2"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/render_drawio.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "aec01da16f7d5efdf2c46831da1a054377d0ec5a76cdf642635e5312e2ac9e26"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/render_erd.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6192395781b356f05e2dbac89eb013c0d27c8fb3f1f54fdb2edc9203e6059475"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/__init__.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "713d6952e620fb59e12b7286e22cee2c3aa67c25cae237633aa4da3cebf9de8f"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/django_sqlalchemy.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "778cdb66e84db728621cad4acbd319a78a5b62fc3fce748745c56a98f07fb84b"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/model.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "7dcb0c28becaa4158cfeac0a5930262e35c39971a442365a1922ecee281f5ead"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/prisma.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0cf1c283fa5a0ff734a8eb79b1e33bd8d89b9ff06a9b02e877e0b71ae96de21e"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/sql_ddl.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "763b70eefc13ae2a6f91658ef96c88c1dd1a18d7db14e681d3032c8810a2ca4c"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_parsers/typeorm.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d2a2b7ad7fd7fe39f25d0882e3ea5d359eaa39ce2d6fd899eedd8c5fba006ada"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/schema_to_spec.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a358acdacca1382a88076ba45268ed3fb149bb0580e1e6cf9c942bffd2a2acec"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/style_catalog.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "76b752673bc5dad2fae758f0e59b7f7197f286de43dbcc7f2eb3e912fa091008"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_check_layout.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "45ce66fdd94be5330fc08a68e446d20091306eed218d31d3baf9a5b7d626bf8b"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_fixtures.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c2e01473e30c16520b5758d0c60f96648a71a5c336b3c16d9d4baf45aab8409f"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_render_drawio.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0bc9d3d8809f43e578e90da224936fa6f57241f4d93bbe0e0058857360d5d201"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_schema_parsers.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "eb801e289820d17752fccd9c632f14d744fb82b4d04cd58f2ffed57f1c398bbe"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_schema_to_spec.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8a01c560412120a6f6051bf63baa8478c0c2abb003891b5fa6950e57a25d30a4"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/test_view_manifest.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e736a96945a9db5a59f570c8157351fc12f0d1ac64e61e8aa5f7b9e8b6b38dc6"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/validate_manifest.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "467df5de3278e75c3691c87b9ea5614d572348c1e682a9a6524a7d1c0b11eed5"
+    },
+    ".agents/skills/common/common-architecture-diagramming/scripts/validate_spec.py": {
+      "owner": "skill",
+      "source": "skill:common/common-architecture-diagramming@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a54e3c58e07e01593fadf990863f930501547ecfde11bffe51572464832f9546"
+    },
+    ".agents/skills/common/common-best-practices/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-best-practices@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-best-practices/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-best-practices@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e714c24b066e11695c48effcebec289fd38a44a508e3e95ef575087c35b6a433"
+    },
+    ".agents/skills/common/common-best-practices/references/CODE_STRUCTURE.md": {
+      "owner": "skill",
+      "source": "skill:common/common-best-practices@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4515784a77b29297c117840d9bf1234d00a25869d271314aeecef110b312a388"
+    },
+    ".agents/skills/common/common-best-practices/references/EFFECTIVENESS.md": {
+      "owner": "skill",
+      "source": "skill:common/common-best-practices@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6903d8a86835e23e2806bc1f5a0734d54a1597633bfac7204559462a2c13c543"
+    },
+    ".agents/skills/common/common-business-requirements/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-business-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-business-requirements/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-business-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8448e8e433849604a292c39025e4d51a4129bb84e4e2e21642a8ff96c9f27092"
+    },
+    ".agents/skills/common/common-business-requirements/references/brd-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-business-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4448000ee8f896e6f4eb96b0fe8858ec7b64f75f2f52961884e485d4f90c7329"
+    },
+    ".agents/skills/common/common-business-requirements/references/checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-business-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "39c3a9db84f0cf699223b0d8829bb7b7df6ee95597737b81f6e32289f59c43d2"
+    },
+    ".agents/skills/common/common-business-requirements/references/standards-baseline.md": {
+      "owner": "skill",
+      "source": "skill:common/common-business-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a461cb484205691eafe18b9f155aec8a9c9d0bc6506fa4f0e4d464356cae7f7b"
+    },
+    ".agents/skills/common/common-code-review/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-code-review/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b2998bfc5b0719a5e2a33e71874039b573fc5748ed980553cbb860016be2eb76"
+    },
+    ".agents/skills/common/common-code-review/references/checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0fac45c8538cb7085ba51fc02dfc293c592d257f3e5f0746f4659e72328edc2f"
+    },
+    ".agents/skills/common/common-code-review/references/lenses.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cc1804d4f4c5e51381ce71d4c5e71b8a20318bb434afbe74db7e8551f2c3adde"
+    },
+    ".agents/skills/common/common-code-review/references/output-format.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "bf42a6f74cc37e4644751455c0837ff2474c52cb61cc99ae43bc8dfa47488827"
+    },
+    ".agents/skills/common/common-code-review/references/report.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b254d3aefdd0842b5b655158701f383ca9dd2584fe17474c7d719e6866636569"
+    },
+    ".agents/skills/common/common-code-review/references/request-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-code-review@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "40eb48691b6222ddf3ca4b683a16949edd6715b7535f919aaff1846ccc7a944f"
+    },
+    ".agents/skills/common/common-context-optimization/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-context-optimization@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-context-optimization/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-context-optimization@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e0756d93889715bb5443c6917f4dc1ac44d91a818cd28c6c04d6cd77521ff258"
+    },
+    ".agents/skills/common/common-context-optimization/references/compaction.md": {
+      "owner": "skill",
+      "source": "skill:common/common-context-optimization@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "744ce797c0532e4690b0fbc7924d95f0113e2e1bb27b44b3e6874589261924a3"
+    },
+    ".agents/skills/common/common-context-optimization/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-context-optimization@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "66b85d2a7aba5e016df8d64eab0bc8c1242ed024819c4324d010a3234a3dcd5e"
+    },
+    ".agents/skills/common/common-context-optimization/references/masking.md": {
+      "owner": "skill",
+      "source": "skill:common/common-context-optimization@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "59ee430785bf8c95a0d8816e20ac4bfb5ffbe8b1a0cc0bc933f8743166716714"
+    },
+    ".agents/skills/common/common-dast-tooling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-dast-tooling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-dast-tooling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-dast-tooling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b04824a5bb2d02ddd5dc5e8843141c55187d9e13373b0b00def5bb11709c6bec"
+    },
+    ".agents/skills/common/common-dast-tooling/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-dast-tooling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e4283ce9ecd0959557b7fedd16fbad10d771967ad487c056fc36e2c0f391377b"
+    },
+    ".agents/skills/common/common-debugging/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-debugging@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-debugging/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-debugging@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9701906d15c35214c359feed4cdb80a16cbda7c1160ad5fe209c808a24517cec"
+    },
+    ".agents/skills/common/common-debugging/references/bug-report-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-debugging@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "36946e6afaf9ebaa3a417c6558bebd9dda66b18872291592aeb774c41d58d28d"
+    },
+    ".agents/skills/common/common-decision-discipline/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-decision-discipline@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-decision-discipline/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-decision-discipline@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0df5a2ce474431c18b1e011b4b3672d737fb833ff863daba1b0c6f6f61dd806f"
+    },
+    ".agents/skills/common/common-decision-discipline/references/contract-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-decision-discipline@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c2eb0a232dff8bf9bb1ea91aa9b72680c4ec71902279922c81ac6d78d7614588"
+    },
+    ".agents/skills/common/common-decision-discipline/references/evidence-ledger.md": {
+      "owner": "skill",
+      "source": "skill:common/common-decision-discipline@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "79755ee660b03ba6f74a5979c92d9e82f745c8eec65a45ff8b5a7cf871559801"
+    },
+    ".agents/skills/common/common-decision-discipline/references/option-card.md": {
+      "owner": "skill",
+      "source": "skill:common/common-decision-discipline@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a26d343d2c8937866fd4dc99431953f09e506b0bd3bed399839a4f4c7e3a7576"
+    },
+    ".agents/skills/common/common-documentation/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-documentation@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-documentation/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-documentation@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6776809cdf947de0be1e5b596c145dd744973fc9fa235fdf598e3550d3283248"
+    },
+    ".agents/skills/common/common-documentation/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-documentation@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6ab029247e084fb34aca080abd45c57065703fcdbbb03a6326aa5b6456acc8aa"
+    },
+    ".agents/skills/common/common-error-handling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-error-handling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-error-handling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-error-handling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0e38dbe7c85e4f753e090f4eea512a2a465c5b81d5cbea34bc5fbb0ac1270955"
+    },
+    ".agents/skills/common/common-error-handling/references/api-error-contract.md": {
+      "owner": "skill",
+      "source": "skill:common/common-error-handling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "91e65461819f57150176446a73079bc968e6a1b4d5a980a56bf7cbc6bf81d224"
+    },
+    ".agents/skills/common/common-error-handling/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-error-handling@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c88d761aa5c74e3a2203a7bf50cd803f804920d84f4d7f973089936d340d9ae8"
+    },
+    ".agents/skills/common/common-exploit-verification/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-exploit-verification@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-exploit-verification/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-exploit-verification@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "39e9fa1756d8d7f1ee1615e326f8d1d72b1d74646101dd4df0c7cbc4591d94f3"
+    },
+    ".agents/skills/common/common-exploit-verification/references/exploit-playbook.md": {
+      "owner": "skill",
+      "source": "skill:common/common-exploit-verification@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "edb58cd7e9c0594a78e0af57bf98df1626fc5bfa9abf07a20ff573d8519df3ee"
+    },
+    ".agents/skills/common/common-exploit-verification/references/false-positive-checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-exploit-verification@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "495192159953aefc1f12bdfed04b20d2e7bc6e3e8ddb2128daa6858200c17bdd"
+    },
+    ".agents/skills/common/common-family-ux/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-family-ux@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-family-ux/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-family-ux@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "408c6b6edff6255c5d9b6991f6a2b020017539f64f70c70b8df4fd3298e2be95"
+    },
+    ".agents/skills/common/common-family-ux/references/child-surface.md": {
+      "owner": "skill",
+      "source": "skill:common/common-family-ux@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "00705862ac878d206c1a12b6f05d6747f665866d9e884635483d251c31e5f67b"
+    },
+    ".agents/skills/common/common-family-ux/references/human-feel.md": {
+      "owner": "skill",
+      "source": "skill:common/common-family-ux@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cc3b47e0bc62d4d841dd9c4aeab3549c0c27b9df2b73b171d0e063efa4a9614f"
+    },
+    ".agents/skills/common/common-family-ux/references/rubric.md": {
+      "owner": "skill",
+      "source": "skill:common/common-family-ux@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "56c46dd9b83e13baf22ee67b9139834469c53523e433659c9ffd810dd2e9a2a0"
+    },
+    ".agents/skills/common/common-feedback-reporter/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-feedback-reporter@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-feedback-reporter/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-feedback-reporter@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "62bc5913c92f3b426c31b52d26f73d99f20dd6e71389c58159f39d46cf87de35"
+    },
+    ".agents/skills/common/common-feedback-reporter/references/test-scenarios.md": {
+      "owner": "skill",
+      "source": "skill:common/common-feedback-reporter@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d3ac0ad6aa1bcaf842b4dc31b6fba2bc76c0c3b4f825ef055fd6644e98b56a56"
+    },
+    ".agents/skills/common/common-feedback-reporter/references/violation-examples.md": {
+      "owner": "skill",
+      "source": "skill:common/common-feedback-reporter@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "5875f7b54863a3da643f181acbb34caaab9d44ceb7d6d5ddc5022b4edc9216cf"
+    },
+    ".agents/skills/common/common-git-collaboration/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-git-collaboration@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-git-collaboration/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-git-collaboration@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "91a393a2f3460653cd1d3bc8efe62b703325e94a6c919cf874524bc5234e0df9"
+    },
+    ".agents/skills/common/common-git-collaboration/references/CLEAN_HISTORY.md": {
+      "owner": "skill",
+      "source": "skill:common/common-git-collaboration@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "78b6ca27ae9648c1fb62af3750630aeeff97f2b46e65b615ef7b0d24122e093e"
+    },
+    ".agents/skills/common/common-git-collaboration/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-git-collaboration@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "93124c23d4ca697d2ccb0e0376ccf8381dbf54c92fab4685bacf32e5b318f6dd"
+    },
+    ".agents/skills/common/common-learning-log/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-learning-log@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-learning-log/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-learning-log@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d8082fe46b7087e25818c6f6e61875d93e620d6b638447e6443748acb6494304"
+    },
+    ".agents/skills/common/common-learning-log/references/log-format.md": {
+      "owner": "skill",
+      "source": "skill:common/common-learning-log@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "fc72b2b56ab110f192f6dbddd0e29687e857c9b09feb24fecce86d6e66d0b49a"
+    },
+    ".agents/skills/common/common-llm-security/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-llm-security@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-llm-security/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-llm-security@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "58608853ea4869e4036b8ee997c1bbd016e233db01fee07e30751c5012ef86e4"
+    },
+    ".agents/skills/common/common-llm-security/references/owasp-llm.md": {
+      "owner": "skill",
+      "source": "skill:common/common-llm-security@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "706844477abb74f0b5f4f6ce75ef79761b0de1bd19cb17012e73dd7072455c10"
+    },
+    ".agents/skills/common/common-mobile-visual-testing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-mobile-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-mobile-visual-testing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-mobile-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a39f9b61ba32b3bbe3ce9ac033d94037817032fe66c3bf04d46f53412979d0a0"
+    },
+    ".agents/skills/common/common-mobile-visual-testing/references/scenarios.md": {
+      "owner": "skill",
+      "source": "skill:common/common-mobile-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e96e71e641fa61a4c0d2e3076ff1eb1e4f08eb2d125727df821e870323d207c9"
+    },
+    ".agents/skills/common/common-operator-profile/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-operator-profile@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-operator-profile/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-operator-profile@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "2eed435027b03928295919acd702f645e1eec718750197673d4aff119a0c1d75"
+    },
+    ".agents/skills/common/common-owasp/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-owasp@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-owasp/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-owasp@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "58d12901cf8ad267ac5b590061e7a828e74ddf2d2f1073e2adb019620321862e"
+    },
+    ".agents/skills/common/common-owasp/references/owasp-api.md": {
+      "owner": "skill",
+      "source": "skill:common/common-owasp@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b6844ad13dddf7c341fb4454ba51b6111eb89b3e23b9ec10f7822ad995b3b84b"
+    },
+    ".agents/skills/common/common-owasp/references/owasp-mobile.md": {
+      "owner": "skill",
+      "source": "skill:common/common-owasp@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0ddd6c456befe7e03463a5a72419b95e3eaae1b32a8b6990bfa33167f062b50b"
+    },
+    ".agents/skills/common/common-owasp/references/owasp-web.md": {
+      "owner": "skill",
+      "source": "skill:common/common-owasp@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "871074ff2d0e5898edb37c1f595225e78c77df3cd970998545463c4135949892"
+    },
+    ".agents/skills/common/common-pentest-methodology/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-pentest-methodology/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b296f27b2f91a29c72f8dc5ab0f2560fef88c9c50541f61059fdb0cb159da6eb"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/compliance-mapping.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "bdfead1317c2a8dd116c85d337891206f8ba0e6caf4439c9f71306893261f49e"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/continuous-pentest.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "aa9d4d4aa67f3408533e2970b87b77e2e84ebe2ee5650c03f8e17b421787db79"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/exploit-techniques.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "0db0e6405e1e8268ab5b4457942303c20af8c84e849dc74acf18d2f45e88f555"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/owasp-mobile.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "758b3e476e6c74f284bfa3a0eb7294734413e48a3b876bb8b6f313a6de48e9ce"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/platform-recon.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9f4409bf3e248a20f193619843f07c68f10177d0a0000d734780859b246c15c4"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/report-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d9ac60d57332c1a0912386855367103e7bb05df9e19b7acfa3aa887b697ea907"
+    },
+    ".agents/skills/common/common-pentest-methodology/references/threat-modeling.md": {
+      "owner": "skill",
+      "source": "skill:common/common-pentest-methodology@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "40d1f5e61d213420617a13ac20424b8107d08f07e2a0145c713e91f2d6550f74"
+    },
+    ".agents/skills/common/common-performance-engineering/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-performance-engineering@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-performance-engineering/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-performance-engineering@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "1d22ae4768f83cc496c52f94620c3f1af17633798f5928edc3a1efa57fd6e1ac"
+    },
+    ".agents/skills/common/common-performance-engineering/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-performance-engineering@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "23814a8d06e14d47fcf706713f334b6944e4eb9ec26df54b199df34a47609a65"
+    },
+    ".agents/skills/common/common-product-requirements/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-product-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-product-requirements/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-product-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "7262c53d56064a2917a4ab3da9afa2936166c84bd197cdaed0630ffb8268589c"
+    },
+    ".agents/skills/common/common-product-requirements/references/checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-product-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9c37d6404ff85602bf621d35cb70119f266845dca9686d12385f7a03e32841ae"
+    },
+    ".agents/skills/common/common-product-requirements/references/lean-spec-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-product-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a1abbb0f36ea994a15452a0ed0ce9caa80db8143814f7b4fc46d4b794b930c5b"
+    },
+    ".agents/skills/common/common-product-requirements/references/prd-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-product-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "f4aa8323dc5887c64bd880d251bb706ed301d34913cbb6866df06f9b18d812f4"
+    },
+    ".agents/skills/common/common-protocol-enforcement/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-protocol-enforcement@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-protocol-enforcement/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-protocol-enforcement@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a48076d484d48437abe0fad74695a41464d010981041818dd3a3c93f52d7ad70"
+    },
+    ".agents/skills/common/common-review-policy/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-review-policy@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-review-policy/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-review-policy@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d913233e85b365330f58b7c4df132e74341b6baecea90151bb0272498a575c96"
+    },
+    ".agents/skills/common/common-review-policy/references/review-policy-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-review-policy@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "000fb879648a1e219fee50c948cb681b72f0ee4b589df04e4177cab975b006cd"
+    },
+    ".agents/skills/common/common-sdlc-metrics/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-sdlc-metrics@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-sdlc-metrics/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-sdlc-metrics@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e8e0ac9e325d12008ac3dbb05bb49d2008b2269026b34f7d5af23425e3ef5a39"
+    },
+    ".agents/skills/common/common-sdlc-metrics/references/bands-template.yaml": {
+      "owner": "skill",
+      "source": "skill:common/common-sdlc-metrics@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "31623bed17bbacd385d4297ef70ecdaf2f98b766245e1c9ded652bfff727d12f"
+    },
+    ".agents/skills/common/common-sdlc-metrics/references/metrics-schema.md": {
+      "owner": "skill",
+      "source": "skill:common/common-sdlc-metrics@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d93f2624225c3a48faf350e182b420c97a7decf5cf26d59c61e9e2ca0357cb16"
+    },
+    ".agents/skills/common/common-security-audit/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-security-audit/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b9ed3c2704e2b4b9df14693b2059a5b47f7fea7446a0157a245524eb58e0ff5b"
+    },
+    ".agents/skills/common/common-security-audit/references/REMEDIATION.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8118c04d2a05f64cfa845a2375f67faa11f45b5448cc25a300e2e730d729b4ea"
+    },
+    ".agents/skills/common/common-security-audit/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "025f2892a1424af491ba7a9475f9672195a9c5d69ba6a6b0895f51d632c03618"
+    },
+    ".agents/skills/common/common-security-audit/references/mobile-audit.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4a4f9578f922b9022eb582fadb45b8dc48ce61a814eab65ffbab8c2b153d4de7"
+    },
+    ".agents/skills/common/common-security-audit/references/signals.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6abc2b821481adeefef91986ff37618836d51547ab9b601550e7c7fd1709ff47"
+    },
+    ".agents/skills/common/common-security-audit/references/trust-review-policy.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "1dfa0849d7efdc3c1b2aba0070501af755ff8ff2aa9a6a3835f37a91da628b42"
+    },
+    ".agents/skills/common/common-security-audit/references/vibe-security-scan.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-audit@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d175856c26adbe30d375a94942ae76d05c2ee0ce66f7e33b9d5df3d46967ca14"
+    },
+    ".agents/skills/common/common-security-standards/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-security-standards@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-security-standards/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-standards@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d304e7df80f83120bee217703faaf3974b32f9c81d3e42a816624efcfecfc49f"
+    },
+    ".agents/skills/common/common-security-standards/references/INJECTION_TESTING.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-standards@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "ed747eaf8433716cdc405bad1bf9d3c6f46a0fb9e60f20c3419f97e131a09b20"
+    },
+    ".agents/skills/common/common-security-standards/references/VULNERABILITY_REMEDIATION.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-standards@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "bff42e6561110e2fc067fd9b32048cd4dddd7013ae8bb51732b4ab28ee2eef73"
+    },
+    ".agents/skills/common/common-security-standards/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:common/common-security-standards@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9302fc48dcf32057d5b1fc7a50cba110d14bdc56a0ab9323e2bbc9d59947bb29"
+    },
+    ".agents/skills/common/common-session-retrospective/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-session-retrospective@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-session-retrospective/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-session-retrospective@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "902ec683d4bf1e1bd6b5782407ad003a580170b865c8506e1af93ac1db00b874"
+    },
+    ".agents/skills/common/common-session-retrospective/references/methodology.md": {
+      "owner": "skill",
+      "source": "skill:common/common-session-retrospective@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "ad238c73478f83da27347dd8f93c9d36ca72a8f1cd0e3b660a56db694719fc0d"
+    },
+    ".agents/skills/common/common-skill-creator/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-skill-creator/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d11258c8537360a88c0f1893d3cfd3ef8c3788f5ce11d3aa6433aad6bd233d86"
+    },
+    ".agents/skills/common/common-skill-creator/references/TEMPLATE.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a0388067ab62f9945f69704a9642858377d06fd689461a5d2214e20f201a12a7"
+    },
+    ".agents/skills/common/common-skill-creator/references/anti-patterns.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "753a1cf80edd5b74abea8c1040632c432dceb11d300eb6c7c00356191a9279de"
+    },
+    ".agents/skills/common/common-skill-creator/references/benchmark.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9852436928f4904deb2a37b2bd56989c31d1894061c4a4cb2a13da75f4d12698"
+    },
+    ".agents/skills/common/common-skill-creator/references/eval-workflow.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "fac6a335e37b7b66a038dc0aa2431abddfb87954377857cf1a15cdc766c2abc1"
+    },
+    ".agents/skills/common/common-skill-creator/references/lifecycle.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "3f3d8ba0794647ce288b60a38f0c67defe0ee1ab2d53b420f60410993bc333c2"
+    },
+    ".agents/skills/common/common-skill-creator/references/resource-organization.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b0c7061a7927274deda69c784b6395493e48edee960a5d3996571cca881aecd0"
+    },
+    ".agents/skills/common/common-skill-creator/references/rubric.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "2976705327b9015bf85e7b6eb0a2f06ed7e2d5c915f6e64fe144ebdf6135ad1a"
+    },
+    ".agents/skills/common/common-skill-creator/references/size-limits.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "ea3c8e9016f0dea619de3590b408f66f99ce2da3f9f5d689a399ae22b596495a"
+    },
+    ".agents/skills/common/common-skill-creator/references/tessl-best-practices.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "374cb844a2daf5115bc68aef124bdce43858675bc3c05ec62b169ca9436f1c40"
+    },
+    ".agents/skills/common/common-skill-creator/references/testing.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6a3b0fc2c57ac9491575cb025e992a3bbfbf19845b921390032a71c80b017f9c"
+    },
+    ".agents/skills/common/common-skill-creator/references/web-search-research.md": {
+      "owner": "skill",
+      "source": "skill:common/common-skill-creator@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "834a85894cb0cf928ebb966a2667170fe972d9b307bd8b044886b0122eb364c8"
+    },
+    ".agents/skills/common/common-software-requirements/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-software-requirements/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "ff3d6ec3a35966330295066fa3602de64a3e89ae7a80f60128c1e4af0bf23020"
+    },
+    ".agents/skills/common/common-software-requirements/references/frs-checklist.md": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "25fefeeaff76a124accb6bfe2d410f2cfaf67b39e74f9933022877fe8c6c28a9"
+    },
+    ".agents/skills/common/common-software-requirements/references/requirements-standards-baseline.md": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "dc6662d905a95af4b59ea323701b778cd1d9a23d63c96917ad8984364b765d28"
+    },
+    ".agents/skills/common/common-software-requirements/references/srs-template.md": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "83fa28b28aec701e8d6429a63b2cdcadaab9cb4814e720623ed40c020539b031"
+    },
+    ".agents/skills/common/common-software-requirements/references/standards-baseline.md": {
+      "owner": "skill",
+      "source": "skill:common/common-software-requirements@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "9a3a179c970bb1160d34f4d6b4bae5e93fa4f21106936e880a41543812299dd0"
+    },
+    ".agents/skills/common/common-stitch-design/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-stitch-design/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "f292ee2de1ce33522f12374f421511538f1799ace5b5e71d47681fdd8980ee3c"
+    },
+    ".agents/skills/common/common-stitch-design/references/design-md.md": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "858990de8d3d8b9ea3fa3435b0e4064dbd44adc4d6ea04d476e1b21004d6a24a"
+    },
+    ".agents/skills/common/common-stitch-design/references/prompting.md": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "38252b6b4a7885ca3609efb553beaadd8543f58108429393b1b8814157089e35"
+    },
+    ".agents/skills/common/common-stitch-design/references/stitch-mcp.md": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "7b51b7e3cdf78b8b16e6d31d9d1b7b6c46e04ef6f183e523b37ae3f2e1d1f035"
+    },
+    ".agents/skills/common/common-stitch-design/scripts/audit_html.js": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "75beccf5fab2820f2755fbe6a6f8ff69e17898b2eef4487b8bbb29833366bcde"
+    },
+    ".agents/skills/common/common-stitch-design/scripts/audit_html.test.js": {
+      "owner": "skill",
+      "source": "skill:common/common-stitch-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "a8cd3311df093158b9d22bcbb5ec595e3d2f3f7ff73403dee8c4b062735185ef"
+    },
+    ".agents/skills/common/common-subagent-driven-development/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-subagent-driven-development/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "7503b77823cda442d542f54b089b72043fbeead2f6cf1c44f0fbb23f42f43aef"
+    },
+    ".agents/skills/common/common-subagent-driven-development/references/methodology.md": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "e2e8548bb8247e31ffa0f44e78664a608a5774f80066fcb6ddf6cf9d0c78f2c9"
+    },
+    ".agents/skills/common/common-subagent-driven-development/references/progress-receipts.md": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "8aa77a9386ff357278ec1eb0ffdc525b45edf8e1fab28c9ce7b12987bbfb12e7"
+    },
+    ".agents/skills/common/common-subagent-driven-development/references/templates.md": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "f487daf8a3ecfe8b8abee76f9a2bfb8b931b5f118ea99aee3646583a3929aacb"
+    },
+    ".agents/skills/common/common-subagent-driven-development/scripts/review_package.py": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "87ac27d423d7937a6de77117153003a8e90f9383ef8d795abd74772bbb9996b4"
+    },
+    ".agents/skills/common/common-subagent-driven-development/scripts/sdd_progress.py": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "cb236e9d2542caced3e49e78274149bcb5790d71706133e475619eb30cd9959c"
+    },
+    ".agents/skills/common/common-subagent-driven-development/scripts/sdd_workspace.py": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "97f6aecb6b28e0a6af8f7424385cff53b6cbdb072746d3188959a2e5bb770bae"
+    },
+    ".agents/skills/common/common-subagent-driven-development/scripts/task_brief.py": {
+      "owner": "skill",
+      "source": "skill:common/common-subagent-driven-development@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "d66207beca33b9b905b341a37be83b4c9338f776c359853e6068e98fb1ede896"
+    },
+    ".agents/skills/common/common-task-complexity-routing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-task-complexity-routing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-task-complexity-routing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-task-complexity-routing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "ae8554705a112905880802dfcbcc70590c97c61192ea05a8d1a0f5c5d2b68970"
+    },
+    ".agents/skills/common/common-task-complexity-routing/references/routing-table.md": {
+      "owner": "skill",
+      "source": "skill:common/common-task-complexity-routing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "6fbda94f6fc2371ea8d80a1ae4ca34d45e2e53cd7e8fe33caa353ec9189e4d48"
+    },
+    ".agents/skills/common/common-task-complexity-routing/references/snc-rubric.md": {
+      "owner": "skill",
+      "source": "skill:common/common-task-complexity-routing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "c80c446b9cc29a907b11a0b1f08d4ba58c3599a638dcce9285f2f1faed509716"
+    },
+    ".agents/skills/common/common-tdd/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-tdd/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "2902d3a26ef28015c2109f70526c7c6606a90fb510de6766566f1a0ee0a4ee31"
+    },
+    ".agents/skills/common/common-tdd/references/aaa_example.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4431710242f66b2188b574bd2d9edb66fb957fb61d99541912209df9c3f4535b"
+    },
+    ".agents/skills/common/common-tdd/references/aaa_methodology.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "fc5d6219bc6b6f9f753db1ab29063eab1163a8cd34d85d3f44ea27bbfc47ae8b"
+    },
+    ".agents/skills/common/common-tdd/references/anti-patterns.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "02c741e35fcb2b21c02a7d574be6d1e423ee23b970ba92a23df25a69249a5910"
+    },
+    ".agents/skills/common/common-tdd/references/best-practices.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "925ecc838443bdadbaa0ddb243a0aa2493aff83bc43fea2f5d693a5b83b71f46"
+    },
+    ".agents/skills/common/common-tdd/references/quality-contract.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b8411152f012da4812f6f57fc07266ff26fc14b280be077babe774b792a6aad1"
+    },
+    ".agents/skills/common/common-tdd/references/tdd_patterns.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "58d57a79216f15dc81bdd9de085289cbe04da83357d754e4ccd877561dad9b33"
+    },
+    ".agents/skills/common/common-tdd/references/test_runners.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "78663605059dac945fdc1521cc92d397916fe5610406957e3f2090e58b78aac5"
+    },
+    ".agents/skills/common/common-tdd/references/testing_anti_patterns.md": {
+      "owner": "skill",
+      "source": "skill:common/common-tdd@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "3dc5f613318edcfe75bad87ece6367a389d62b5544e26c301de8df260e03d738"
+    },
+    ".agents/skills/common/common-telemetry/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-telemetry@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-telemetry/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-telemetry@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "973f44393e081d5aefb70a0c219284fe128ba6b7f880c467328c3993638b884a"
+    },
+    ".agents/skills/common/common-ui-design/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-ui-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-ui-design/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-ui-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "309c229e2d47b6dcd4fdf8a269c4e735a51aa6880b141536445ef94eb000d277"
+    },
+    ".agents/skills/common/common-ui-design/references/motion.md": {
+      "owner": "skill",
+      "source": "skill:common/common-ui-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "779f48806d18ad3f33eb5b6765c13888359f36c076fbc17852470575e98c9528"
+    },
+    ".agents/skills/common/common-ui-design/references/tones.md": {
+      "owner": "skill",
+      "source": "skill:common/common-ui-design@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "bbc1f418c102420f47a1ef7a1238fcc229d8259520c3e3081ed57c34ae8ee239"
+    },
+    ".agents/skills/common/common-web-visual-testing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-web-visual-testing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "87400640d721091640c27ba37e632bfc83a8db998de08774297f1fcded46e9b0"
+    },
+    ".agents/skills/common/common-web-visual-testing/references/diagnostic-decoder.md": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b6c59a02c2dcd018553a3f262f8da477fcd66667808502f68f1eb95fdffc96d0"
+    },
+    ".agents/skills/common/common-web-visual-testing/references/dom-snapshot-vs-screenshot.md": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "b687ce0ac3a2aef03b6529557d00079ec8bb57619617f74aa3342ebddadf1cc2"
+    },
+    ".agents/skills/common/common-web-visual-testing/references/login-and-test-data.md": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "295664eb50591cf16acb8d8cad4e1ae1e692be65a7fb28e45f206a2c316f0747"
+    },
+    ".agents/skills/common/common-web-visual-testing/references/scenarios.md": {
+      "owner": "skill",
+      "source": "skill:common/common-web-visual-testing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "2dff3ef9d38196bb4e8fb4476a17363b584783087fc639b16c3ea392853f9354"
+    },
+    ".agents/skills/common/common-workflow-writing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:common/common-workflow-writing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/common/common-workflow-writing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:common/common-workflow-writing@common-v2.8.7",
+      "agent": "antigravity",
+      "sha256": "153063fb1a434dfb8b3d224d917b84ad38a80cfabd1ffad44dbe1df5498a29fb"
+    },
+    ".agents/skills/javascript/_INDEX.md": {
+      "owner": "index",
+      "source": "index:javascript",
+      "agent": "antigravity",
+      "sha256": "9540d8613c04899a5faf503488f1d56f611f3327f75b82dd167ad8758a47b8a2"
+    },
+    ".agents/skills/javascript/javascript-best-practices/LICENSE": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-best-practices@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/javascript/javascript-best-practices/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-best-practices@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "4b6644c7fa93e71fd90921041f471bfebc146ef91be65bdb239ecece1ecca7e6"
+    },
+    ".agents/skills/javascript/javascript-best-practices/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-best-practices@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "a907394693154b8c1104d1796784be9142805763ff3b7ed5b5648c864f3d9618"
+    },
+    ".agents/skills/javascript/javascript-language/LICENSE": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-language@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/javascript/javascript-language/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-language@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "b48fb14e0253df3e53f3c10d9c16d34028012509446f00a102ba72405864c277"
+    },
+    ".agents/skills/javascript/javascript-language/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-language@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "d2569fb6ad2194c0320ee1d58c85e83da48ba792fd66ca44dc4bf76ed46ff239"
+    },
+    ".agents/skills/javascript/javascript-tooling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-tooling@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/javascript/javascript-tooling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-tooling@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "12ad377fa69799d9d8fe56f17bf869d5f2676af612a9df1a797d6cc49a041a8e"
+    },
+    ".agents/skills/javascript/javascript-tooling/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:javascript/javascript-tooling@javascript-v1.3.5",
+      "agent": "antigravity",
+      "sha256": "5cfc089a908ce44fc16c21e1d38dcc2f58f2a4cc6d844a6e788ba828bb01d00e"
+    },
+    ".agents/skills/nextjs/_INDEX.md": {
+      "owner": "index",
+      "source": "index:nextjs",
+      "agent": "antigravity",
+      "sha256": "0a649761d18a92e0d88b80ff7d1f9b265fd941849fa8036e9db734e0b07c0ffe"
+    },
+    ".agents/skills/nextjs/nextjs-app-router/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-app-router@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-app-router/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-app-router@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "9d9d2bbf26b0768f2a61d756923793757a141ece83376c7f2d8f6316e4b40d45"
+    },
+    ".agents/skills/nextjs/nextjs-app-router/references/SELF_HOSTING.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-app-router@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "a4540d9d8632355949791107a79d02dd8e43bfec3893e21e33994982b0bfa1ce"
+    },
+    ".agents/skills/nextjs/nextjs-app-router/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-app-router@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "68949427351fdee80689ed8da09eca324dcaaffaba6f3b4f3a4c0e77118d209a"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "9e383442d73690cbf3f6a93aa70dd0b9623b89e52e665d2328c3cacf2f882393"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/BUNDLING.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "7780530c441b9d61ad89bcdf2bd1fb0d69d26656b617f888f955eb02d5512c14"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/DEBUG_TRICKS.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "317aa69dc0c9234e31bfa27c84ba8484e19e3c59c39fea35ac117222e92202ea"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/RSC_BOUNDARIES.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "7592afdb68139c1f5ed153905eb12f9462abc01706df1f1727cc9e6cada42054"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/RUNTIME_SELECTION.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "bfba189aabb51f86dd9c645265004b2e9eb50d8be6950dee9235f79ab72d818a"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/fsd-structure.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "1ff4b98d82cc6a0edccdca665717a2db34e8403f8906c060fbc829c8bf4487e1"
+    },
+    ".agents/skills/nextjs/nextjs-architecture/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-architecture@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "1b96c3952eccfeb4db9d7e8b57f654cd22c7a87b90c8fc3b4e11178aa8764e75"
+    },
+    ".agents/skills/nextjs/nextjs-authentication/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-authentication@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-authentication/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-authentication@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "d58f39e4d5b851532b59417a6a08eb3fd564145f0ed482be14834a35eb064a86"
+    },
+    ".agents/skills/nextjs/nextjs-authentication/references/auth-implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-authentication@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4538fd7fa568ca2fb24f133a9f727520159341149963fc2793026010b3d85dee"
+    },
+    ".agents/skills/nextjs/nextjs-authentication/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-authentication@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "356034a881a5461f3b6759ce2d1edeb91c1f96739c612a826d39b97c7ef1a200"
+    },
+    ".agents/skills/nextjs/nextjs-caching/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-caching@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-caching/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-caching@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "23ae51f20f9dc9b88e99e56b7b65e447a1d3c85d61428a66bcb282d33f115518"
+    },
+    ".agents/skills/nextjs/nextjs-caching/references/CACHE_COMPONENTS.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-caching@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "69270012c34bb2c97055bdd29b8c1c8f9295a6c0c4482d2d308321bcba587ae1"
+    },
+    ".agents/skills/nextjs/nextjs-caching/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-caching@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "5e4d52547c003c1f53df3594c07373b07ac2849306c26197a948360fc5cc6b2b"
+    },
+    ".agents/skills/nextjs/nextjs-data-access-layer/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-data-access-layer@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-data-access-layer/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-data-access-layer@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "2ae766067d6ebca5a73f6a29f5af00e56c98f2301a639d0892522fdd250686c8"
+    },
+    ".agents/skills/nextjs/nextjs-data-access-layer/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-data-access-layer@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "0c4d5e60f57049b6704a064e1331732b66d9e8597deee6c9dc3e14f05b717630"
+    },
+    ".agents/skills/nextjs/nextjs-data-access-layer/references/patterns.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-data-access-layer@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "751fccbbaa808deec02338315427326d6dacfea27aa592548734d40f909e37c3"
+    },
+    ".agents/skills/nextjs/nextjs-optimization/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-optimization@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-optimization/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-optimization@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "7dfd4c3dd7b8146c974a9e7620e88e0bdafd078a556b8870fd75f59a9297c113"
+    },
+    ".agents/skills/nextjs/nextjs-optimization/references/example.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-optimization@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "fd9ea797bb608ea4e860378b13b676f2b8d61a67d6cc6e1cb079af5e61baa282"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "7a9e9d8dc8d1b4e291da81a97ced2f1c0b5eb7a11dd52ca4bc674b47982ba220"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/references/SUSPENSE_BAILOUT.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "d8c71b5835b4d6d7395bf897e58a7b8a1f68670c340696f1701c9f4a221c4bf9"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/references/implementation-details.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "d97abd536798452259a5c019b640aa4249f30a3517201687ddd3fc6be7e6e9b4"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "1254482eb130bc32c9a2c72a975e76a168653992dc0afccbcab25a8b4db0236c"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/references/scaling-patterns.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "88744ce926d3d69eea81ca27881a0b62b0104fc1c72c974cf6d9142e4fcd122b"
+    },
+    ".agents/skills/nextjs/nextjs-rendering/references/strategy-matrix.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-rendering@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "fae058b3ad10d0ac5844ee540f3c11df5504b29e3fde04765b846246fb00c6ae"
+    },
+    ".agents/skills/nextjs/nextjs-security/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-security@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-security/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-security@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "be713864b1030d0836fda8bfdf1456ca0c559f0996e35703cc000b316ac56732"
+    },
+    ".agents/skills/nextjs/nextjs-security/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-security@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "c0ca33377cc23aece84dd9b3e54fca7f0dbf09a5bc08f8ed622cdf015732ad04"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "96b51fdec2c34080eb22506b57bc37e67e19e1bb789c3ac403a16cc61e1047cd"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "a5f4a904ccc0571b9ddcaa53a2b65d4990147f86701ee7dfdc433058554d9c48"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/references/redux.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "ca35599d26aa90a7e29d36d927ceed9af0111313e1496f28215fcc8679793b57"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/references/url-state.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "f0fddacef9a8e859f170b24b71a564846b2e7917a19a884e9ccc42b1aa822312"
+    },
+    ".agents/skills/nextjs/nextjs-state-management/references/zustand.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-state-management@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "b6312b87849d11bad0faedde9b1b3935f92b176ad5085966910a1697365d3c13"
+    },
+    ".agents/skills/nextjs/nextjs-styling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-styling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "5c46fc4d447fb62cf52af64ba90b67f0705930ad070a3682fe1239e1a9696d82"
+    },
+    ".agents/skills/nextjs/nextjs-styling/references/ant-design.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "06df3cc2592479048befbda0f0d9df40a2d94ce0966513f15bf8649d4aa42d86"
+    },
+    ".agents/skills/nextjs/nextjs-styling/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "3959a7f07a2ff039bf3ee883e22d4ee39132da263fc5605937398190826af9d9"
+    },
+    ".agents/skills/nextjs/nextjs-styling/references/scss.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "c4b04a814d15e51d14f68466f469190de586a9eae435296c28fbcb516a5d47f7"
+    },
+    ".agents/skills/nextjs/nextjs-styling/references/tailwind.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-styling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "153d94c86c505c07b0c0c4cf6c2ab05230bef30739db90693775e483231370f5"
+    },
+    ".agents/skills/nextjs/nextjs-testing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-testing@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-testing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-testing@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "c5a8def879e0c0c0adce0be07c720e0c8df6025c77a2af99c15f1101ef7b23d2"
+    },
+    ".agents/skills/nextjs/nextjs-testing/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-testing@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "a9a0c05b05d35d212201eb003c46b9b0ba196953a89b4e20c01f16f1539518b1"
+    },
+    ".agents/skills/nextjs/nextjs-tooling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-tooling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-tooling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-tooling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "c828c0ebf519c24875d5f42d8517aab1ee1874bd3353fa9996365d7e84e81f1b"
+    },
+    ".agents/skills/nextjs/nextjs-tooling/references/implementation.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-tooling@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "b3791560cf9313201e552c9170fed445102c61330155590c262797e1c55f69d3"
+    },
+    ".agents/skills/nextjs/nextjs-upgrade/LICENSE": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-upgrade@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/nextjs/nextjs-upgrade/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-upgrade@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "e1c201a963b054ed2bf5a3c62c95f75479e2ef391c2e3c8bfd854652567981f8"
+    },
+    ".agents/skills/nextjs/nextjs-upgrade/references/example.md": {
+      "owner": "skill",
+      "source": "skill:nextjs/nextjs-upgrade@nextjs-v1.4.7",
+      "agent": "antigravity",
+      "sha256": "e4a87140ecd5daf87774f13bf2c723af68303c4f50237e2b7b4ae1b178743ec2"
+    },
+    ".agents/skills/quality-engineering/_INDEX.md": {
+      "owner": "index",
+      "source": "index:quality-engineering",
+      "agent": "antigravity",
+      "sha256": "79ec45e7999062cdba8d16a3258a715b876d7d4e9ca1bacfdee61115771f84b8"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "6c4b1a8220a70c7308d9d15a9b5cd9f206dd64f4f33b0bfcdb51241fc933c3b9"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/references/driver-ladder.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "a5432207019b406872686f1c8a1218bce11dd3cbe55fcf6d700b52951b3a7bde"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/references/lambdatest-cloud-setup.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "cd45f128d2423cc90d3b5d65e1bdf0a4241c34d952eda464c59ea13ffa6d73a7"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/references/project-context.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "a5b5ceab2733cc8c7fb97be368bf43122afaa348b4b3b2303983ca43cc6c392b"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/references/setup.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4ba85695034926afc71e3e685c6176e4ea2ec61bc1e6b9c9007ebe000f8dd0ec"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/references/tool-cheatsheet.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "793b086fa845d43f7a51b97b0ab6f78bf42d732075d1bfb670b322898006fee5"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-appium-mcp/scripts/preflight.sh": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-appium-mcp@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "de543b5825b08dfac1b553bb6ac399a845291b3d0c94488ce1d2a3e47a6a07dd"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-automation-health/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-automation-health@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-automation-health/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-automation-health@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "61f9a2c3b594e44b4a7aa3ee6a80b6d75652462342881af0f22ea7bc6e7ae0f4"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-automation-health/references/confidence-report-template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-automation-health@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "cd4ce6cb8e3fcdce76e5089ca1c9d74994c99271e7f5675d1838d1aaa710d14c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-automation-health/references/metrics-definitions.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-automation-health@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "3f3ec300206277bf35fe2d25ff81c735f79160cc2218dcadfad4cd3348357182"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-business-analysis/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-business-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-business-analysis/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-business-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "3ede6a721b753b6e76247ce071a2993c9b27f7ff5691df3e81394284f072440c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-business-analysis/references/analysis_patterns.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-business-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "dc53105da9b932a5d9f14370d0cc73ed8671b9651c1327b30553ed4802eada22"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-business-analysis/references/logic_truth_tables.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-business-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "ae871601ec4e563bd9f9bb1fb229565e6d1addfa886afdaec355198db0712d7b"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-business-analysis/references/user_story_template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-business-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "ee1b2ff027766e52cfad1c4897acf2896e23424632ba1cac324b9fdccf907d44"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-flaky-triage/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-flaky-triage@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-flaky-triage/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-flaky-triage@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "43aec22376d71b154e181723917e7bc90f107b8a3bcf3d8645adceb1f4093b3f"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-flaky-triage/references/quarantine-ticket-template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-flaky-triage@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "2a3adacd0439ce5ab1cc7f0088ec96f98e3e82cc3c2a800c696abb5cef844a05"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-flaky-triage/references/reliability-math.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-flaky-triage@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "513e63a389ae4901844fc2fbd456a7c6e2238fddf893f5a577d44da612385ba1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-flaky-triage/references/root-cause-buckets.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-flaky-triage@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4e5c14eea73f64772a87e1a2c020c88bbdd977d1ce10730567e2a5c9b8036b4c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-jira-integration/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-jira-integration@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-jira-integration/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-jira-integration@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "c720249e4dda9d8cf7eafb722de31d4e009181558b1c2cc40ce95e6a01daa4ff"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "44f507f020b7a210c62c801774196843884e449799a698162a1a9705817e1bd8"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/references/anti-patterns-rationale.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "2b99c5b5784145375ed6b634bc768904529dd70ff1a1f1839f6574a62744d39e"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/references/driver-ladder.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4f83b58dd8b31cef9a5c4c7536d9fcd1984eac69c2771e4cde1d0cc933e815ea"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/references/project-context.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "b4e7b9c2fa43757124bd34007985d4cb0bb798e1624bc47ca4ec51f8097acd95"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/references/setup.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "462106ee8d54add4d3c903e615cc47d707c77d465f7a22fe0f5abc189137d4f4"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-cli/scripts/preflight.sh": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-cli@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "54b4bd5147400169fcc417089e6b4be86e11748891ae2693f07c0c4439c4bc70"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-pom-generation/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-pom-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-pom-generation/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-pom-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "d201abb1ba2b16b81d02fea9393abc5c3190104dd0267e6d6ca853130b533c67"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-pom-generation/references/fixture-wiring.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-pom-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "1f36c248c011702e8332cffe184b0bc0cdf0e1b00410294f6dae6ede15a70e0c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-pom-generation/references/page-object-template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-pom-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "5babf2c8c90bb83c013150ad1c9b66a6ba957e7bfdbe902ca8ee40050f41e5ac"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-playwright-pom-generation/references/playwright-mcp-authoring.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-playwright-pom-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "8e0b929b5eaaeabefc9b1179bf56829a50d713d02784ce8cff078a6d107285b8"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-quality-assurance/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-quality-assurance@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-quality-assurance/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-quality-assurance@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "a0e544a5cf83c25a88a9a6c36adb8cf2badb1d2537d8c33ed0761ed700255267"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-quality-assurance/references/TDD_FEEDBACK.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-quality-assurance@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "324ed4b8623d1e179116e4c9691db13fe0cc04373b7c66ddb6a8bbfc5e73de39"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-quality-assurance/references/test_case_standards.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-quality-assurance@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "37f3214e150367e0e8cf09f6f993033dfa3973ecfe69c44f6a9d197c03ebc760"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "fcca95212bea38987a0c63d0f2ec8d5a1c7ba0281dfd1ce8d90c58fefe80b077"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/references/drift-classification.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "1872e60cfc5b99194fbed3b78ffcb3dd2038e5732ac905de5b87eb0eedd8424c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/references/insertion-policy.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "75b8117ef98689d2717959db0fddf5aa55de1d652421c397355ffe8aeb52f1cb"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/references/selector-ladder.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "9d6e7a42d9a43276e019317c6446a48e3f3dda9fcb3470dfb8a6c6bbb7eaa98e"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-selector-stability/references/testid-naming.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-selector-stability@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "f505a3fe0c5e2f790a80a0ed908bef1bcba7902b7de54f73105f878e2b8df7ad"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "fb96729f75a4719b10749c7d58e98b92467776c4c11ebd725b84282ce7c3e067"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/references/failure-taxonomy.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "7859387dd80a24df7f435bef2cd79a4eb031f302b9ba3f164d9cdee75f5cd541"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/references/forbidden-repairs.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "b48c4af2f1c7d0bfde5a53a815c172f68933c36c4fcbf00a67d2bd2026eb061e"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/references/repair-catalog.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "3089d0484691febff34e66988ac5f194105c7ea6ff1ac2c4e5bd3dace24ab47c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-healing/references/verdict-contract.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-healing@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "f76329cfa00c6b667880d98e4a8dc21368cc7df0b5b10b84c4bdf76afc69e09a"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "3db21cddac766fad3763e8401ad3e24d6faa03d06cce793ae2c254f79cd31d83"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/ac-scenario-mapping.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "de0503671e79dae71b7c733feed36e5b00d4baf083ad2e62553fa7dc62738ba9"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/golden-requirements.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "cc03dd00b7dbb958a28b9ef28f2c756dc41c3bc58ea7f9f86ddd4f61e65253f7"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/mobile-lane-matrix.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4c672b841195ba235c49c1e5b761f793e09ad0bc877483449156e628eff7e98c"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/playwright-agents-artifacts.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "8db4e6415f14e3ab61acecf3bd92a5d7c0cd2216077d412ca916c4002b2754fb"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/scenario-expansion.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "ddb1737913878994299542bc46dabeac0242b454c40731c10c2c65c82b5f9eda"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-test-plan-authoring/references/test-plan-template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-test-plan-authoring@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "61c147ff121a7205de81a92a2aaa4f1033180af7c34931cf0b661cbe0c24eb49"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-visual-baseline/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-visual-baseline@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-visual-baseline/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-visual-baseline@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "52c3ed0b3b2d2d73511f702ceb0854a2c77dfd628368450b9dd82e02cae63254"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-visual-baseline/references/baseline-update-review.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-visual-baseline@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "2da9f2035bcb89cb76f51b1f2fb2408a0a97654efe90ff6c8232ec86b58c03e8"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-visual-baseline/references/masking-and-thresholds.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-visual-baseline@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "e23b00024b405b32541851d999cadf12c37d4b59293d2dfb7c4fcce9ed62060a"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-visual-baseline/references/tool-matrix.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-visual-baseline@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "c8793022296f8eb6ce9e5ad1a176f699bd0b0398ca5f52540ba635370550527d"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-coverage-analysis/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-coverage-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-coverage-analysis/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-coverage-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "537cab6ff13f0915c4b209b972871ddab488d8d56867e7478e9c399664b51b0e"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-coverage-analysis/references/coverage_report_template.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-coverage-analysis@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "51e82058102b4a07e70d3360b1456e4dababb2605bcb75412ef1b426df4f28e3"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/LICENSE": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "d093ffbbc04ddda781592ea286b582450e42adb94b7c547548f36235f6f40fb1"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/references/impact_analysis.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "200a5729c1f105ef6217f9f18d9e836b86db7381999976add4965589568901ff"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/references/smartbear-api.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "fab7799f729491aab0131dd6a5db8614b003009c034723eafd22b9d0a23583ab"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/references/tc_format.md": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "5ea4fdee296f1dfd6f3a446eb5e0f04bc1f387ac1b5e2af49a19a3aa1443b631"
+    },
+    ".agents/skills/quality-engineering/quality-engineering-zephyr-test-generation/references/zephyr_schema.json": {
+      "owner": "skill",
+      "source": "skill:quality-engineering/quality-engineering-zephyr-test-generation@quality-engineering-v1.6.0",
+      "agent": "antigravity",
+      "sha256": "48e3b663a3becd6ec2ac7b5945ede14e868c081260a0619c70f34e1490dfd191"
+    },
+    ".agents/skills/react/_INDEX.md": {
+      "owner": "index",
+      "source": "index:react",
+      "agent": "antigravity",
+      "sha256": "819ad33389bbe19b732e52c325abbf9d93202f8fbcb00cf6da67785dc70c7a70"
+    },
+    ".agents/skills/react/react-component-patterns/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-component-patterns@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-component-patterns/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-component-patterns@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "88658f43a994757b3c7d922e9b1e0772252044ca525b8f2f88f217cea3b3529e"
+    },
+    ".agents/skills/react/react-component-patterns/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:react/react-component-patterns@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "5736375c23921e8aa6c433b077ff32c6b95f71ca980fd4e7867ae8bfa1417cae"
+    },
+    ".agents/skills/react/react-component-patterns/references/patterns.md": {
+      "owner": "skill",
+      "source": "skill:react/react-component-patterns@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "55a1294e01bf8f0894da77219a245c63fe51b8d2190591bc4f62feb2fba7a987"
+    },
+    ".agents/skills/react/react-hooks/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-hooks@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-hooks/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-hooks@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "db51d97849137ffe57f3d666870d6c8ca4e1a44664e6ce27baed57f0f85d858c"
+    },
+    ".agents/skills/react/react-hooks/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:react/react-hooks@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "ebf38547ed19baceae47cec15d673b17e97245c5225e5760e1f9389396cba946"
+    },
+    ".agents/skills/react/react-performance/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-performance@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-performance/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-performance@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "0014ee2bb65de962f58692d30d733921fa5c127dbd56c788195837740919a835"
+    },
+    ".agents/skills/react/react-performance/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:react/react-performance@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "a947ddd55f78b7f35440dbaa461175529e79940b08bfbaa9c73897ded73dc043"
+    },
+    ".agents/skills/react/react-security/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-security@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-security/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-security@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "f158055ab6b54fea2f55df41840bd5850179177490262a7b7b388014ea80c7a9"
+    },
+    ".agents/skills/react/react-security/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:react/react-security@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "637d60dfef0a69dbf64bea7c781cd11d5f936730de3a67d2267f5c48bd934709"
+    },
+    ".agents/skills/react/react-tooling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-tooling@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-tooling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-tooling@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "96ad463a75e2f0543dbc66878ec88b034886e0845c4b83fc1e38d9b158448fae"
+    },
+    ".agents/skills/react/react-tooling/references/example.md": {
+      "owner": "skill",
+      "source": "skill:react/react-tooling@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "c5120614941a45bf4572c4e03b7292cfb79718c42560e717e2c5f212275a240f"
+    },
+    ".agents/skills/react/react-typescript/LICENSE": {
+      "owner": "skill",
+      "source": "skill:react/react-typescript@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "4d7986336b20626e0f4b37bdcd8010f718856bdf0fecb11f40dfdd5f705d49e1"
+    },
+    ".agents/skills/react/react-typescript/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:react/react-typescript@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "24405286b5fe5bf6d88ec598ec73d26b36b511559dd18e65e2449ade28ff1fee"
+    },
+    ".agents/skills/react/react-typescript/references/example.md": {
+      "owner": "skill",
+      "source": "skill:react/react-typescript@react-v1.4.2",
+      "agent": "antigravity",
+      "sha256": "b54527ae5eb6aba79d1599a487b2a790ad61e37a60da9e2bd86f970ddd0becb2"
+    },
+    ".agents/skills/typescript/_INDEX.md": {
+      "owner": "index",
+      "source": "index:typescript",
+      "agent": "antigravity",
+      "sha256": "3bcd6dcb1b2f3b58ec9884b1ce17beb4996603187fbdf1fee1c3927d6c341ddb"
+    },
+    ".agents/skills/typescript/typescript-best-practices/LICENSE": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-best-practices@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/typescript/typescript-best-practices/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-best-practices@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "ef35ad528a09395e0f439e0e2fc70e69f9b1da7732149e2d0e234be23d500b0a"
+    },
+    ".agents/skills/typescript/typescript-best-practices/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-best-practices@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "b6bec884988f1911896959bb5bd0ee39cb687c80242cde297614bd45ed86a58a"
+    },
+    ".agents/skills/typescript/typescript-best-practices/references/examples.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-best-practices@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "e1b7fceee50c8f9edc77adc2f5638684c26d38ac03ff54f9c7f9b3523507258b"
+    },
+    ".agents/skills/typescript/typescript-language/LICENSE": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-language@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/typescript/typescript-language/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-language@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "5dbacb158389d8c88a1239324c10cf84cbb688f7ca88f3920671d25d71f91866"
+    },
+    ".agents/skills/typescript/typescript-language/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-language@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "a22578b2a8bcbcb449566d086741017ba698e4e434d2670590ba620242edbb15"
+    },
+    ".agents/skills/typescript/typescript-language/references/TESTING.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-language@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "4cfd1673d8c0be9f4d90c287995470fe87c456493ab8974594b25727bbe79f39"
+    },
+    ".agents/skills/typescript/typescript-security/LICENSE": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-security@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/typescript/typescript-security/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-security@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "48dc0167fcdc5099ebe6f3d971fdede79be8ee5f1cf1edad73b2babd5fe32be3"
+    },
+    ".agents/skills/typescript/typescript-security/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-security@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "c05bcab2256f81d9e485f6da76870192b52c0d678e9276b1a96df7e9b98530e4"
+    },
+    ".agents/skills/typescript/typescript-tooling/LICENSE": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-tooling@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    ".agents/skills/typescript/typescript-tooling/SKILL.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-tooling@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "f388172d1e7564bea69a69d51bc41897a23b6ae319856e87f128349467dae30e"
+    },
+    ".agents/skills/typescript/typescript-tooling/references/REFERENCE.md": {
+      "owner": "skill",
+      "source": "skill:typescript/typescript-tooling@typescript-v1.3.4",
+      "agent": "antigravity",
+      "sha256": "27ed525cb1d79658205835e65c9c268cc7009359766ab183f421cd1b67bed1fe"
+    },
+    ".agents/workflows/brainstorm-feature.md": {
+      "owner": "workflow",
+      "source": "workflow:brainstorm-feature",
+      "agent": "antigravity",
+      "sha256": "a4f650174ff5a2ee3fd2a018571aa1153c1b95b6852670e256596ed24e008ae7"
+    },
+    ".agents/workflows/code-review.md": {
+      "owner": "workflow",
+      "source": "workflow:code-review",
+      "agent": "antigravity",
+      "sha256": "5e1f0b734a1fd5d049a4de4515358dd3fb3e833bc96b5559e8a004c76c5fdb63"
+    },
+    ".agents/workflows/codebase-review.md": {
+      "owner": "workflow",
+      "source": "workflow:codebase-review",
+      "agent": "antigravity",
+      "sha256": "2f38944faa6d00cb4b2e77b6d1684e23161a68fd40ec66c5c8f257ed8b1288f5"
+    },
+    ".agents/workflows/deploy-release.md": {
+      "owner": "workflow",
+      "source": "workflow:deploy-release",
+      "agent": "antigravity",
+      "sha256": "b8ad36e74366ed925e64c5f4857383e97bec9a52e04c80a016e83dcf264fbaf6"
+    },
+    ".agents/workflows/design-solution.md": {
+      "owner": "workflow",
+      "source": "workflow:design-solution",
+      "agent": "antigravity",
+      "sha256": "8d767e3a881e1eeb030222a7dccc66b7fb44d57a3ce21aa23ca232877b6cae35"
+    },
+    ".agents/workflows/dev-fix.md": {
+      "owner": "workflow",
+      "source": "workflow:dev-fix",
+      "agent": "antigravity",
+      "sha256": "679c5e85536ac0d04ea605f1ce7e97dabb8a1c9a7fa025303921844401ee3df9"
+    },
+    ".agents/workflows/implement-feature.md": {
+      "owner": "workflow",
+      "source": "workflow:implement-feature",
+      "agent": "antigravity",
+      "sha256": "9e4a9448c7382322d84b1d8aa56ce1dde278b17b6da309c60d18f0a281ff8976"
+    },
+    ".agents/workflows/implementation-readiness.md": {
+      "owner": "workflow",
+      "source": "workflow:implementation-readiness",
+      "agent": "antigravity",
+      "sha256": "b79f7ad08ef48549369602dce8abd9277f15076b12b4b3edb1641c1d5258a01b"
+    },
+    ".agents/workflows/incident-hotfix.md": {
+      "owner": "workflow",
+      "source": "workflow:incident-hotfix",
+      "agent": "antigravity",
+      "sha256": "53c9c799ffe2618335d0a02a7d10c0aaa447eff520554108d07e610e7fc350bf"
+    },
+    ".agents/workflows/monitor-respond.md": {
+      "owner": "workflow",
+      "source": "workflow:monitor-respond",
+      "agent": "antigravity",
+      "sha256": "5d099a304878703578881667923825bc55d984733366e6842997b1b22cd7f739"
+    },
+    ".agents/workflows/pentest.md": {
+      "owner": "workflow",
+      "source": "workflow:pentest",
+      "agent": "antigravity",
+      "sha256": "9ed2741d7bb7c3aaec6d8de74a85780cc8d3b11ebd53a9654494e2c79f390e65"
+    },
+    ".agents/workflows/plan-feature.md": {
+      "owner": "workflow",
+      "source": "workflow:plan-feature",
+      "agent": "antigravity",
+      "sha256": "201a4100aa5fc7fa80fec89671331fb0bb27ecd4d1c49838fcb54f40a8274c2e"
+    },
+    ".agents/workflows/publish-notes.md": {
+      "owner": "workflow",
+      "source": "workflow:publish-notes",
+      "agent": "antigravity",
+      "sha256": "d9e863fff8c70b63903561a09480de5016ed805750df4ec602b8ed202dd0a0ae"
+    },
+    ".agents/workflows/retro-learn.md": {
+      "owner": "workflow",
+      "source": "workflow:retro-learn",
+      "agent": "antigravity",
+      "sha256": "13dd9aaeb9a6738cf1bad4233300f80c5a13bf8a932c05840fe32186f49f35e7"
+    },
+    ".agents/workflows/review-system-design.md": {
+      "owner": "workflow",
+      "source": "workflow:review-system-design",
+      "agent": "antigravity",
+      "sha256": "3353cbe239c2ecb6450a6eecdadfb7a39c3a668eac7d261ef3b42a3a0ce52889"
+    },
+    ".agents/workflows/review-ticket.md": {
+      "owner": "workflow",
+      "source": "workflow:review-ticket",
+      "agent": "antigravity",
+      "sha256": "6930858cc8ce575b831e8097ab661b58e7666271313b9f36df663e9044487bf1"
+    },
+    ".agents/workflows/sdlc.md": {
+      "owner": "workflow",
+      "source": "workflow:sdlc",
+      "agent": "antigravity",
+      "sha256": "969b9d81197e56b92b8cb47a460782f1f3add71d71ef74ad27b9a0febbf6b0b5"
+    },
+    ".agents/workflows/security-test.md": {
+      "owner": "workflow",
+      "source": "workflow:security-test",
+      "agent": "antigravity",
+      "sha256": "045e7fb2d23c40633b468eab179fe794493e862a0e2703d4a34b5f0075610513"
+    },
+    ".agents/workflows/session-report.md": {
+      "owner": "workflow",
+      "source": "workflow:session-report",
+      "agent": "antigravity",
+      "sha256": "aee4efb586f9969e968e56cf7365b2a397a4f2dec2547cc5aeb04c326b617d2e"
+    },
+    ".agents/workflows/skill-benchmark.md": {
+      "owner": "workflow",
+      "source": "workflow:skill-benchmark",
+      "agent": "antigravity",
+      "sha256": "1872aeffe9e68b07d464eab879285880dd7ec2397bacd07730876d164544e788"
+    },
+    ".agents/workflows/system-design-session.md": {
+      "owner": "workflow",
+      "source": "workflow:system-design-session",
+      "agent": "antigravity",
+      "sha256": "dc7c67b6cb141cf84720f6ca9fc6635f99baab24fd786c9d6b4cbd8ff54bd227"
+    },
+    ".agents/workflows/test-loop.md": {
+      "owner": "workflow",
+      "source": "workflow:test-loop",
+      "agent": "antigravity",
+      "sha256": "a7365624439d743f726b116ba21002f08a1767b24f2253606fc439896cd53ee9"
+    },
+    ".agents/workflows/traceability-audit.md": {
+      "owner": "workflow",
+      "source": "workflow:traceability-audit",
+      "agent": "antigravity",
+      "sha256": "cfe846a7fa4d1d5e3a9f918f3e037c3ccfa696c1aee051835ec0758bfccd3089"
+    },
+    ".agents/workflows/uat-signoff.md": {
+      "owner": "workflow",
+      "source": "workflow:uat-signoff",
+      "agent": "antigravity",
+      "sha256": "ec02f2fb040e3459b3becc593a3da483799a6c86422e124e20c1997ac92a412b"
+    },
+    ".agents/workflows/verify-bug.md": {
+      "owner": "workflow",
+      "source": "workflow:verify-bug",
+      "agent": "antigravity",
+      "sha256": "39f59c8b02f97000ea34773e141259af4a22b7f1f795e93241fe0ed5947b8b07"
+    },
+    ".agents/workflows/verify-work.md": {
+      "owner": "workflow",
+      "source": "workflow:verify-work",
+      "agent": "antigravity",
+      "sha256": "e7b8d7e44d317919c85c57ce9e03858419d54a4237055868e94cae4c4ea40fd7"
+    }
+  },
+  "disclosed": {
+    "antigravity": [
+      "specialists",
+      "hooks"
+    ]
+  }
+}
