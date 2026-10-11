@@ -1,58 +1,103 @@
 # AI English Learning Platform
 
-Nền tảng học tiếng Anh thích ứng dành cho người mất gốc hoặc chưa biết trình độ. Mục tiêu là giúp người học hiểu mình đang ở đâu, cần học gì tiếp theo và tiến bộ ra sao.
+Nền tảng học tiếng Anh thích ứng thông minh (Adaptive AI English Learning Platform) dành cho người mất gốc hoặc chưa xác định rõ trình độ. Hệ thống hỗ trợ người học nắm bắt vị trí hiện tại, mục tiêu cần đạt, lý do học và theo dõi tiến độ thực tế theo từng ngày.
 
-## Core loop
-**Assess → Learner Profile → Learning Path → Daily Plan → Learn/Practice → Evidence → Adapt → Repeat**
+## 1. Core Learning Loop
+```text
+Assess → Learner Profile → Learning Path → Daily Plan → Practice → Evidence → Adapt → Repeat
+```
 
-AI đề xuất và giải thích; người học có quyền chấp nhận, sửa hoặc từ chối. Backend chịu trách nhiệm điểm số, quyền, trạng thái và tiến độ.
+* **Backend & Logic Deterministic**: Chịu trách nhiệm hoàn toàn về điểm số, quyền, trạng thái và tiến độ học tập.
+* **AI Layer**: Đề xuất lộ trình (`proposed`), giải thích bài tập, phản hồi ngôn ngữ và hội thoại hỗ trợ. Người học luôn giữ quyền quyết định (Accept / Edit / Reject).
 
-## Tech stack
-- Next.js + React + TypeScript
-- Supabase Auth
-- Supabase Database (PostgreSQL nằm bên dưới Supabase; không cần dựng database server riêng)
-- Supabase Storage
-- External AI APIs qua adapter phía server
-- Zod hoặc thư viện tương đương để validate dữ liệu
+---
 
-## Tài liệu
-- `docs/product/PRD.md`: yêu cầu sản phẩm
-- `docs/product/VISION.md`: tầm nhìn
-- `docs/product/DEVELOPMENT_ROADMAP.md`: thứ tự phát triển
-- `docs/requirements/`: yêu cầu từng module
-- `docs/architecture/`: kiến trúc hệ thống, database, API, AI
+## 2. Tech Stack
 
-Giữ nguyên tài liệu hiện có và chuyển vào thư mục tương ứng; không tạo bản trùng chỉ vì đổi vị trí.
+- **Framework**: Next.js 15 (App Router) + React 19 + TypeScript (Strict mode).
+- **Backend Services**: Next.js Server Actions & Route Handlers.
+- **Database & Auth**: Supabase (PostgreSQL với Row Level Security + Supabase Auth).
+- **Storage**: Supabase Storage (Audio, media & user recordings).
+- **AI Abstraction**: External LLM APIs (Gemini/OpenAI) qua Server-side Provider Adapter layer.
+- **Styling**: Vanilla CSS Design System với Dark Mode & Responsive Layout.
 
-## MVP
-1. Auth, profile và onboarding.
-2. Placement assessment.
-3. Learner profile cơ bản.
-4. Learning path có thể accept/edit.
-5. Daily plan và một vòng học tập hoàn chỉnh.
-6. AI giải thích bài tập/tutor.
-7. Vocabulary review cơ bản.
-8. Mở rộng TOEIC và các kỹ năng theo roadmap.
+---
 
-## Local setup
-1. Cài Node.js LTS phù hợp với phiên bản Next.js đã chọn.
-2. Khởi tạo app và cài dependencies.
-3. Tạo project Supabase.
-4. Copy `.env.example` thành `.env.local`.
-5. Điền Supabase URL/public key và AI key phía server.
-6. Chạy migrations theo thứ tự.
-7. Chạy development server.
+## 3. Cấu trúc thư mục (Modular Monolith)
 
-Lệnh cụ thể cần được ghi lại sau khi khởi tạo project và chọn package manager. Không commit `.env.local`, AI keys hoặc Supabase service-role key.
+```text
+├── docs/                     # Tài liệu sản phẩm, kiến trúc & yêu cầu kỹ thuật
+│   ├── architecture/         # System architecture, DB schema, API design, AI architecture
+│   ├── product/              # PRD, Vision, Development Roadmap
+│   └── requirements/         # Yêu cầu chi tiết từng module (Auth, Assessment, Daily Plan, ...)
+├── src/
+│   ├── app/                  # Next.js App Router (Routing & Thin Pages)
+│   ├── components/           # UI components tái sử dụng (Button, Card, Badge, ...)
+│   ├── modules/              # Domain-oriented business logic (Auth, Assessment, Learning Path, ...)
+│   └── lib/                  # Tiện ích chung & tích hợp hạ tầng
+│       ├── supabase/         # Client helper, Server helper, Admin helper
+│       ├── ai/               # AI provider interfaces, orchestrator & adapters
+│       └── utils/            # Helper utilities
+├── .env.example              # Mẫu biến môi trường
+├── package.json
+└── tsconfig.json             # TypeScript strict mode cấu hình
+```
 
-## Security baseline
-- Bật RLS cho dữ liệu người dùng.
-- Kiểm tra quyền sở hữu resource ở server.
-- Không đưa service-role key/AI keys ra client.
-- Không trả answer key trước khi nộp bài.
-- Validate input và AI output.
-- Rate limit các tính năng AI.
-- Test RLS bằng nhiều tài khoản.
+---
 
-## Development principle
-Làm từng vertical slice có dữ liệu thật, validation, quyền và test. Không triển khai mọi module cùng lúc; không cần tự huấn luyện model ở giai đoạn đầu.
+## 4. Hướng dẫn cài đặt & Chạy ứng dụng
+
+### Yêu cầu môi trường
+- Node.js LTS: `v20.x` trở lên (Khuyến nghị Node.js >= 20.20.0).
+- Trình quản lý gói: `npm` (hoặc `pnpm` / `yarn`).
+
+### Các bước khởi động
+
+1. **Cài đặt thư viện phụ thuộc:**
+   ```bash
+   npm install
+   ```
+
+2. **Cấu hình biến môi trường:**
+   Tạo file `.env.local` từ mẫu `.env.example`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Sau đó điền thông tin Supabase project của bạn vào `.env.local`:
+   ```dotenv
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   ```
+   *(Lưu ý: Không commit `.env.local` hoặc secret keys lên Git repo).*
+
+3. **Chạy server phát triển (Development server):**
+   ```bash
+   npm run dev
+   ```
+   Mở trình duyệt tại địa chỉ: [http://localhost:3000](http://localhost:3000).
+
+4. **Kiểm tra chất lượng code (Lint & Typecheck):**
+   ```bash
+   npm run lint
+   npm run typecheck
+   ```
+
+5. **Build ứng dụng production:**
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 5. Lộ trình phát triển (Roadmap)
+
+- [x] **Phase 0 — Foundation & Tooling Setup**: Khởi tạo Next.js App Router, TypeScript strict, cấu trúc Modular Monolith, tích hợp Supabase helpers & AI adapter interfaces.
+- [ ] **Phase 1 — Auth, Profile & Onboarding**: Đăng ký/đăng nhập Supabase Auth, thiết lập mục tiêu, sở thích học và bảo vệ routes.
+- [ ] **Phase 2 — Placement Assessment**: Ngân hàng câu hỏi, kiểm tra đánh giá ban đầu và deterministic scoring engine.
+- [ ] **Phase 3 — Learner Profile & Learning Path**: Bảng ma trận kỹ năng và sinh đề xuất lộ trình học tập cá nhân hóa.
+- [ ] **Phase 4 — Daily Plan & Practice**: Lập kế hoạch học theo ngày và thực hành bài học mẫu.
+- [ ] **Phase 5 — AI Explanation & Tutor**: Tích hợp AI provider thật (Gemini/OpenAI) giải thích câu sai và trợ lý học tập.
+- [ ] **Phase 6 — Vocabulary Review**: Ôn tập từ vựng ngắt quãng (Spaced Repetition).
+- [ ] **Phase 7 — 4 Skills Practice**: Luyện tập Nghe, Nói, Đọc, Viết mở rộng.
+- [ ] **Phase 8 — TOEIC Training**: Luyện đề thi TOEIC chuyên sâu.
