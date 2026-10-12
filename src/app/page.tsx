@@ -1,25 +1,80 @@
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/server';
 
-export default function HomePage() {
+export default async function HomePage() {
   const isSupabaseConfigured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   );
 
+  let user = null;
+  if (isSupabaseConfigured) {
+    try {
+      const supabase = await createClient();
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    } catch {
+      // In case credentials are not connected yet
+      user = null;
+    }
+  }
+
   return (
     <main className="container">
+      {/* Top Navigation */}
+      <header className="navbar">
+        <Link href="/" className="nav-brand">
+          <span>🌱</span>
+          <span>AI English Platform</span>
+        </Link>
+        <div className="nav-user">
+          {user ? (
+            <Link href="/dashboard" className="btn btn-primary btn-sm">
+              Đi tới Dashboard →
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="btn btn-secondary btn-sm">
+                Đăng nhập
+              </Link>
+              <Link href="/register" className="btn btn-primary btn-sm">
+                Đăng ký
+              </Link>
+            </>
+          )}
+        </div>
+      </header>
+
       <header className="header">
         <div className="hero-badge">
           <span>●</span>
-          <span>Phase 0: Foundation &amp; Tooling Setup</span>
+          <span>Phase 1: Authentication, Profile &amp; Onboarding</span>
         </div>
         <h1 className="title">AI English Learning Platform</h1>
         <p className="subtitle">
           Nền tảng học tiếng Anh thích ứng thông minh (Adaptive AI English Learning Platform)
           dành cho người mất gốc và người học định hướng mục tiêu rõ ràng.
         </p>
+
+        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          {user ? (
+            <Link href="/dashboard" className="btn btn-primary">
+              Vào Không Gian Học Tập (Dashboard) →
+            </Link>
+          ) : (
+            <>
+              <Link href="/register" className="btn btn-primary">
+                Bắt Đầu Học Ngay (Đăng Ký Miễn Phí) →
+              </Link>
+              <Link href="/login" className="btn btn-secondary">
+                Đã có tài khoản? Đăng nhập
+              </Link>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Core Loop */}
@@ -44,83 +99,61 @@ export default function HomePage() {
 
       {/* System Status Grid */}
       <section className="grid">
-        <Card title="Trạng thái nền tảng kỹ thuật">
+        <Card title="Trạng thái Phase 1: Auth &amp; Onboarding">
           <ul className="status-list">
             <li className="status-item">
               <div>
-                <div className="status-label">Next.js Framework</div>
-                <div className="status-desc">App Router + React 19 + TypeScript strict mode</div>
+                <div className="status-label">Authentication Flow</div>
+                <div className="status-desc">Supabase Auth (Sign Up, Sign In, Sign Out, Session Cookies)</div>
+              </div>
+              <Badge variant="success">Hoàn thành</Badge>
+            </li>
+            <li className="status-item">
+              <div>
+                <div className="status-label">Bảo vệ Route (Middleware)</div>
+                <div className="status-desc">Server-side route protection cho /dashboard, /onboarding</div>
               </div>
               <Badge variant="success">Hoạt động</Badge>
             </li>
             <li className="status-item">
               <div>
-                <div className="status-label">Kiến trúc mã nguồn</div>
-                <div className="status-desc">Modular Monolith (src/modules/, src/lib/, src/components/)</div>
+                <div className="status-label">Onboarding &amp; Profile</div>
+                <div className="status-desc">3 bước: Mục tiêu chính, mục tiêu phụ, thời lượng học mỗi ngày</div>
               </div>
-              <Badge variant="success">Chuẩn hóa</Badge>
-            </li>
-            <li className="status-item">
-              <div>
-                <div className="status-label">Code Quality &amp; Linting</div>
-                <div className="status-desc">ESLint + Next.js Core Web Vitals + TypeScript check</div>
-              </div>
-              <Badge variant="success">Sẵn sàng</Badge>
+              <Badge variant="success">Hoàn thành</Badge>
             </li>
           </ul>
         </Card>
 
-        <Card title="Tích hợp dịch vụ &amp; Dữ liệu">
+        <Card title="Cơ sở dữ liệu &amp; Bảo mật">
           <ul className="status-list">
             <li className="status-item">
               <div>
-                <div className="status-label">Supabase Auth &amp; Database</div>
-                <div className="status-desc">
-                  {isSupabaseConfigured
-                    ? 'Đã phát hiện biến môi trường Supabase.'
-                    : 'Chờ thiết lập thông tin kết nối trong .env.local.'}
-                </div>
+                <div className="status-label">SQL Migration Phase 1</div>
+                <div className="status-desc">Bảng profiles, goals, learner_preferences + Triggers + RLS</div>
               </div>
-              <Badge variant={isSupabaseConfigured ? 'success' : 'warning'}>
-                {isSupabaseConfigured ? 'Đã kết nối' : 'Chờ credentials'}
-              </Badge>
+              <Badge variant="info">Sẵn sàng áp dụng</Badge>
             </li>
             <li className="status-item">
               <div>
-                <div className="status-label">Supabase Helper Layers</div>
-                <div className="status-desc">Client Helper, Server Helper (Next.js 15 cookies), Admin Helper</div>
+                <div className="status-label">Row Level Security (RLS)</div>
+                <div className="status-desc">Cô lập dữ liệu người dùng 100% bằng chính sách auth.uid()</div>
               </div>
               <Badge variant="success">Đã cấu hình</Badge>
             </li>
             <li className="status-item">
               <div>
-                <div className="status-label">AI Provider Abstraction</div>
-                <div className="status-desc">Interface adapter server-side (triển khai API ở Phase 5)</div>
+                <div className="status-label">Bước tiếp theo</div>
+                <div className="status-desc">Phase 2: Placement Assessment &amp; Scoring Engine</div>
               </div>
-              <Badge variant="info">Đã cấu trúc</Badge>
+              <Badge variant="default">Kế hoạch tiếp</Badge>
             </li>
           </ul>
         </Card>
       </section>
 
-      {/* Development Next Step */}
-      <Card title="Kế hoạch tiếp theo (Next Step)">
-        <p style={{ marginBottom: '0.75rem' }}>
-          Giai đoạn <strong>Phase 0 — Foundation &amp; Tooling Setup</strong> đã hoàn thành thiết lập kỹ thuật nền tảng.
-          Hệ thống đã sẵn sàng cho bước tiếp theo:
-        </p>
-        <ul style={{ paddingLeft: '1.25rem', color: 'var(--text-secondary)' }}>
-          <li>
-            <strong>Phase 1:</strong> Triển khai Authentication, Profile &amp; Onboarding flow (Supabase Auth + Database RLS).
-          </li>
-          <li>
-            <strong>Cấu hình môi trường:</strong> Copy file <code>.env.example</code> sang <code>.env.local</code> và điền Supabase credentials thật trước khi kiểm thử tính năng kết nối DB.
-          </li>
-        </ul>
-      </Card>
-
       <footer className="footer">
-        AI English Learning Platform &bull; Phase 0 Foundation Completed
+        AI English Learning Platform &bull; Phase 1 Implemented
       </footer>
     </main>
   );
