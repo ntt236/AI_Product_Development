@@ -57,3 +57,41 @@ Each `_INDEX.md` has two sections - follow both:
 > [!TIP] **Indirect phrasing counts.** "make it faster" -> performance, "broken query" -> database, "login flow" -> auth.
 
 <!-- SKILLS_INDEX_END -->
+
+---
+
+## Session Continuity and Project Memory
+
+### 1. Starting a Session
+- Đọc `AGENTS.md` trước khi thực hiện task.
+- Đọc `docs/development/PROJECT_STATE.md` nếu file đã tồn tại.
+- Xem báo cáo phiên làm việc gần nhất trong `docs/development/sessions/` khi có liên quan.
+- Kiểm tra code và Git changes thực tế trước khi dựa vào các ghi chú cũ.
+- Tiếp tục từ trạng thái hiện tại, không tự ý làm lại những phần đã hoàn thành.
+
+### 2. After Each Meaningful Task
+- Cập nhật `docs/development/PROJECT_STATE.md`.
+- Tạo hoặc cập nhật báo cáo Markdown trong `docs/development/sessions/`.
+- Ghi rõ mục tiêu, kết quả, file đã sửa, quyết định kỹ thuật, test đã chạy, lỗi còn tồn tại và bước tiếp theo.
+- Phân biệt rõ code đã triển khai, đã kiểm thử, migration đã tạo và migration đã áp dụng.
+- Không tạo báo cáo riêng cho những thay đổi cực nhỏ hoặc cuộc hội thoại không làm thay đổi trạng thái dự án.
+
+### 3. Data Flow Documentation
+- Duy trì `docs/architecture/DATA_FLOWS.md` để mô tả các luồng dữ liệu quan trọng.
+- Chỉ cập nhật data flow khi một tính năng làm thay đổi luồng dữ liệu, ranh giới xác thực, database, storage hoặc AI provider.
+- Ghi rõ entry point, các bước xử lý, dữ liệu đọc/ghi, quyền truy cập, nhánh lỗi, file liên quan và test liên quan.
+- Mô tả phải khớp với code thực tế. Không được ghi tính năng chưa triển khai như thể đã hoạt động.
+
+### 4. Documentation Safety
+- Nếu các file trên chưa tồn tại, tạo chúng khi cần thiết; không tạo file trùng lặp nếu đã có tài liệu tương đương.
+- Giữ `PROJECT_STATE.md` ngắn gọn, đóng vai trò handoff cho phiên tiếp theo.
+- Không lưu API key, password, token hoặc dữ liệu nhạy cảm vào báo cáo.
+- Không đánh dấu hoàn thành nếu chưa kiểm chứng.
+- Nếu tài liệu cũ mâu thuẫn với code thực tế, phải điều tra và cập nhật ghi chú chính xác.
+
+### 5. Communication and Scope
+- Hiểu các yêu cầu chat ngắn, tự nhiên trong ngữ cảnh hiện tại và các quy tắc của repository.
+- Với task nhỏ, thực hiện trực tiếp; với task lớn, lập kế hoạch ngắn trước khi sửa.
+- Hỏi lại trước các quyết định lớn liên quan đến kiến trúc, bảo mật, dữ liệu hoặc thao tác phá hủy.
+- Không sửa các file không liên quan và không mở rộng phạm vi yêu cầu.
+- Sau khi hoàn thành, báo cáo ngắn gọn kết quả thực tế và bước tiếp theo.
