@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { LogoutButton } from '@/components/auth/logout-button';
 import { GOAL_OPTIONS } from '@/modules/onboarding/constants';
+import { getUserLatestAssessmentResult } from '@/modules/assessment/services';
 
 export const metadata = {
   title: 'Dashboard — AI English Learning Platform',
@@ -42,6 +43,9 @@ export default async function DashboardPage() {
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
+
+  // Fetch latest assessment result
+  const latestAssessment = await getUserLatestAssessmentResult(user.id);
 
   const primaryGoal = goals?.find((g) => g.priority === 'primary');
   const secondaryGoals = goals?.filter((g) => g.priority === 'secondary') || [];
@@ -200,20 +204,44 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Next Up: Phase 2 Placement Assessment Banner */}
+      {/* Phase 2: Placement Assessment Card */}
       <div className="loop-banner" style={{ marginTop: '1rem' }}>
         <h3 className="loop-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>🚀</span>
-          <span>Bước tiếp theo: Phase 2 — Placement Assessment</span>
+          <span>🎯</span>
+          <span>Đánh giá năng lực đầu vào (Placement Assessment)</span>
         </h3>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-          Bạn đã hoàn thành thiết lập mục tiêu! Bước kế tiếp là làm bài kiểm tra đánh giá năng lực ban đầu (Placement Test) để hệ thống đo lường chính xác các kỹ năng (Từ vựng, Ngữ pháp, Nghe, Đọc) và sinh Lộ trình học thích ứng (Adaptive Learning Path).
-        </p>
-        <div>
-          <button className="btn btn-primary" disabled style={{ opacity: 0.7, cursor: 'default' }}>
-            📝 Làm bài kiểm tra đầu vào (Mở ở Phase 2)
-          </button>
-        </div>
+
+        {latestAssessment ? (
+          <div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', maxWidth: '720px' }}>
+              Bạn đã hoàn thành bài kiểm tra đầu vào. Trình độ ước tính hiện tại:{' '}
+              <strong style={{ color: 'var(--accent-cyan)', fontSize: '1.1rem' }}>
+                {latestAssessment.overall_level.toUpperCase()}
+              </strong>{' '}
+              ({latestAssessment.correct_answers}/{latestAssessment.total_questions} câu đúng —{' '}
+              {Math.round(latestAssessment.accuracy * 100)}%).
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link href={`/assessment/results/${latestAssessment.attempt_id}`} className="btn btn-primary">
+                📊 Xem chi tiết kết quả &amp; giải thích đáp án
+              </Link>
+              <Link href="/assessment" className="btn btn-secondary">
+                🔄 Làm bài kiểm tra lại
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', maxWidth: '720px' }}>
+              Bạn đã hoàn thành thiết lập mục tiêu! Hãy làm bài kiểm tra đánh giá năng lực ban đầu (16 câu hỏi, ~20 phút) để hệ thống đo lường 4 kỹ năng cốt lõi (Từ vựng, Ngữ pháp, Nghe, Đọc) và chuẩn bị dữ liệu cho Lộ trình học thích ứng (Adaptive Learning Path).
+            </p>
+            <div>
+              <Link href="/assessment" className="btn btn-primary">
+                📝 Bắt đầu làm bài kiểm tra đầu vào ngay
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

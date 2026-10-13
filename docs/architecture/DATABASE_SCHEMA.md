@@ -81,7 +81,10 @@ Quy ước chung: UUID primary key, `created_at default now()`, `updated_at` đ�
 `id`, `title`, `assessment_type` (`placement`, `lesson`, `skill`, `toeic`), `target_skill`, `level_min`, `level_max`, `time_limit_seconds`, `scoring_config jsonb`, `is_adaptive boolean`, `is_published boolean`, timestamps.
 
 ### `assessment_questions`
-`id`, `assessment_id references assessments(id) on delete cascade`, `exercise_id references exercises(id) on delete restrict`, `position`, `weight`; unique (`assessment_id`, `position`) và (`assessment_id`, `exercise_id`).
+`id uuid primary key default gen_random_uuid()`, `assessment_id references assessments(id) on delete cascade`, `skill` (`vocabulary`, `grammar`, `reading`, `listening`), `category text`, `difficulty smallint`, `level text`, `question_type text`, `prompt text not null`, `context_text text`, `audio_url text`, `options jsonb` (chỉ chứa id & text, không chứa đáp án), `position integer`, `weight numeric(4,2) default 1.0`, `created_at timestamptz`. Unique (`assessment_id`, `position`).
+
+### `assessment_question_answers` (Server-Only Confidential Table)
+`question_id uuid primary key references assessment_questions(id) on delete cascade`, `correct_option_id text not null`, `explanation text not null`, `created_at timestamptz`. Bật RLS và **tuyệt đối không cấp policy SELECT cho role authenticated/anon**. Chỉ `service_role` và backend scoring engine mới được phép truy xuất.
 
 ### `assessment_attempts`
 `id`, `user_id`, `assessment_id`, `status` (`in_progress`, `submitted`, `scored`, `abandoned`), `started_at`, `submitted_at`, `duration_seconds`, `raw_score`, `max_score`, `result_summary jsonb`.
