@@ -165,11 +165,23 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
 
 * **Entry point**: [src/modules/assessment/actions.ts](file:///d:/AI_Product_Development/src/modules/assessment/actions.ts) & [src/modules/assessment/services.ts](file:///d:/AI_Product_Development/src/modules/assessment/services.ts).
 * **Dữ liệu đọc/ghi**:
-  * `public.assessments` & `public.assessment_questions`: Đọc câu hỏi và lựa chọn (chỉ trả nội dung an toàn).
-  * `public.assessment_question_answers`: Khóa hoàn toàn bởi RLS, chỉ backend `service_role` đọc để chấm.
-  * `public.assessment_attempts` & `public.assessment_answers`: Thuộc quyền sở hữu người dùng, không cho sửa sau khi `completed`.
+  * `public.assessments` & `public.assessment_questions`: Đọc câu hỏi và lựa chọn (chỉ trả nội dung an toàn, không có đáp án đúng hay explanation).
+  * `public.assessment_question_answers`: Khóa hoàn toàn bởi RLS (deny all cho `anon` và `authenticated`), chỉ backend `service_role` đọc để chấm hoặc khi attempt đã `completed`.
+  * `public.assessment_attempts`:
+    * Client (`authenticated`) chỉ có quyền `SELECT` và `INSERT`. Đã thu hồi quyền `UPDATE` trực tiếp.
+    * Trigger `protect_assessment_attempt_fields`: Bắt buộc `user_id = auth.uid()`, `status = 'in_progress'`, và cấm client tự đặt điểm số (`score`, `max_score`, `accuracy`), `answered_count` hoặc các timestamp nộp bài (`submitted_at`, `completed_at`).
+    * Trạng thái bài làm chỉ được chuyển tiếp và ghi điểm bởi Server Service Role (`service_role`).
+  * `public.assessment_answers`:
+    * Client có quyền `SELECT` và `INSERT` (`upsert`) trên bài làm `in_progress` của chính mình.
+    * Trigger `protect_assessment_answer_fields`: Ngăn client tự đặt hoặc sửa `is_correct` và `score_awarded`.
+    * Trigger `update_attempt_answered_count`: Tự động đồng bộ số lượng câu đã trả lời `answered_count` trên `assessment_attempts`.
+  * **Xử lý nộp đồng thời & Idempotency**:
+    * Quá trình nộp bài sử dụng khóa nguyên tử có điều kiện: `UPDATE assessment_attempts SET status = 'submitted' WHERE id = :id AND user_id = :userId AND status = 'in_progress'`.
+    * Nếu nhiều request gửi tới đồng thời hoặc nộp lại, chỉ request đầu tiên giành được khóa và thực thi chấm điểm. Các request tiếp theo nhận kết quả đã nộp hoặc thông báo bài đang được xử lý một cách an toàn.
+  * **Bảo vệ Explanation & Answer Key**:
+    * Hàm `getDetailedAssessmentResult()` kiểm tra bắt buộc `attempt.status === 'completed'` trước khi truy vấn giải thích và đáp án mật từ `assessment_question_answers`. Tuyệt đối không để rò rỉ đáp án khi bài thi chưa kết thúc.
   * `public.assessment_results`: Kết quả tổng hợp, skill breakdown và gợi ý học tập.
   * `public.learner_skill_profiles`: Hồ sơ năng lực 4 kỹ năng phục vụ Adaptive Engine ở Phase 3.
-  * `public.profiles.estimated_level`: Cập nhật tự động thông qua `createAdminClient()`.
+  * `public.profiles.estimated_level`: Cập nhật tự động thông qua `createAdminClient()`, tuân thủ đúng ranh giới đặc quyền của Phase 1.
 
 

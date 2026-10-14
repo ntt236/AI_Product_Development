@@ -14,33 +14,40 @@
   - Middleware Edge route protection với cookie forwarding an toàn (`@supabase/ssr`).
   - Phân tách ngân hàng câu hỏi công khai (`assessment_questions`) và bảng đáp án mật phía server (`assessment_question_answers`).
   - Khóa RLS tuyệt đối trên bảng đáp án mật: client không có quyền SELECT/UPDATE/INSERT/DELETE.
+  - Thu hồi trực tiếp quyền UPDATE trên `assessment_attempts` đối với client (`authenticated`).
+  - Trigger `protect_assessment_attempt_fields`: Ngăn client tự đặt/sửa điểm (`score`, `max_score`, `accuracy`), trạng thái hoặc timestamps.
+  - Trigger `protect_assessment_answer_fields`: Ngăn client tự gán `is_correct` và `score_awarded`.
+  - Trigger `update_attempt_answered_count`: Tự động đồng bộ số câu đã trả lời.
+  - Chống race condition & idempotency: Atomic status transition lock (`in_progress` -> `submitted`) bằng điều kiện `eq('status', 'in_progress')`.
+  - Cổng kiểm soát `getDetailedAssessmentResult`: Bắt buộc attempt phải `completed` mới cho phép truy xuất explanation và đáp án chính thức.
   - Chấm điểm 100% tại backend thông qua `calculateAssessmentScore()` (idempotent, không tin cậy client).
-  - Cập nhật `profiles.estimated_level` thông qua `createAdminClient()` tuân thủ ranh giới đặc quyền của Phase 1 mà không làm suy yếu trigger.
+  - Cập nhật `profiles.estimated_level` thông qua `createAdminClient()` tuân thủ ranh giới đặc quyền của Phase 1.
 - **Database Schema**:
-  - Migration Phase 1: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql)
-  - Migration Phase 2: [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) gồm 6 bảng đánh giá (`assessments`, `assessment_questions`, `assessment_question_answers`, `assessment_attempts`, `assessment_answers`, `assessment_results`, `learner_skill_profiles`), phân quyền RLS chặt chẽ và bộ 16 câu hỏi mẫu chuẩn hóa 4 kỹ năng (Vocab, Grammar, Reading, Listening).
+  - Migration Phase 1: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql) — **Đã áp dụng trên Supabase remote**.
+  - Migration Phase 2 (Cơ sở): [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) — **Đã áp dụng trên Supabase remote**.
+  - Migration Phase 2 Hardening: [supabase/migrations/20261014_phase_2_security_hardening.sql](file:///d:/AI_Product_Development/supabase/migrations/20261014_phase_2_security_hardening.sql) — **Đã áp dụng thành công trên Supabase remote**.
 
 ---
 
 ## 2. Trạng thái kiểm thử
-- `npm test`: Exit code 0 (19/19 tests passed across 2 suites trong 266ms).
-- `npx tsc --noEmit`: Exit code 0 (TypeScript strict hoàn toàn không có lỗi).
+- `npm test`: Exit code 0 (25/25 tests passed across 3 suites).
+- `npx tsc --noEmit`: Exit code 0 (TypeScript strict mode hoàn toàn sạch lỗi).
 - `npm run lint`: Exit code 0 (No ESLint warnings or errors).
-- `npm run build`: Exit code 0 (Production build thành công 10 static/dynamic routes + middleware).
+- `npm run build`: Exit code 0 (Production build thành công cho tất cả static & dynamic routes).
+- **Kiểm thử trực tiếp trên Supabase Remote**:
+  - Đã xác minh quyền truy cập bảng: `assessment_question_answers` và `assessment_results` từ chối triệt để client `anon` (HTTP 401 code 42501).
+  - Đã xác minh luồng kiểm tra thực tế: Tạo attempt, lưu 16 câu hỏi qua trigger đồng bộ `answered_count`, nộp bài atomic qua service role, ghi nhận kết quả và cập nhật `profiles.estimated_level` thành công.
 
 ---
 
 ## 3. Trạng thái Database Migration
-- **Local files**:
-  - `supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql`
-  - `supabase/migrations/20261013_phase_2_placement_assessment.sql`
-- **Remote Supabase**: **CHƯA ÁP DỤNG**. File migration cục bộ chưa được chạy lên dự án Supabase remote; người dùng sẽ chạy tuần tự trên Supabase SQL Editor khi triển khai.
+- **Phase 1**: **ĐÃ ÁP DỤNG**.
+- **Phase 2 (Cơ sở & Hardening)**: **ĐÃ ÁP DỤNG TOÀN DIỆN**. Toàn bộ cơ chế bảo vệ (Triggers, RLS, Grants) đã được kích hoạt trên database thật.
 
 ---
 
 ## 4. Việc cần làm tiếp theo (Next Action)
-1. Người dùng chạy migration Phase 1 và Phase 2 trên Supabase SQL Editor khi sẵn sàng.
-2. Kiểm thử làm bài thi trực tiếp trên giao diện dev (`/assessment`).
-3. Chuyển sang triển khai **Phase 3 — Adaptive Learning Path & Weakness Detection**.
+- Phase 2 đã hoàn tất toàn diện về chức năng và bảo mật.
+- Sẵn sàng chuyển sang triển khai **Phase 3 — Adaptive Learning Path & Weakness Detection**.
 
 

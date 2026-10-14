@@ -181,7 +181,215 @@ create trigger set_learner_skill_profiles_updated_at
   execute function public.handle_updated_at();
 
 -- ==============================================================================
--- 8. Row Level Security (RLS) Configuration
+-- 8. Protective Triggers on Attempts & Answers
+-- ==============================================================================
+
+-- Helper: Check privilege boundary (re-declared safely to ensure availability)
+create or replace function public.is_admin_or_service_role()
+returns boolean
+language plpgsql
+stable
+set search_path = public
+as $$
+begin
+  if auth.jwt() is not null then
+    return coalesce(auth.jwt()->>'role', '') = 'service_role';
+  end if;
+  return session_user in ('postgres', 'supabase_admin');
+end;
+$$;
+
+-- Trigger Function: protect privileged fields on public.assessment_attempts
+create or replace function public.protect_assessment_attempt_fields()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  is_privileged boolean;
+begin
+  is_privileged := public.is_admin_or_service_role();
+
+  -- Privileged callers (service_role, migrations, DB superuser) bypass user locks
+  if is_privileged then
+    return new;
+  end if;
+
+  -- 1. Guard INSERT by regular clients
+  if tg_op = 'INSERT' then
+    if new.user_id is distinct from auth.uid() then
+      raise exception 'Không thể tạo lượt làm bài cho người dùng khác.';
+    end if;
+
+    if new.status is distinct from 'in_progress' then
+      raise exception 'Bài làm mới phải bắt đầu ở trạng thái in_progress.';
+    end if;
+
+    if new.score is not null or new.max_score is not null or new.accuracy is not null then
+      raise exception 'Chỉ hệ thống chấm điểm mới có quyền thiết lập điểm số.';
+    end if;
+
+    if new.submitted_at is not null or new.completed_at is not null then
+      raise exception 'Không thể tạo bài làm với trạng thái đã nộp hoặc đã hoàn thành.';
+    end if;
+
+    if coalesce(new.answered_count, 0) != 0 then
+      raise exception 'answered_count khởi tạo phải bằng 0.';
+    end if;
+
+    return new;
+  end if;
+
+  -- 2. Guard UPDATE by regular clients
+  if tg_op = 'UPDATE' then
+    if old.status is distinct from 'in_progress' then
+      raise exception 'Không thể chỉnh sửa lượt làm bài đã kết thúc.';
+    end if;
+
+    if new.id is distinct from old.id then
+      raise exception 'Không thể thay đổi attempt id.';
+    end if;
+
+    if new.user_id is distinct from old.user_id then
+      raise exception 'Không thể chuyển quyền sở hữu bài làm sang người dùng khác.';
+    end if;
+
+    if new.assessment_id is distinct from old.assessment_id then
+      raise exception 'Không thể thay đổi bài đánh giá của lượt làm bài.';
+    end if;
+
+    if new.status is distinct from old.status then
+      raise exception 'Chỉ hệ thống chấm điểm phía server mới có quyền thay đổi trạng thái hoàn thành.';
+    end if;
+
+    if new.score is distinct from old.score
+       or new.max_score is distinct from old.max_score
+       or new.accuracy is distinct from old.accuracy
+       or new.submitted_at is distinct from old.submitted_at
+       or new.completed_at is distinct from old.completed_at then
+      raise exception 'Chỉ hệ thống chấm điểm mới có quyền cập nhật điểm số và thời điểm nộp bài.';
+    end if;
+
+    return new;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists check_assessment_attempt_permissions on public.assessment_attempts;
+create trigger check_assessment_attempt_permissions
+  before insert or update on public.assessment_attempts
+  for each row
+  execute function public.protect_assessment_attempt_fields();
+
+-- Trigger Function: protect privileged fields on public.assessment_answers
+create or replace function public.protect_assessment_answer_fields()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  is_privileged boolean;
+  v_attempt_status text;
+  v_attempt_user_id uuid;
+begin
+  is_privileged := public.is_admin_or_service_role();
+
+  -- Privileged callers (service_role, postgres) bypass client locks
+  if is_privileged then
+    return new;
+  end if;
+
+  -- Verify attempt status and ownership
+  select status, user_id into v_attempt_status, v_attempt_user_id
+  from public.assessment_attempts
+  where id = new.attempt_id;
+
+  if v_attempt_status is null then
+    raise exception 'Không tìm thấy lượt làm bài tương ứng.';
+  end if;
+
+  if v_attempt_user_id is distinct from auth.uid() then
+    raise exception 'Không có quyền ghi nhận câu trả lời cho bài làm của người khác.';
+  end if;
+
+  if v_attempt_status is distinct from 'in_progress' then
+    raise exception 'Lượt làm bài đã kết thúc, không thể thêm hoặc sửa câu trả lời.';
+  end if;
+
+  -- 1. Guard INSERT
+  if tg_op = 'INSERT' then
+    if new.is_correct is not null or new.score_awarded is not null then
+      raise exception 'Chỉ hệ thống chấm điểm mới có quyền ghi nhận tính đúng sai và điểm số.';
+    end if;
+    return new;
+  end if;
+
+  -- 2. Guard UPDATE
+  if tg_op = 'UPDATE' then
+    if new.id is distinct from old.id then
+      raise exception 'Không thể thay đổi answer id.';
+    end if;
+    if new.attempt_id is distinct from old.attempt_id then
+      raise exception 'Không thể chuyển câu trả lời sang attempt khác.';
+    end if;
+    if new.question_id is distinct from old.question_id then
+      raise exception 'Không thể thay đổi question id của câu trả lời.';
+    end if;
+
+    if new.is_correct is distinct from old.is_correct
+       or new.score_awarded is distinct from old.score_awarded then
+      raise exception 'Chỉ hệ thống chấm điểm mới có quyền cập nhật tính đúng sai và điểm số.';
+    end if;
+
+    return new;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists check_assessment_answer_permissions on public.assessment_answers;
+create trigger check_assessment_answer_permissions
+  before insert or update on public.assessment_answers
+  for each row
+  execute function public.protect_assessment_answer_fields();
+
+-- Trigger Function: synchronize answered_count on public.assessment_attempts automatically
+create or replace function public.update_attempt_answered_count()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  target_attempt_id uuid;
+begin
+  if tg_op = 'INSERT' then
+    target_attempt_id := new.attempt_id;
+  elsif tg_op = 'DELETE' then
+    target_attempt_id := old.attempt_id;
+  end if;
+
+  update public.assessment_attempts
+  set answered_count = (
+    select count(*) from public.assessment_answers where attempt_id = target_attempt_id
+  ),
+  updated_at = now()
+  where id = target_attempt_id;
+
+  return null;
+end;
+$$;
+
+drop trigger if exists sync_assessment_answered_count on public.assessment_answers;
+create trigger sync_assessment_answered_count
+  after insert or delete on public.assessment_answers
+  for each row
+  execute function public.update_attempt_answered_count();
+
+-- ==============================================================================
+-- 9. Row Level Security (RLS) Configuration
 -- ==============================================================================
 
 alter table public.assessments enable row level security;
@@ -223,13 +431,19 @@ create policy "Users can read own attempts"
 drop policy if exists "Users can insert own attempts" on public.assessment_attempts;
 create policy "Users can insert own attempts"
   on public.assessment_attempts for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id 
+    and status = 'in_progress' 
+    and score is null 
+    and max_score is null 
+    and accuracy is null 
+    and submitted_at is null 
+    and completed_at is null 
+    and coalesce(answered_count, 0) = 0
+  );
 
+-- Direct client updates to assessment_attempts are revoked; status & scoring are managed by backend scoring service.
 drop policy if exists "Users can update own in-progress attempts" on public.assessment_attempts;
-create policy "Users can update own in-progress attempts"
-  on public.assessment_attempts for update
-  using (auth.uid() = user_id and status = 'in_progress')
-  with check (auth.uid() = user_id);
 
 -- Policies for public.assessment_answers
 drop policy if exists "Users can read own answers" on public.assessment_answers;
@@ -246,7 +460,9 @@ drop policy if exists "Users can insert own answers while in-progress" on public
 create policy "Users can insert own answers while in-progress"
   on public.assessment_answers for insert
   with check (
-    exists (
+    is_correct is null
+    and score_awarded is null
+    and exists (
       select 1 from public.assessment_attempts a
       where a.id = assessment_answers.attempt_id 
         and a.user_id = auth.uid() 
@@ -266,7 +482,9 @@ create policy "Users can update own answers while in-progress"
     )
   )
   with check (
-    exists (
+    is_correct is null
+    and score_awarded is null
+    and exists (
       select 1 from public.assessment_attempts a
       where a.id = assessment_answers.attempt_id 
         and a.user_id = auth.uid() 
@@ -287,14 +505,22 @@ create policy "Users can read own skill profiles"
   using (auth.uid() = user_id);
 
 -- ==============================================================================
--- 9. Table and Function Permissions (Grants)
+-- 10. Table and Function Permissions (Grants)
 -- ==============================================================================
+
+grant usage on schema public to authenticated, anon, service_role;
 
 grant select on table public.assessments to authenticated, anon;
 grant select on table public.assessment_questions to authenticated, anon;
 
-grant select, insert, update on table public.assessment_attempts to authenticated;
+-- Role authenticated can ONLY select and insert in-progress attempts.
+-- Direct UPDATE on assessment_attempts is intentionally NOT granted to authenticated users.
+grant select, insert on table public.assessment_attempts to authenticated;
+
+-- Role authenticated can select, insert, and update selected answers during active attempt.
+-- is_correct and score_awarded are locked by RLS and BEFORE triggers.
 grant select, insert, update on table public.assessment_answers to authenticated;
+
 grant select on table public.assessment_results to authenticated;
 grant select on table public.learner_skill_profiles to authenticated;
 

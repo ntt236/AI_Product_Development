@@ -176,26 +176,15 @@ export async function saveLearnerAnswer(
     return { success: false, error: `Lỗi lưu câu trả lời: ${upsertError.message}` };
   }
 
-  // 3. Update answered count on attempt
-  const { count } = await supabase
-    .from('assessment_answers')
-    .select('*', { count: 'exact', head: true })
-    .eq('attempt_id', attemptId);
-
-  await supabase
-    .from('assessment_attempts')
-    .update({
-      answered_count: count || 1,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', attemptId);
-
+  // Note: answered_count on assessment_attempts is automatically maintained
+  // by the database trigger sync_assessment_answered_count.
   return { success: true };
 }
 
 /**
  * Submits and grades an assessment attempt completely server-side.
- * Idempotent: multiple submissions for the same attempt return the identical scored result.
+ * Idempotent & Concurrency-Safe: Multiple submissions or retries for the same attempt
+ * return the identical scored result without duplicate scoring or state corruption.
  */
 export async function submitAndScoreAssessmentAttempt(
   userId: string,
@@ -218,17 +207,57 @@ export async function submitAndScoreAssessmentAttempt(
     return { success: false, error: 'Không có quyền nộp bài làm của người khác.' };
   }
 
-  // 2. IDEMPOTENCY CHECK: If already submitted or completed, return existing result!
-  if (attempt.status === 'completed' || attempt.status === 'submitted') {
+  // 2. IDEMPOTENCY CHECK: If already completed, return existing result immediately!
+  if (attempt.status === 'completed') {
     const { data: existingResult } = await supabase
       .from('assessment_results')
       .select('*')
       .eq('attempt_id', attemptId)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existingResult) {
       return { success: true, result: existingResult as AssessmentResult };
     }
+  }
+
+  const now = new Date().toISOString();
+  const adminClient = createAdminClient();
+
+  // 3. ATOMIC STATE TRANSITION LOCK:
+  // Transition status from 'in_progress' to 'submitted' atomically.
+  // If multiple concurrent requests hit, only ONE will obtain lockedAttempt!
+  const { data: lockedAttempt } = await adminClient
+    .from('assessment_attempts')
+    .update({
+      status: 'submitted',
+      submitted_at: now,
+      updated_at: now,
+    })
+    .eq('id', attemptId)
+    .eq('user_id', userId)
+    .eq('status', 'in_progress')
+    .select('*')
+    .maybeSingle();
+
+  if (!lockedAttempt) {
+    // Another concurrent request is either currently grading or just finished grading.
+    // Check if result is already available.
+    const { data: existingResult } = await adminClient
+      .from('assessment_results')
+      .select('*')
+      .eq('attempt_id', attemptId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existingResult) {
+      return { success: true, result: existingResult as AssessmentResult };
+    }
+
+    return {
+      success: false,
+      error: 'Lượt làm bài đang được xử lý hoặc đã kết thúc. Vui lòng làm mới trang.',
+    };
   }
 
   // 3. Fetch questions and user answers
@@ -252,7 +281,6 @@ export async function submitAndScoreAssessmentAttempt(
   }
 
   // 4. Fetch official confidential answers using admin client (service_role)
-  const adminClient = createAdminClient();
   const questionIds = questions.map((q) => q.id);
 
   const { data: officialAnswers, error: officialError } = await adminClient
@@ -276,8 +304,6 @@ export async function submitAndScoreAssessmentAttempt(
     officialAnswers as QuestionAnswerKey[],
     submissionInputs
   );
-
-  const now = new Date().toISOString();
 
   // 6. Persist scored answers (mark correctness & awarded score)
   for (const item of scoredResult.scoredAnswers) {
@@ -389,8 +415,8 @@ export async function getDetailedAssessmentResult(
     .eq('id', attemptId)
     .single();
 
-  if (!attempt || attempt.user_id !== userId) {
-    return { result: null, attempt: null, reviews: [] };
+  if (!attempt || attempt.user_id !== userId || attempt.status !== 'completed') {
+    return { result: null, attempt: (attempt as AssessmentAttempt) || null, reviews: [] };
   }
 
   // 2. Fetch assessment_result
