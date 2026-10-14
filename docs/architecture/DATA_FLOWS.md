@@ -131,3 +131,57 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * Người dùng thường (`authenticated`, `anon` hoặc JWT role không xác định / NULL) không được phép sửa đổi `estimated_level` hoặc gian lận `onboarding_completed_at`.
   * Chỉ backend service với `service_role` (ví dụ: Assessment Engine ở Phase 2) hoặc quyền quản trị viên PostgreSQL (`postgres`, `supabase_admin`) mới có thể ghi nhận hoặc điều chỉnh các trường này.
 
+---
+
+## 5. Placement Assessment Flow (Đánh giá năng lực đầu vào & Chấm điểm độc lập)
+
+```text
+[User Browser /assessment]
+   │
+   ├─ (1) Bắt đầu / Khôi phục: startOrResumePlacementAction()
+   │      ├─ Đọc public.assessments (slug='placement-test', is_published=true)
+   │      ├─ Đọc public.assessment_questions (KHÔNG chứa đáp án đúng)
+   │      ├─ Kiểm tra/Tạo public.assessment_attempts (status='in_progress')
+   │      └─ Khôi phục câu trả lời đã lưu từ public.assessment_answers
+   │
+   ├─ (2) Trả lời câu hỏi: saveAnswerAction()
+   │      ├─ Xác thực người dùng (auth.uid())
+   │      ├─ Kiểm tra quyền sở hữu attempt và status='in_progress'
+   │      ├─ UPSERT public.assessment_answers (attempt_id, question_id, selected_option_id)
+   │      └─ Cập nhật assessment_attempts.answered_count
+   │
+   └─ (3) Nộp bài & Chấm điểm: submitAssessmentAction()
+          ├─ Xác thực danh tính & Kiểm tra idempotency (nếu đã completed -> trả kết quả cũ)
+          ├─ Server nạp đáp án mật từ public.assessment_question_answers qua createAdminClient()
+          ├─ Thuật toán calculateAssessmentScore() tính điểm tổng, độ chính xác & từng kỹ năng
+          ├─ Ghi nhận kết quả:
+          │    ├─ UPDATE assessment_answers (is_correct, score_awarded)
+          │    ├─ UPDATE assessment_attempts (status='completed', score, accuracy, completed_at)
+          │    ├─ INSERT public.assessment_results (overall_level, skill_scores, strengths, weaknesses)
+          │    ├─ UPSERT public.learner_skill_profiles (cho từng kỹ năng: vocab, grammar, reading, listening)
+          │    └─ UPDATE public.profiles (estimated_level qua service_role, vượt qua trigger an toàn)
+          └─ Redirect tới /assessment/results/[attemptId] để xem báo cáo và giải thích chi tiết
+```
+
+* **Entry point**: [src/modules/assessment/actions.ts](file:///d:/AI_Product_Development/src/modules/assessment/actions.ts) & [src/modules/assessment/services.ts](file:///d:/AI_Product_Development/src/modules/assessment/services.ts).
+* **Dữ liệu đọc/ghi**:
+  * `public.assessments` & `public.assessment_questions`: Đọc câu hỏi và lựa chọn (chỉ trả nội dung an toàn, không có đáp án đúng hay explanation).
+  * `public.assessment_question_answers`: Khóa hoàn toàn bởi RLS (deny all cho `anon` và `authenticated`), chỉ backend `service_role` đọc để chấm hoặc khi attempt đã `completed`.
+  * `public.assessment_attempts`:
+    * Client (`authenticated`) chỉ có quyền `SELECT` và `INSERT`. Đã thu hồi quyền `UPDATE` trực tiếp.
+    * Trigger `protect_assessment_attempt_fields`: Bắt buộc `user_id = auth.uid()`, `status = 'in_progress'`, và cấm client tự đặt điểm số (`score`, `max_score`, `accuracy`), `answered_count` hoặc các timestamp nộp bài (`submitted_at`, `completed_at`).
+    * Trạng thái bài làm chỉ được chuyển tiếp và ghi điểm bởi Server Service Role (`service_role`).
+  * `public.assessment_answers`:
+    * Client có quyền `SELECT` và `INSERT` (`upsert`) trên bài làm `in_progress` của chính mình.
+    * Trigger `protect_assessment_answer_fields`: Ngăn client tự đặt hoặc sửa `is_correct` và `score_awarded`.
+    * Trigger `update_attempt_answered_count`: Tự động đồng bộ số lượng câu đã trả lời `answered_count` trên `assessment_attempts`.
+  * **Xử lý nộp đồng thời & Idempotency**:
+    * Quá trình nộp bài sử dụng khóa nguyên tử có điều kiện: `UPDATE assessment_attempts SET status = 'submitted' WHERE id = :id AND user_id = :userId AND status = 'in_progress'`.
+    * Nếu nhiều request gửi tới đồng thời hoặc nộp lại, chỉ request đầu tiên giành được khóa và thực thi chấm điểm. Các request tiếp theo nhận kết quả đã nộp hoặc thông báo bài đang được xử lý một cách an toàn.
+  * **Bảo vệ Explanation & Answer Key**:
+    * Hàm `getDetailedAssessmentResult()` kiểm tra bắt buộc `attempt.status === 'completed'` trước khi truy vấn giải thích và đáp án mật từ `assessment_question_answers`. Tuyệt đối không để rò rỉ đáp án khi bài thi chưa kết thúc.
+  * `public.assessment_results`: Kết quả tổng hợp, skill breakdown và gợi ý học tập.
+  * `public.learner_skill_profiles`: Hồ sơ năng lực 4 kỹ năng phục vụ Adaptive Engine ở Phase 3.
+  * `public.profiles.estimated_level`: Cập nhật tự động thông qua `createAdminClient()`, tuân thủ đúng ranh giới đặc quyền của Phase 1.
+
+
