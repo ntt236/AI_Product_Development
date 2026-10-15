@@ -1,11 +1,23 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const testDir = join(process.cwd(), 'tests', 'assessment');
-const files = readdirSync(testDir)
-  .filter((f) => f.endsWith('.test.mjs'))
-  .map((f) => join(testDir, f));
+function findTestFiles(dir) {
+  let results = [];
+  const list = readdirSync(dir);
+  for (const file of list) {
+    const fullPath = join(dir, file);
+    const stat = statSync(fullPath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(findTestFiles(fullPath));
+    } else if (file.endsWith('.test.mjs')) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+const files = findTestFiles(join(process.cwd(), 'tests'));
 
 console.log(`Chạy ${files.length} test suite(s)...`);
 
