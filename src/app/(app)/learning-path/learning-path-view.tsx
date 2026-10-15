@@ -47,6 +47,17 @@ export function LearningPathView({
   const [customReason, setCustomReason] = useState('Ưu tiên luyện kỹ năng theo nguyện vọng');
   const [selectedTopicInfo, setSelectedTopicInfo] = useState<LearningPathItem | null>(null);
 
+  const allModules = initialItems
+    .filter((it) => it.item_type === 'module')
+    .sort((a, b) => a.position - b.position);
+
+  const [selectedModuleId, setSelectedModuleId] = useState<string>(() => {
+    const firstMod = initialItems.find((it) => it.item_type === 'module');
+    return firstMod ? firstMod.id : '';
+  });
+
+  const [reorderedTopicIds, setReorderedTopicIds] = useState<string[]>([]);
+
   // Filter items by type
   const milestones = initialItems
     .filter((it) => it.item_type === 'milestone')
@@ -62,6 +73,29 @@ export function LearningPathView({
     return initialItems
       .filter((it) => it.item_type === 'topic' && it.parent_id === moduleId)
       .sort((a, b) => a.position - b.position);
+  };
+
+  // Active module topics
+  const effectiveModuleId = selectedModuleId || allModules[0]?.id || '';
+  const currentModuleTopics = initialItems
+    .filter((it) => it.item_type === 'topic' && it.parent_id === effectiveModuleId)
+    .sort((a, b) => a.position - b.position);
+
+  const displayedTopicIds =
+    reorderedTopicIds.length > 0 &&
+    reorderedTopicIds.every((id) => currentModuleTopics.some((t) => t.id === id)) &&
+    reorderedTopicIds.length === currentModuleTopics.length
+      ? reorderedTopicIds
+      : currentModuleTopics.map((t) => t.id);
+
+  const moveTopic = (index: number, direction: 'up' | 'down') => {
+    const newArr = [...displayedTopicIds];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newArr.length) return;
+    const temp = newArr[index];
+    newArr[index] = newArr[targetIndex];
+    newArr[targetIndex] = temp;
+    setReorderedTopicIds(newArr);
   };
 
   const toggleMilestone = (milestoneId: string) => {
@@ -146,19 +180,18 @@ export function LearningPathView({
 
   const handleSaveCustomization = () => {
     if (!initialPath) return;
+    if (displayedTopicIds.length === 0) {
+      setFeedback({ type: 'error', message: 'Mô-đun được chọn không có chủ đề nào để tùy chỉnh.' });
+      return;
+    }
     setFeedback(null);
-
-    // Collect all topic IDs in current order
-    const allTopicIds = initialItems
-      .filter((it) => it.item_type === 'topic')
-      .map((t) => t.id);
 
     startTransition(async () => {
       const res = await customizePathAction(
         initialPath.id,
         initialPath.current_version,
         customReason,
-        allTopicIds
+        displayedTopicIds
       );
       if (res.success) {
         setFeedback({
@@ -166,6 +199,7 @@ export function LearningPathView({
           message: `Đã lưu tùy chỉnh thành công! Lộ trình đã được cập nhật lên phiên bản v${res.newVersion}.`,
         });
         setIsCustomizing(false);
+        setReorderedTopicIds([]);
         router.refresh();
       } else {
         setFeedback({ type: 'error', message: res.error || 'Lỗi khi lưu tùy chỉnh.' });
@@ -467,9 +501,100 @@ export function LearningPathView({
             Hệ thống áp dụng kiểm soát đồng thời lạc quan (optimistic locking) để bảo vệ dữ liệu khi làm việc trên nhiều tab.
           </p>
 
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+              1. Chọn Mô-đun để tùy chỉnh thứ tự các Chủ đề (Topics):
+            </label>
+            <select
+              value={effectiveModuleId}
+              onChange={(e) => {
+                setSelectedModuleId(e.target.value);
+                setReorderedTopicIds([]);
+              }}
+              className="form-input"
+              style={{
+                width: '100%',
+                padding: '0.65rem',
+                borderRadius: '6px',
+                background: 'rgba(0, 0, 0, 0.4)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {allModules.map((mod) => {
+                const parentMilestone = initialItems.find((it) => it.id === mod.parent_id);
+                return (
+                  <option key={mod.id} value={mod.id} style={{ background: '#1e293b', color: '#fff' }}>
+                    [{parentMilestone?.title || 'Milestone'}] {mod.title}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+              2. Sắp xếp thứ tự các chủ đề trong mô-đun này:
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {displayedTopicIds.map((topicId, idx) => {
+                const topic = initialItems.find((it) => it.id === topicId);
+                if (!topic) return null;
+                return (
+                  <div
+                    key={topicId}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.6rem 0.85rem',
+                      borderRadius: '6px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-cyan)', fontSize: '0.85rem' }}>
+                        #{idx + 1}
+                      </span>
+                      <div>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{topic.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {topic.skill?.toUpperCase()} • {topic.estimated_minutes} phút
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => moveTopic(idx, 'up')}
+                        disabled={idx === 0 || isPending}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        title="Di chuyển lên"
+                      >
+                        ↑ Lên
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveTopic(idx, 'down')}
+                        disabled={idx === displayedTopicIds.length - 1 || isPending}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        title="Di chuyển xuống"
+                      >
+                        ↓ Xuống
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-              Lý do thay đổi (Change Reason):
+              3. Lý do thay đổi (Change Reason):
             </label>
             <input
               type="text"
@@ -491,7 +616,7 @@ export function LearningPathView({
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button
               onClick={handleSaveCustomization}
-              disabled={isPending}
+              disabled={isPending || displayedTopicIds.length === 0}
               className="btn btn-primary btn-sm"
             >
               {isPending ? 'Đang lưu snapshot...' : '💾 Lưu phiên bản mới (Save New Version)'}

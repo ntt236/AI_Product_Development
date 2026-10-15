@@ -563,61 +563,113 @@ async function fallbackCustomizeLearningPathStructure(
     };
   }
 
-  // 2. Validate all reordered items belong to this path
-  if (reorderedItemIds && reorderedItemIds.length > 0) {
-    const { data: pathItems } = await adminClient
-      .from('learning_path_items')
-      .select('id')
-      .eq('learning_path_id', pathId)
-      .in('id', reorderedItemIds);
+  // 2. Validate input array: non-empty check
+  if (!reorderedItemIds || reorderedItemIds.length === 0) {
+    return { success: false, error: 'Danh sách hạng mục tùy chỉnh không được để trống.' };
+  }
 
-    const validIds = new Set(pathItems?.map((it) => it.id) || []);
-    for (const itemId of reorderedItemIds) {
-      if (!validIds.has(itemId)) {
-        return {
-          success: false,
-          error: `Phát hiện hạng mục không hợp lệ hoặc thuộc lộ trình khác: ${itemId}`,
-        };
-      }
+  // 3. Reject duplicate IDs
+  if (new Set(reorderedItemIds).size !== reorderedItemIds.length) {
+    return { success: false, error: 'Danh sách hạng mục tùy chỉnh chứa ID bị trùng lặp.' };
+  }
+
+  // 4. Fetch all items in path to validate sibling group contract
+  const { data: allPathItems } = await adminClient
+    .from('learning_path_items')
+    .select('*')
+    .eq('learning_path_id', pathId);
+
+  const itemsMap = new Map((allPathItems || []).map((it) => [it.id, it]));
+
+  // Verify all reordered items exist in this path
+  for (const id of reorderedItemIds) {
+    if (!itemsMap.has(id)) {
+      return { success: false, error: `Phát hiện hạng mục không hợp lệ hoặc thuộc lộ trình khác: ${id}` };
     }
+  }
+
+  // Verify single sibling group (same parent_id and same item_type)
+  const firstItem = itemsMap.get(reorderedItemIds[0])!;
+  const targetParentId = firstItem.parent_id;
+  const targetType = firstItem.item_type;
+
+  for (const id of reorderedItemIds) {
+    const item = itemsMap.get(id)!;
+    if (item.parent_id !== targetParentId) {
+      return { success: false, error: 'Không thể sắp xếp các hạng mục thuộc các hạng mục cha khác nhau (Cross-parent reordering).' };
+    }
+    if (item.item_type !== targetType) {
+      return { success: false, error: 'Không thể sắp xếp đồng thời các hạng mục ở các cấp phân cấp khác nhau.' };
+    }
+  }
+
+  // Completeness check: all siblings under targetParentId must be included
+  const allSiblings = (allPathItems || []).filter((it) => it.parent_id === targetParentId);
+  if (allSiblings.length !== reorderedItemIds.length) {
+    return {
+      success: false,
+      error: `Danh sách tùy chỉnh phải bao gồm toàn bộ ${allSiblings.length} hạng mục trong cùng nhóm cha (nhận được: ${reorderedItemIds.length}).`,
+    };
   }
 
   const newVersion = path.current_version + 1;
   const now = new Date().toISOString();
 
-  // 3. Update item positions based on reorderedItemIds
-  if (reorderedItemIds && reorderedItemIds.length > 0) {
-    let pos = 1;
-    for (const itemId of reorderedItemIds) {
-      await adminClient
-        .from('learning_path_items')
-        .update({ position: pos++, updated_at: now })
-        .eq('id', itemId)
-        .eq('learning_path_id', pathId);
-    }
+  // 5. Update item positions based on reorderedItemIds
+  let pos = 1;
+  for (const itemId of reorderedItemIds) {
+    await adminClient
+      .from('learning_path_items')
+      .update({ position: pos++, updated_at: now })
+      .eq('id', itemId)
+      .eq('learning_path_id', pathId);
   }
 
-  // 4. Fetch validated updated items to create snapshot
-  const { data: currentItems } = await adminClient
+  // 6. Fetch refreshed items to construct deterministic hierarchical snapshot
+  const { data: refreshedItems } = await adminClient
     .from('learning_path_items')
     .select('*')
-    .eq('learning_path_id', pathId)
-    .order('position', { ascending: true });
+    .eq('learning_path_id', pathId);
 
-  // 5. Insert immutable version snapshot
+  const mList = (refreshedItems || [])
+    .filter((it) => it.item_type === 'milestone')
+    .sort((a, b) => a.position - b.position)
+    .map((m) => {
+      const modules = (refreshedItems || [])
+        .filter((mod) => mod.parent_id === m.id && mod.item_type === 'module')
+        .sort((a, b) => a.position - b.position)
+        .map((mod) => {
+          const topics = (refreshedItems || [])
+            .filter((t) => t.parent_id === mod.id && t.item_type === 'topic')
+            .sort((a, b) => a.position - b.position);
+          return { ...mod, topics };
+        });
+      return { ...m, modules };
+    });
+
+  const snapshot = {
+    title: path.title,
+    description: path.description,
+    target_level: path.target_level,
+    total_estimated_minutes: path.total_estimated_minutes,
+    estimated_weeks: path.estimated_weeks,
+    version_number: newVersion,
+    change_reason: changeReason || 'Người học tùy chỉnh cấu trúc lộ trình',
+    created_by: 'user',
+    generated_at: now,
+    milestones: mList,
+  };
+
+  // 7. Insert immutable version snapshot
   await adminClient.from('learning_path_versions').insert({
     learning_path_id: pathId,
     version_number: newVersion,
     change_reason: changeReason || 'Người học tùy chỉnh cấu trúc lộ trình',
     created_by: 'user',
-    snapshot: {
-      items: currentItems || [],
-      reordered_ids: reorderedItemIds,
-      updated_at: now,
-    },
+    snapshot,
   });
 
-  // 6. Increment path version and flag as user modified
+  // 8. Increment path version and flag as user modified
   await adminClient
     .from('learning_paths')
     .update({

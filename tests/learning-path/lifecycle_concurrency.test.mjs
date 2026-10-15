@@ -217,11 +217,24 @@ class MockLearningPathDB {
       };
     }
 
-    // 2. Validate all reordered item IDs belong to this path (anti-cross-path tampering)
+    // 2. Validate input array: non-empty check
+    if (!reorderedIds || reorderedIds.length === 0) {
+      return { success: false, error: 'Danh sách hạng mục tùy chỉnh không được để trống.' };
+    }
+
+    // 3. Reject duplicate item IDs in reorderedIds
+    if (new Set(reorderedIds).size !== reorderedIds.length) {
+      return {
+        success: false,
+        error: 'Danh sách hạng mục tùy chỉnh chứa ID bị trùng lặp.',
+      };
+    }
+
+    // 4. Validate all reordered item IDs belong to this path (anti-cross-path tampering)
     const existingItems = this.getItems(pathId);
-    const validIds = new Set(existingItems.map((i) => i.id));
+    const validMap = new Map(existingItems.map((i) => [i.id, i]));
     for (const itemId of reorderedIds) {
-      if (!validIds.has(itemId)) {
+      if (!validMap.has(itemId)) {
         return {
           success: false,
           error: `Phát hiện hạng mục không hợp lệ hoặc thuộc lộ trình khác: ${itemId}`,
@@ -229,7 +242,39 @@ class MockLearningPathDB {
       }
     }
 
-    // 3. Atomically update positions
+    // 5. Validate single sibling group contract & anti-cross-parent tampering
+    const firstItem = validMap.get(reorderedIds[0]);
+    const targetParentId = firstItem.parent_id;
+    const targetType = firstItem.item_type;
+
+    for (const itemId of reorderedIds) {
+      const item = validMap.get(itemId);
+      if (item.item_type !== targetType) {
+        return {
+          success: false,
+          error: 'Không thể sắp xếp đồng thời các hạng mục ở các cấp phân cấp khác nhau.',
+        };
+      }
+      if (item.parent_id !== targetParentId) {
+        return {
+          success: false,
+          error: 'Không thể sắp xếp các hạng mục thuộc các hạng mục cha khác nhau (Cross-parent reordering).',
+        };
+      }
+    }
+
+    // 6. Completeness check: Ensure omitted items cannot accidentally retain conflicting positions
+    const allSiblings = existingItems.filter(
+      (it) => it.parent_id === targetParentId && it.item_type === targetType
+    );
+    if (allSiblings.length !== reorderedIds.length) {
+      return {
+        success: false,
+        error: `Danh sách tùy chỉnh phải bao gồm toàn bộ ${allSiblings.length} hạng mục trong cùng nhóm cha (nhận được: ${reorderedIds.length}).`,
+      };
+    }
+
+    // 7. Atomically update positions
     let pos = 1;
     for (const itemId of reorderedIds) {
       const item = this.items.get(itemId);
@@ -242,8 +287,25 @@ class MockLearningPathDB {
     const newVersion = path.current_version + 1;
     const now = new Date().toISOString();
 
-    // 4. Construct snapshot from actual updated DB items
-    const updatedItems = this.getItems(pathId);
+    // 8. Construct deterministic hierarchical snapshot from actual updated DB items
+    const refreshedItems = this.getItems(pathId);
+    const milestones = refreshedItems
+      .filter((it) => it.item_type === 'milestone')
+      .sort((a, b) => a.position - b.position)
+      .map((m) => {
+        const modules = refreshedItems
+          .filter((mod) => mod.parent_id === m.id && mod.item_type === 'module')
+          .sort((a, b) => a.position - b.position)
+          .map((mod) => {
+            const topics = refreshedItems
+              .filter((t) => t.parent_id === mod.id && t.item_type === 'topic')
+              .sort((a, b) => a.position - b.position)
+              .map((t) => ({ ...t }));
+            return { ...mod, topics };
+          });
+        return { ...m, modules };
+      });
+
     const versionId = `v-${pathId}-${newVersion}`;
     this.versions.set(versionId, {
       id: versionId,
@@ -252,7 +314,9 @@ class MockLearningPathDB {
       change_reason: changeReason || 'Người học tùy chỉnh cấu trúc lộ trình',
       created_by: 'user',
       snapshot: {
-        items: updatedItems.map((it) => ({ ...it })),
+        title: path.title,
+        version_number: newVersion,
+        milestones,
         reordered_ids: reorderedIds,
         previous_version: expectedVersion,
         timestamp: now,
@@ -260,7 +324,7 @@ class MockLearningPathDB {
       created_at: now,
     });
 
-    // 5. Update path version
+    // 9. Update path version
     path.current_version = newVersion;
     path.is_user_modified = true;
     path.updated_at = now;
@@ -455,9 +519,11 @@ describe('Learning Path Lifecycle, Security & Concurrency Engine', () => {
         status: 'proposed',
       });
 
-      const t1 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', title: 'Topic 1', position: 1 });
-      const t2 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', title: 'Topic 2', position: 2 });
-      const t3 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', title: 'Topic 3', position: 3 });
+      const m1 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', title: 'Milestone 1', position: 1 });
+      const mod1 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', title: 'Module 1', position: 1 });
+      const t1 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', title: 'Topic 1', position: 1 });
+      const t2 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', title: 'Topic 2', position: 2 });
+      const t3 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', title: 'Topic 3', position: 3 });
 
       assert.equal(path.current_version, 1);
       assert.equal(db.getVersions(path.id).length, 1);
@@ -479,20 +545,22 @@ describe('Learning Path Lifecycle, Security & Concurrency Engine', () => {
       assert.equal(db.items.get(t3.id).position, 2);
       assert.equal(db.items.get(t1.id).position, 3);
 
-      const itemsInOrder = db.getItems(path.id);
+      const topicsInOrder = db.getItems(path.id).filter((it) => it.item_type === 'topic');
       assert.deepEqual(
-        itemsInOrder.map((i) => i.id),
+        topicsInOrder.map((i) => i.id),
         [t2.id, t3.id, t1.id]
       );
 
-      // Verify immutable version snapshot captures exact reordered items
+      // Verify immutable version snapshot captures exact reordered items in deterministic hierarchy
       const versions = db.getVersions(path.id);
       assert.equal(versions.length, 2);
       const v2 = versions.find((v) => v.version_number === 2);
       assert.ok(v2);
       assert.equal(v2.created_by, 'user');
       assert.deepEqual(v2.snapshot.reordered_ids, [t2.id, t3.id, t1.id]);
-      assert.equal(v2.snapshot.items[0].id, t2.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[0].id, t2.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[1].id, t3.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[2].id, t1.id);
     });
 
     it('rejects concurrent edits with stale expected_version without partial writes', () => {
@@ -532,6 +600,101 @@ describe('Learning Path Lifecycle, Security & Concurrency Engine', () => {
       const res = db.customizePath(userA, path.id, 1, 'Attempt edit completed', []);
       assert.equal(res.success, false);
       assert.match(res.error, /Không thể chỉnh sửa cấu trúc của lộ trình đã kết thúc hoặc lưu trữ/);
+    });
+
+    it('rejects duplicate item IDs in reorderedIds array', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Duplicate Test Path' });
+      const t1 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', position: 1 });
+      const t2 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', position: 2 });
+
+      // Sending duplicate t1
+      const res = db.customizePath(userA, path.id, 1, 'Duplicate ID attempt', [t1.id, t1.id]);
+      assert.equal(res.success, false);
+      assert.match(res.error, /Danh sách hạng mục tùy chỉnh chứa ID bị trùng lặp/);
+
+      // Verify no changes made to path version
+      assert.equal(db.getPath(path.id).current_version, 1);
+    });
+
+    it('rejects omitted sibling IDs (partial array that does not cover the complete sibling group)', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Omitted Sibling Path' });
+      const m1 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', position: 1 });
+      const mod1 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', position: 1 });
+      const t1 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', position: 1 });
+      const t2 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', position: 2 });
+      const t3 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', position: 3 });
+
+      // Omit t3 (sending only 2 out of 3 siblings)
+      const res = db.customizePath(userA, path.id, 1, 'Partial sibling list', [t2.id, t1.id]);
+      assert.equal(res.success, false);
+      assert.match(res.error, /phải bao gồm toàn bộ 3 hạng mục trong cùng nhóm cha/);
+
+      // Verify positions unchanged
+      assert.equal(db.items.get(t1.id).position, 1);
+      assert.equal(db.items.get(t2.id).position, 2);
+      assert.equal(db.items.get(t3.id).position, 3);
+      assert.equal(db.getPath(path.id).current_version, 1);
+    });
+
+    it('rejects cross-parent reordering (items from different parent modules)', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Cross Parent Path' });
+      const m1 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', position: 1 });
+      const mod1 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', position: 1 });
+      const mod2 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', position: 2 });
+
+      const t1 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', position: 1 });
+      const t2 = db.insertItem({ learning_path_id: path.id, parent_id: mod2.id, item_type: 'topic', position: 1 });
+
+      // Attempting to reorder topics across mod1 and mod2
+      const res = db.customizePath(userA, path.id, 1, 'Cross-parent attempt', [t2.id, t1.id]);
+      assert.equal(res.success, false);
+      assert.match(res.error, /Cross-parent reordering/);
+      assert.equal(db.getPath(path.id).current_version, 1);
+    });
+
+    it('rejects cross-hierarchy reordering (mixing different item_types)', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Cross Hierarchy Path' });
+      const m1 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', position: 1 });
+      const mod1 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', position: 1 });
+
+      const res = db.customizePath(userA, path.id, 1, 'Cross-hierarchy attempt', [m1.id, mod1.id]);
+      assert.equal(res.success, false);
+      assert.match(res.error, /các cấp phân cấp khác nhau/);
+    });
+
+    it('rejects invalid or non-existent item IDs', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Invalid ID Path' });
+      const t1 = db.insertItem({ learning_path_id: path.id, item_type: 'topic', position: 1 });
+
+      const fakeId = '00000000-0000-0000-0000-000000000000';
+      const res = db.customizePath(userA, path.id, 1, 'Non-existent item', [fakeId]);
+      assert.equal(res.success, false);
+      assert.match(res.error, /Phát hiện hạng mục không hợp lệ hoặc thuộc lộ trình khác/);
+    });
+
+    it('ensures deterministic hierarchical snapshot ordering (Milestone -> Module -> Topic)', () => {
+      const path = db.insertPath({ user_id: userA, title: 'Hierarchy Snapshot Path' });
+      const m1 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', title: 'M1', position: 1 });
+      const m2 = db.insertItem({ learning_path_id: path.id, item_type: 'milestone', title: 'M2', position: 2 });
+      const mod1 = db.insertItem({ learning_path_id: path.id, parent_id: m1.id, item_type: 'module', title: 'Mod 1', position: 1 });
+      const t1 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', title: 'Topic 1', position: 1 });
+      const t2 = db.insertItem({ learning_path_id: path.id, parent_id: mod1.id, item_type: 'topic', title: 'Topic 2', position: 2 });
+
+      // Reorder topics in mod1: t2, t1
+      const res = db.customizePath(userA, path.id, 1, 'Reorder topics in mod1', [t2.id, t1.id]);
+      assert.equal(res.success, true);
+
+      const v2 = db.getVersions(path.id).find((v) => v.version_number === 2);
+      assert.ok(v2);
+      assert.ok(v2.snapshot.milestones);
+      assert.equal(v2.snapshot.milestones.length, 2);
+      assert.equal(v2.snapshot.milestones[0].id, m1.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].id, mod1.id);
+      // Topics under mod1 must reflect the new deterministic positions: t2 first, then t1
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[0].id, t2.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[1].id, t1.id);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[0].position, 1);
+      assert.equal(v2.snapshot.milestones[0].modules[0].topics[1].position, 2);
     });
   });
 });

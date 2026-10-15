@@ -80,7 +80,10 @@ create table if not exists public.learning_path_items (
     target_level is null or target_level in ('pre_a1', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2')
   ),
   position integer not null check (position >= 1),
-  estimated_minutes integer not null default 20 check (estimated_minutes between 5 and 180),
+  estimated_minutes integer not null default 0 check (
+    (item_type = 'topic' and estimated_minutes between 5 and 180) or
+    (item_type in ('milestone', 'module') and estimated_minutes >= 0)
+  ),
   content_status text not null default 'planned_curriculum' check (
     content_status in ('available', 'planned_curriculum')
   ),
@@ -124,7 +127,7 @@ create trigger set_learning_path_items_updated_at
 create or replace function public.validate_learning_path_item_hierarchy()
 returns trigger
 language plpgsql
-security definer set search_path = public
+security definer set search_path = ''
 as $$
 declare
   v_parent_type text;
@@ -180,11 +183,13 @@ create or replace function public.activate_learning_path(
 )
 returns jsonb
 language plpgsql
-security definer set search_path = public
+security definer set search_path = ''
 as $$
 declare
   v_caller_id uuid;
   v_path record;
+  v_first_milestone_id uuid;
+  v_first_module_id uuid;
 begin
   -- Resolve caller identity safely
   if p_user_id is not null and public.is_admin_or_service_role() then
@@ -197,7 +202,13 @@ begin
     raise exception 'Unauthorized: Yêu cầu xác thực danh tính.';
   end if;
 
-  -- Verify target path ownership and proposed status
+  -- Serialize concurrent activations for the caller to prevent race conditions
+  perform 1
+  from public.learning_paths
+  where user_id = v_caller_id
+  for update;
+
+  -- Verify target path ownership
   select * into v_path
   from public.learning_paths
   where id = p_path_id and user_id = v_caller_id
@@ -205,6 +216,11 @@ begin
 
   if not found then
     raise exception 'Không tìm thấy lộ trình học hoặc bạn không có quyền truy cập.';
+  end if;
+
+  -- Reject reactivation of terminal states
+  if v_path.status in ('completed', 'rejected', 'archived') then
+    raise exception 'Không thể kích hoạt lại lộ trình ở trạng thái kết thúc (%): thao tác bị từ chối.', v_path.status;
   end if;
 
   if v_path.status = 'active' then
@@ -231,54 +247,52 @@ begin
   where id = p_path_id and user_id = v_caller_id;
 
   -- 3. Progressively unlock Milestone 1, its first Module, and its first Topic
-  declare
-    v_first_milestone_id uuid;
-    v_first_module_id uuid;
-  begin
-    -- 3a. Find and unlock Milestone 1
-    select id into v_first_milestone_id
+  -- 3a. Find and unlock Milestone 1
+  select id into v_first_milestone_id
+  from public.learning_path_items
+  where learning_path_id = p_path_id
+    and parent_id is null
+    and item_type = 'milestone'
+    and position = 1;
+
+  if v_first_milestone_id is not null then
+    update public.learning_path_items
+    set status = 'available',
+        updated_at = now()
+    where id = v_first_milestone_id
+      and status = 'locked';
+
+    -- 3b. Find and unlock Module 1 under Milestone 1
+    select id into v_first_module_id
     from public.learning_path_items
     where learning_path_id = p_path_id
-      and parent_id is null
-      and item_type = 'milestone'
+      and parent_id = v_first_milestone_id
+      and item_type = 'module'
       and position = 1;
 
-    if v_first_milestone_id is not null then
+    if v_first_module_id is not null then
       update public.learning_path_items
       set status = 'available',
           updated_at = now()
-      where id = v_first_milestone_id
+      where id = v_first_module_id
         and status = 'locked';
 
-      -- 3b. Find and unlock Module 1 under Milestone 1
-      select id into v_first_module_id
-      from public.learning_path_items
+      -- 3c. Unlock Topic 1 under Module 1
+      update public.learning_path_items
+      set status = 'available',
+          updated_at = now()
       where learning_path_id = p_path_id
-        and parent_id = v_first_milestone_id
-        and item_type = 'module'
-        and position = 1;
-
-      if v_first_module_id is not null then
-        update public.learning_path_items
-        set status = 'available',
-            updated_at = now()
-        where id = v_first_module_id
-          and status = 'locked';
-
-        -- 3c. Unlock Topic 1 under Module 1
-        update public.learning_path_items
-        set status = 'available',
-            updated_at = now()
-        where learning_path_id = p_path_id
-          and parent_id = v_first_module_id
-          and item_type = 'topic'
-          and position = 1
-          and status = 'locked';
-      end if;
+        and parent_id = v_first_module_id
+        and item_type = 'topic'
+        and position = 1
+        and status = 'locked';
     end if;
-  end;
+  end if;
 
   return jsonb_build_object('success', true, 'path_id', p_path_id, 'status', 'active');
+exception
+  when unique_violation then
+    raise exception 'Xung đột kích hoạt: Người dùng đã có một lộ trình học đang hoạt động.';
 end;
 $$;
 
@@ -297,14 +311,18 @@ create or replace function public.save_learning_path_customization(
 )
 returns jsonb
 language plpgsql
-security definer set search_path = public
+security definer set search_path = ''
 as $$
 declare
   v_caller_id uuid;
   v_path record;
   v_new_version integer;
-  v_item_id uuid;
-  v_pos integer := 1;
+  v_distinct_count integer;
+  v_found_count integer;
+  v_target_parent_id uuid;
+  v_target_type text;
+  v_total_sibling_count integer;
+  v_idx integer;
   v_snapshot jsonb;
   v_creator text;
 begin
@@ -347,60 +365,137 @@ begin
       v_path.current_version, p_expected_version;
   end if;
 
-  -- 5. Atomically validate and update item positions
-  if p_reordered_item_ids is not null and array_length(p_reordered_item_ids, 1) > 0 then
-    foreach v_item_id in array p_reordered_item_ids loop
-      -- Verify item actually belongs to this path (anti-cross-path tampering)
-      if not exists (
-        select 1 from public.learning_path_items
-        where id = v_item_id and learning_path_id = p_path_id
-      ) then
-        raise exception 'Phát hiện hạng mục không hợp lệ hoặc thuộc lộ trình khác: %', v_item_id;
-      end if;
-
-      update public.learning_path_items
-      set position = v_pos,
-          updated_at = now()
-      where id = v_item_id and learning_path_id = p_path_id;
-
-      v_pos := v_pos + 1;
-    end loop;
+  -- 5. Validate input array: non-empty check
+  if p_reordered_item_ids is null or array_length(p_reordered_item_ids, 1) is null or array_length(p_reordered_item_ids, 1) < 1 then
+    raise exception 'Danh sách hạng mục tùy chỉnh không được để trống.';
   end if;
 
-  -- 6. Construct validated snapshot directly from verified database items (Anti-forgery)
+  -- 6. Reject duplicate item IDs in p_reordered_item_ids
+  select count(distinct id) into v_distinct_count
+  from unnest(p_reordered_item_ids) as u(id);
+
+  if v_distinct_count <> array_length(p_reordered_item_ids, 1) then
+    raise exception 'Danh sách hạng mục tùy chỉnh chứa ID bị trùng lặp.';
+  end if;
+
+  -- 7. Validate single sibling-group contract & anti-cross-parent tampering
+  -- Fetch target parent_id and item_type from the first item
+  select parent_id, item_type into v_target_parent_id, v_target_type
+  from public.learning_path_items
+  where learning_path_id = p_path_id
+    and id = p_reordered_item_ids[1];
+
+  if not found then
+    raise exception 'Phát hiện hạng mục không hợp lệ hoặc không thuộc lộ trình này: %', p_reordered_item_ids[1];
+  end if;
+
+  -- Ensure all reordered items belong to this path, have the exact same parent_id and same item_type
+  select count(*) into v_found_count
+  from public.learning_path_items
+  where learning_path_id = p_path_id
+    and id = any(p_reordered_item_ids)
+    and parent_id is not distinct from v_target_parent_id
+    and item_type = v_target_type;
+
+  if v_found_count <> array_length(p_reordered_item_ids, 1) then
+    raise exception 'Toàn bộ các hạng mục tùy chỉnh phải cùng thuộc lộ trình và cùng một nhóm cha (sibling group).';
+  end if;
+
+  -- 8. Completeness check: Ensure omitted items cannot accidentally retain conflicting or unexpected positions
+  select count(*) into v_total_sibling_count
+  from public.learning_path_items
+  where learning_path_id = p_path_id
+    and parent_id is not distinct from v_target_parent_id
+    and item_type = v_target_type;
+
+  if v_total_sibling_count <> array_length(p_reordered_item_ids, 1) then
+    raise exception 'Danh sách tùy chỉnh phải bao gồm toàn bộ % hạng mục trong cùng nhóm cha (nhận được: %).', 
+      v_total_sibling_count, array_length(p_reordered_item_ids, 1);
+  end if;
+
+  -- 9. Atomically update item positions for the sibling group
+  for v_idx in 1 .. array_length(p_reordered_item_ids, 1) loop
+    update public.learning_path_items
+    set position = v_idx,
+        updated_at = now()
+    where id = p_reordered_item_ids[v_idx]
+      and learning_path_id = p_path_id;
+  end loop;
+
+  v_new_version := v_path.current_version + 1;
+
+  -- 10. Construct deterministic hierarchical snapshot directly from verified database items (Anti-forgery)
   select jsonb_build_object(
     'title', v_path.title,
     'description', v_path.description,
     'target_level', v_path.target_level,
     'total_estimated_minutes', v_path.total_estimated_minutes,
     'estimated_weeks', v_path.estimated_weeks,
-    'items', coalesce(
+    'version_number', v_new_version,
+    'change_reason', coalesce(nullif(trim(p_change_reason), ''), 'Người học tùy chỉnh cấu trúc lộ trình'),
+    'created_by', v_creator,
+    'generated_at', now(),
+    'milestones', coalesce(
       (
         select jsonb_agg(
           jsonb_build_object(
-            'id', id,
-            'parent_id', parent_id,
-            'item_type', item_type,
-            'title', title,
-            'skill', skill,
-            'target_level', target_level,
-            'position', position,
-            'estimated_minutes', estimated_minutes,
-            'content_status', content_status,
-            'status', status
-          ) order by position asc
+            'id', m.id,
+            'title', m.title,
+            'description', m.description,
+            'position', m.position,
+            'status', m.status,
+            'content_status', m.content_status,
+            'modules', coalesce(
+              (
+                select jsonb_agg(
+                  jsonb_build_object(
+                    'id', mod.id,
+                    'title', mod.title,
+                    'description', mod.description,
+                    'skill', mod.skill,
+                    'position', mod.position,
+                    'status', mod.status,
+                    'content_status', mod.content_status,
+                    'topics', coalesce(
+                      (
+                        select jsonb_agg(
+                          jsonb_build_object(
+                            'id', t.id,
+                            'title', t.title,
+                            'description', t.description,
+                            'skill', t.skill,
+                            'target_level', t.target_level,
+                            'position', t.position,
+                            'estimated_minutes', t.estimated_minutes,
+                            'content_status', t.content_status,
+                            'status', t.status
+                          ) order by t.position asc
+                        )
+                        from public.learning_path_items t
+                        where t.learning_path_id = p_path_id
+                          and t.parent_id = mod.id
+                          and t.item_type = 'topic'
+                      ), '[]'::jsonb
+                    )
+                  ) order by mod.position asc
+                )
+                from public.learning_path_items mod
+                where mod.learning_path_id = p_path_id
+                  and mod.parent_id = m.id
+                  and mod.item_type = 'module'
+              ), '[]'::jsonb
+            )
+          ) order by m.position asc
         )
-        from public.learning_path_items
-        where learning_path_id = p_path_id
+        from public.learning_path_items m
+        where m.learning_path_id = p_path_id
+          and m.parent_id is null
+          and m.item_type = 'milestone'
       ), '[]'::jsonb
-    ),
-    'reordered_ids', to_jsonb(p_reordered_item_ids),
-    'timestamp', now()
+    )
   ) into v_snapshot;
 
-  v_new_version := v_path.current_version + 1;
-
-  -- 7. Insert immutable snapshot into learning_path_versions
+  -- 11. Insert immutable snapshot into learning_path_versions
   insert into public.learning_path_versions (
     learning_path_id,
     version_number,
@@ -415,7 +510,7 @@ begin
     v_snapshot
   );
 
-  -- 8. Increment path version and flag as user modified
+  -- 12. Increment path version and flag as user modified
   update public.learning_paths
   set current_version = v_new_version,
       is_user_modified = (is_user_modified or v_creator = 'user'),
@@ -495,11 +590,11 @@ grant all on table public.learning_paths to service_role;
 grant all on table public.learning_path_versions to service_role;
 grant all on table public.learning_path_items to service_role;
 
--- Revoke EXECUTE from public and anon on controlled RPC functions
+-- Revoke EXECUTE from public and anon on Phase 3 functions
+revoke execute on function public.validate_learning_path_item_hierarchy() from public, anon;
 revoke execute on function public.activate_learning_path(uuid, uuid) from public, anon;
 revoke execute on function public.save_learning_path_customization(uuid, integer, text, uuid[], text, uuid) from public, anon;
 
 -- Grant EXECUTE on controlled RPC functions to authenticated and service_role
 grant execute on function public.activate_learning_path(uuid, uuid) to authenticated, service_role;
 grant execute on function public.save_learning_path_customization(uuid, integer, text, uuid[], text, uuid) to authenticated, service_role;
-
