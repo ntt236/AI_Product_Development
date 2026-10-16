@@ -95,14 +95,74 @@ Quy ước chung: UUID primary key, `created_at default now()`, `updated_at` đ�
 ### `assessment_results`
 `id`, `attempt_id unique references assessment_attempts(id) on delete cascade`, `overall_level`, `skill_scores jsonb`, `strengths jsonb`, `weaknesses jsonb`, `confidence numeric(5,4)`, `scoring_version text`, `created_at`.
 
-### `learning_paths`
-`id`, `user_id`, `goal_id references goals(id) on delete set null`, `title`, `description`, `status` (`proposed`, `active`, `paused`, `completed`, `rejected`, `archived`), `source` (`ai`, `user`, `template`), `current_version integer default 1`, timestamps.
+### `learning_paths` (Phase 3 Implemented)
+- `id uuid primary key default gen_random_uuid()`
+- `user_id uuid not null references auth.users(id) on delete cascade`
+- `goal_id uuid references goals(id) on delete set null`
+- `title text not null`
+- `description text`
+- `target_level text not null check (target_level in ('pre_a1','a1','a2','b1','b2','c1','c2'))`
+- `total_estimated_minutes integer not null default 0 check (total_estimated_minutes >= 0)`
+- `estimated_weeks integer not null default 1 check (estimated_weeks >= 1)`
+- `status text not null default 'proposed' check (status in ('proposed','active','paused','completed','rejected','archived'))`
+- `is_user_modified boolean not null default false`
+- `current_version integer not null default 1 check (current_version >= 1)`
+- `created_at timestamptz not null default now()`, `updated_at timestamptz not null default now()`
+- Unique Partial Index: `uq_user_single_active_path ON public.learning_paths(user_id) WHERE (status = 'active')` đảm bảo mỗi user chỉ có tối đa một lộ trình active tại một thời điểm.
+- Quyền: `authenticated` chỉ có SELECT; mọi INSERT/UPDATE/DELETE đi qua Server Actions và RPC functions an toàn.
 
-### `learning_path_versions`
-`id`, `learning_path_id references learning_paths(id) on delete cascade`, `version_number`, `change_reason`, `created_by`, `snapshot jsonb`, `created_at`; unique (`learning_path_id`, `version_number`). Mọi lần user chỉnh lộ trình tạo version mới; AI không ghi đè thay đổi của user.
+### `learning_path_versions` (Phase 3 Implemented)
+- `id uuid primary key default gen_random_uuid()`
+- `learning_path_id uuid not null references learning_paths(id) on delete cascade`
+- `version_number integer not null check (version_number >= 1)`
+- `change_reason text not null`
+- `created_by text not null default 'system' check (created_by in ('user','system','ai'))`
+- `snapshot jsonb not null`
+- `created_at timestamptz not null default now()`
+- Unique: `(learning_path_id, version_number)`.
+- Bản ghi là append-only: Client/authenticated không được phép UPDATE hay DELETE snapshot đã tạo. Mọi tùy chỉnh tạo version mới; AI không được tự ý ghi đè.
 
-### `learning_path_items`
-`id`, `learning_path_id`, `version_number`, `parent_id uuid`, `item_type` (`milestone`, `module`, `topic`, `activity`), `title`, `description`, `content_item_id`, `position`, `estimated_minutes`, `status`, `metadata jsonb`.
+### `learning_path_items` (Phase 3 Implemented)
+- `id uuid primary key default gen_random_uuid()`
+- `learning_path_id uuid not null references learning_paths(id) on delete cascade`
+- `parent_id uuid`
+- `item_type text not null check (item_type in ('milestone','module','topic'))`
+- `title text not null`
+- `description text`
+- `skill text check (skill is null or skill in ('vocabulary','grammar','reading','listening','speaking','writing','toeic'))`
+- `target_level text check (target_level is null or target_level in ('pre_a1','a1','a2','b1','b2','c1','c2'))`
+- `position integer not null check (position >= 1)`
+- `estimated_minutes integer not null default 0 check (estimated_minutes >= 0)`
+- `content_status text not null default 'planned_curriculum' check (content_status in ('available','planned_curriculum'))`
+- `status text not null default 'locked' check (status in ('locked','available','in_progress','completed','skipped'))`
+- `created_at timestamptz not null default now()`, `updated_at timestamptz not null default now()`
+- Composite Unique: `uq_learning_path_items_path_id (learning_path_id, id)`
+- Composite FK Tree Integrity: `fk_learning_path_items_parent (learning_path_id, parent_id) REFERENCES public.learning_path_items(learning_path_id, id) ON DELETE CASCADE` ngăn chặn triệt để liên kết chéo giữa các learning paths khác nhau ở cấp độ database.
+- Trigger `validate_learning_path_item_hierarchy()`: milestone có parent_id NULL; module có parent là milestone; topic có parent là module.
+- Quyền: `authenticated` chỉ có SELECT qua RLS; thao tác ghi qua Server Actions/RPC.
+
+### Database RPC Functions (Phase 3 Implemented)
+- `activate_learning_path(p_path_id uuid, p_user_id uuid default null)`:
+  - `SECURITY DEFINER SET search_path = ''`: Toàn bộ đối tượng database được định danh schema tường minh (`public.*`, `pg_catalog.*`, `auth.*`).
+  - Serialization: Thực thi `PERFORM 1 FROM public.learning_paths WHERE user_id = v_caller_id FOR UPDATE` để serialize các yêu cầu kích hoạt đồng thời, triệt tiêu race condition.
+  - Bắt lỗi xung đột: Xử lý ngoại lệ `unique_violation` từ partial unique index `uq_user_single_active_path` và trả về thông báo lỗi thân thiện, bảo mật.
+  - Chặn trạng thái kết thúc (Terminal states): Cấm kích hoạt lại các lộ trình có trạng thái `completed`, `rejected`, hoặc `archived`.
+  - Chuyển lộ trình active cũ của user thành `archived` và kích hoạt `p_path_id` thành `active` trong một transaction duy nhất.
+  - Mở khóa tuần tự (Progressive Unlock): Milestone 1, Module 1 (thuộc Milestone 1), và Topic 1 (thuộc Module 1) đồng thời chuyển sang trạng thái `available`; các hạng mục kế tiếp giữ nguyên `locked`.
+  - Quyền: `REVOKE EXECUTE FROM public, anon; GRANT EXECUTE TO authenticated, service_role`.
+- `save_learning_path_customization(p_path_id uuid, p_expected_version integer, p_change_reason text, p_reordered_item_ids uuid[], p_created_by text default 'user', p_user_id uuid default null)`:
+  - `SECURITY DEFINER SET search_path = ''`: Schema-qualified objects, triệt tiêu nguy cơ search-path hijacking.
+  - Khóa dòng `learning_paths` bằng `FOR UPDATE`.
+  - Kiểm tra xung đột phiên bản lạc quan (`current_version = p_expected_version`).
+  - Hợp đồng nhóm đồng cấp (Single Sibling-Group Contract): Mảng `p_reordered_item_ids` đại diện cho một nhóm đồng cấp hoàn chỉnh (`parent_id` và `item_type` hoàn toàn đồng nhất).
+  - Nghiêm cấm ID trùng lặp, cấm sắp xếp chéo nhánh cha (cross-parent reordering), cấm trộn lẫn các cấp phân cấp (cross-hierarchy).
+  - Kiểm tra tính toàn vẹn (Completeness check): Số lượng phần tử gửi lên phải đúng bằng tổng số siblings thực tế trong nhóm cha đó, ngăn chặn việc bỏ sót hạng mục gây xung đột vị trí.
+  - Cập nhật trường `position` tuần tự trong `learning_path_items`.
+  - Tự động sinh `snapshot` JSONB phân cấp xác định (deterministic hierarchy: Milestones -> Modules -> Topics theo `position asc`) trực tiếp từ database, chống client giả mạo dữ liệu.
+  - Bắt buộc `created_by = 'user'` đối với người dùng thông thường; không thể mạo danh system/ai hoặc thay đổi `user_id`.
+  - Ghi bản ghi bất biến vào `learning_path_versions` và tăng `current_version` trong transaction duy nhất.
+  - Quyền: `REVOKE EXECUTE FROM public, anon; GRANT EXECUTE TO authenticated, service_role`.
+
 
 ### `daily_plans`
 `id`, `user_id`, `plan_date date`, `available_minutes integer`, `status` (`planned`, `in_progress`, `completed`, `partially_completed`, `skipped`), `generation_reason jsonb`, timestamps; unique (`user_id`, `plan_date`).

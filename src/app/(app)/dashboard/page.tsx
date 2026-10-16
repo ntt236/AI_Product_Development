@@ -4,9 +4,10 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentUserProfile } from '@/modules/profile/services';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { LogoutButton } from '@/components/auth/logout-button';
+import { Navbar } from '@/components/layout/navbar';
 import { GOAL_OPTIONS } from '@/modules/onboarding/constants';
 import { getUserLatestAssessmentResult } from '@/modules/assessment/services';
+import { getUserLearningPath } from '@/modules/learning-path/services';
 
 export const metadata = {
   title: 'Dashboard — AI English Learning Platform',
@@ -47,6 +48,10 @@ export default async function DashboardPage() {
   // Fetch latest assessment result
   const latestAssessment = await getUserLatestAssessmentResult(user.id);
 
+  // Fetch learning path (Phase 3)
+  const learningPathData = await getUserLearningPath(user.id);
+  const currentPath = learningPathData.path;
+
   const primaryGoal = goals?.find((g) => g.priority === 'primary');
   const secondaryGoals = goals?.filter((g) => g.priority === 'secondary') || [];
 
@@ -54,21 +59,31 @@ export default async function DashboardPage() {
     return GOAL_OPTIONS.find((g) => g.type === type);
   };
 
+  const renderPathStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge variant="success">Đang hoạt động</Badge>;
+      case 'proposed':
+        return <Badge variant="info">Chờ duyệt (Proposed)</Badge>;
+      case 'paused':
+        return <Badge variant="warning">Đang tạm dừng</Badge>;
+      case 'completed':
+        return <Badge variant="success">Hoàn thành</Badge>;
+      case 'rejected':
+        return <Badge variant="default">Đã từ chối</Badge>;
+      default:
+        return <Badge variant="default">{status}</Badge>;
+    }
+  };
+
   return (
     <div className="container">
       {/* Navigation Header */}
-      <header className="navbar">
-        <Link href="/" className="nav-brand">
-          <span>🌱</span>
-          <span>AI English Platform</span>
-        </Link>
-        <div className="nav-user">
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Xin chào, <strong>{profile?.display_name || user.email?.split('@')[0]}</strong>
-          </span>
-          <LogoutButton />
-        </div>
-      </header>
+      <Navbar
+        displayName={profile?.display_name || undefined}
+        email={user.email}
+        activePath="dashboard"
+      />
 
       {/* Main Dashboard Hero */}
       <div className="header" style={{ textAlign: 'left', marginBottom: '2.5rem' }}>
@@ -82,6 +97,107 @@ export default async function DashboardPage() {
         <p className="subtitle" style={{ margin: '0' }}>
           Thông tin mục tiêu và thiết lập cá nhân hóa cho hành trình chinh phục tiếng Anh.
         </p>
+      </div>
+
+      {/* Phase 3: Learning Path Spotlight Banner */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '2rem',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          background: 'linear-gradient(135deg, rgba(26, 34, 52, 0.85) 0%, rgba(18, 24, 38, 0.95) 100%)',
+          boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.35)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '1.4rem' }}>🗺️</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                Lộ trình học cá nhân hóa (Learning Path)
+              </h3>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+              Khung 3 Milestones thích ứng theo trình độ ước lượng và thời gian học hàng tuần.
+            </p>
+          </div>
+          {currentPath && renderPathStatusBadge(currentPath.status)}
+        </div>
+
+        {currentPath ? (
+          <div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                margin: '1.25rem 0',
+                padding: '1rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TÊN LỘ TRÌNH</div>
+                <strong style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>
+                  {currentPath.title}
+                </strong>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>MỤC TIÊU CEFR</div>
+                <strong style={{ color: 'var(--accent-cyan)', fontSize: '1.1rem' }}>
+                  {currentPath.target_level.toUpperCase()}
+                </strong>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>THỜI LƯỢNG ƯỚC TÍNH</div>
+                <strong style={{ color: 'var(--text-primary)' }}>
+                  ~{currentPath.estimated_weeks} tuần ({Math.round(currentPath.total_estimated_minutes / 60)} giờ)
+                </strong>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>PHIÊN BẢN (VERSION)</div>
+                <strong style={{ color: 'var(--accent-indigo)' }}>
+                  v{currentPath.current_version} {currentPath.is_user_modified ? '(Đã tùy chỉnh)' : ''}
+                </strong>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Link href="/learning-path" className="btn btn-primary">
+                {currentPath.status === 'proposed'
+                  ? '🔍 Xem & Duyệt lộ trình đề xuất →'
+                  : currentPath.status === 'paused'
+                  ? '▶️ Tiếp tục lộ trình đang tạm dừng →'
+                  : '🚀 Xem chi tiết lộ trình học →'}
+              </Link>
+              {currentPath.status === 'proposed' && (
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  ⚠️ Lộ trình đang chờ bạn phê duyệt trước khi bắt đầu bài học.
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+              {latestAssessment
+                ? 'Bạn đã hoàn tất bài đánh giá đầu vào! Hệ thống đã sẵn sàng tạo Lộ trình học 3 Milestones thích ứng riêng cho bạn.'
+                : 'Bạn có thể làm bài đánh giá đầu vào để hệ thống đo lường điểm mạnh/yếu, hoặc tạo ngay Lộ trình học tiêu chuẩn (Starter Path) theo mục tiêu hiện tại.'}
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link href="/learning-path" className="btn btn-primary">
+                ✨ Khởi tạo lộ trình học cá nhân hóa →
+              </Link>
+              {!latestAssessment && (
+                <Link href="/assessment" className="btn btn-secondary">
+                  🎯 Làm Placement Test trước (Khuyên dùng)
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Profile & Goals Grid */}
@@ -204,7 +320,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Phase 2: Placement Assessment Card */}
+      {/* Placement Assessment Card */}
       <div className="loop-banner" style={{ marginTop: '1rem' }}>
         <h3 className="loop-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span>🎯</span>

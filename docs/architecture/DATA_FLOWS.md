@@ -184,4 +184,71 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * `public.learner_skill_profiles`: Hồ sơ năng lực 4 kỹ năng phục vụ Adaptive Engine ở Phase 3.
   * `public.profiles.estimated_level`: Cập nhật tự động thông qua `createAdminClient()`, tuân thủ đúng ranh giới đặc quyền của Phase 1.
 
+---
+
+## 5. Learning Path Generation, State Transitions & Customization Flow (Phase 3)
+
+```text
+[User Browser]
+   │
+   ├─ (1) Tổng hợp hồ sơ & Sinh lộ trình đề xuất (Proposed Path):
+   │      ↓
+   │   Server Action: generateProposedPathAction() [src/modules/learning-path/actions.ts]
+   │      ├─ getUserLearningPath(userId) -> Kiểm tra nếu đã có path active/proposed/paused
+   │      ├─ getLearnerProfileSummary(userId) -> Tổng hợp profiles, goals, preferences, learner_skill_profiles
+   │      ├─ generateLearningPathProposal(profile) [src/modules/learning-path/generator.ts]
+   │      │    ├─ Nếu chưa làm Placement Test -> Sinh Standard Starter Path
+   │      │    └─ Nếu đã có test -> Weakness Detection (Priority Score = (1 - ability) * goal_weight)
+   │      │         └─ Sinh 3 Milestones (Củng cố điểm yếu, Phát triển mục tiêu chính, Tích hợp & Đánh giá)
+   │      │         └─ Tính dynamic workload: total_estimated_minutes, estimated_weeks
+   │      ├─ INSERT public.learning_paths (status='proposed', current_version=1)
+   │      ├─ INSERT public.learning_path_versions (v1 snapshot)
+   │      └─ INSERT public.learning_path_items (Milestones -> Modules -> Topics, content_status='planned_curriculum')
+   │
+   ├─ (2) Chấp nhận / Từ chối lộ trình (User Sovereignty):
+   │      ├─ acceptPathAction(pathId) [src/modules/learning-path/actions.ts]
+   │      │    ├─ Kiểm tra quyền sở hữu (path.user_id === user.id)
+   │      │    ├─ Kiểm tra status ('proposed' hoặc 'paused')
+   │      │    ├─ UPDATE public.learning_paths SET status='archived' WHERE user_id=:userId AND status='active'
+   │      │    ├─ UPDATE public.learning_paths SET status='active' WHERE id=:pathId
+   │      │    └─ Progressive Unlock: Milestone 1, Module 1, và Topic 1 đồng thời mở khóa (status='available')
+   │      │
+   │      └─ rejectPathAction(pathId) [src/modules/learning-path/actions.ts]
+   │           ├─ Kiểm tra quyền sở hữu & status='proposed'
+   │           └─ UPDATE public.learning_paths SET status='rejected' (Terminal state)
+   │
+   ├─ (3) Tạm dừng / Tiếp tục học (Pause / Resume):
+   │      ├─ pausePathAction(pathId) -> UPDATE learning_paths SET status='paused' WHERE status='active'
+   │      └─ resumePathAction(pathId) -> Kích hoạt lại trạng thái active
+   │
+   └─ (4) Tùy chỉnh cấu trúc & Kiểm soát đồng thời lạc quan (Atomic Customization & Snapshots):
+          ↓
+       Server Action: customizePathAction(pathId, expectedVersion, changeReason, reorderedIds)
+          ├─ Gọi RPC nguyên tử: save_learning_path_customization()
+          ├─ Khóa bản ghi FOR UPDATE / kiểm tra: learning_paths.current_version === expectedVersion
+          │    └─ Nếu mismatch: Rollback toàn bộ, báo lỗi xung đột phiên bản, yêu cầu refresh trang
+          ├─ Xác thực reorderedIds: mọi ID phải thuộc đúng pathId (chống chèn ID từ lộ trình khác)
+          ├─ Cập nhật tuần tự learning_path_items.position
+          ├─ Tự động tạo snapshot JSONB từ items đã cập nhật trong DB (chống giả mạo snapshot)
+          ├─ Ghi bản ghi bất biến vào learning_path_versions (bắt buộc created_by='user' đối với client)
+          └─ UPDATE public.learning_paths SET current_version = newVersion, is_user_modified = true
+```
+
+* **Entry point**: [src/modules/learning-path/actions.ts](file:///d:/AI_Product_Development/src/modules/learning-path/actions.ts) & [src/modules/learning-path/services.ts](file:///d:/AI_Product_Development/src/modules/learning-path/services.ts).
+* **Dữ liệu đọc/ghi**:
+  * `public.learning_paths`:
+    * Client (`authenticated`) chỉ có quyền `SELECT` qua RLS.
+    * Mọi thao tác ghi thực hiện qua Server Action / RPC functions với kiểm tra định danh `auth.uid()` và quyền sở hữu nghiêm ngặt.
+    * Partial unique index `uq_user_single_active_path` bảo đảm toàn vẹn chỉ có tối đa 1 lộ trình `active` cho mỗi user.
+  * `public.learning_path_versions`:
+    * Append-only table: Lưu snapshot bất biến của từng phiên bản. Client không được sửa hay xóa snapshot.
+  * `public.learning_path_items`:
+    * Ràng buộc composite foreign key `(learning_path_id, parent_id) REFERENCES (learning_path_id, id)` bảo đảm cây phân cấp không bao giờ bị tham chiếu chéo sang lộ trình khác.
+    * Trigger `validate_learning_path_item_hierarchy()` kiểm tra toàn vẹn phân cấp Milestone -> Module -> Topic.
+  * **Minh bạch nội dung (`planned_curriculum`)**: Mọi topic của lộ trình Phase 3 được đánh dấu `content_status = 'planned_curriculum'`. UI ngăn chặn tạo bài học giả lập khi nội dung thực tế sẽ được phân phối trong Phase 4.
+  * **Bảo vệ chống ghi đè (AI Anti-Overwrite)**:
+    * Logic sinh lộ trình là rule-based thuần túy, không phụ thuộc vào LLM.
+    * Các đề xuất AI trong tương lai chỉ đóng vai trò khuyến nghị; người dùng nắm toàn quyền quyết định (User Sovereignty). Không hệ thống tự động nào được phép ghi đè lộ trình đã tùy chỉnh mà không tạo version mới và được người dùng xác nhận.
+
+
 
