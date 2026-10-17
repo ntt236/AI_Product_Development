@@ -1,43 +1,48 @@
 # Project State — AI English Learning Platform
 
-**Last Updated:** 2026-10-16  
-**Active Branch:** `phase-4`  
-**Current Phase:** Phase 4 — Daily Plan + Practice (Code, UI, Content Seeding, Server Scoring, Migration & Tests Complete)  
-**Next Phase:** Phase 5 — Adaptive Engine & Spaced Repetition (SRS)  
+**Last Updated:** 2026-10-17  
+**Active Branch:** `phase-5`  
+**Current Phase:** Phase 5 — AI Tutor (Provider Abstraction, Prompt Versioning, Level-Adaptive Explanations, Anti-IDOR, Rate Limiting, Usage Telemetry, UI Integration, Migration & Automated Tests Complete)  
+**Next Phase:** Phase 6 — Vocabulary Notebook & Spaced Repetition (SRS)  
 
 ---
 
 ## 1. Trạng thái mã nguồn & kiến trúc
 - **Framework**: Next.js 15.5.27 (App Router), React 19, TypeScript strict mode.
-- **Kiến trúc**: Modular Monolith (`src/modules/auth`, `src/modules/profile`, `src/modules/onboarding`, `src/modules/assessment`, `src/modules/learning-path`, `src/modules/daily-plan`).
-- **Phase 4 — Daily Plan + Practice Implementation**:
-  - **Deterministic Daily Plan Generator (`src/modules/daily-plan/generator.ts`)**:
-    - Phân bổ ngân sách thời gian học (`daily_minutes`) chính xác, không tạo nhiệm vụ vượt quá ngân sách.
-    - Nhận diện ngày học theo lịch (`preferred_study_days`) hoặc ngày học linh hoạt ngoài lịch (`flexible_catchup`).
-    - Ưu tiên các topic đã mở khóa (`status = 'available'`) từ Learning Path đang kích hoạt (`status = 'active'`).
-    - Khớp chính xác với kho bài học thực nghiệm (`content_items`), gán nhãn trung thực `available` (có bài tập tương tác) hoặc `planned_curriculum` (chương trình dự kiến, bài tập sắp ra mắt).
-    - Hoàn toàn xác định (deterministic rule-based): Cùng dữ liệu đầu vào luôn sinh ra cùng kế hoạch 100%.
-  - **Foundational Curated Content & Anti-Fake Rules**:
-    - Seed dữ liệu bài học thực tế, kiểm chứng chất lượng cao: Từ vựng sinh hoạt hàng ngày (`vocab-daily-routine` với 6 từ vựng, phiên âm IPA, nghĩa tiếng Việt, câu ví dụ) và Ngữ pháp Thì hiện tại đơn (`grammar-present-simple` với quy tắc, công thức, cách chia động từ, ví dụ).
-    - 10 bài tập trắc nghiệm thực tế, có phương án lựa chọn và lời giải thích sư phạm chi tiết.
-    - Tuyệt đối không tạo bài tập giả lập, không tạo điểm số ảo, không nhận vơ bài nghe khi chỉ có văn bản/transcript.
-  - **Server-Side Scoring & Zero-Trust Answer Protection (`src/modules/daily-plan/services.ts`)**:
-    - Đáp án đúng (`practice_exercise_answers`) được lưu trữ tại bảng riêng biệt, **KHÔNG CẤP QUYỀN SELECT CHO AUTHENTICATED ROLE**. Trình duyệt client không bao giờ nhận được đáp án trước khi nộp bài.
-    - Server Action `submitPracticeAction()` xác thực runtime bằng Zod, chỉ server tính điểm, đánh giá đúng/sai từng câu và trả về phản hồi/giải thích sau khi đã chấm.
-  - **Evidence, Event Persistence & Progress Lifecycle**:
-    - Ghi nhận chi tiết bài làm vào `practice_submissions` (điểm số, tỷ lệ % đúng, thời gian làm bài, chi tiết từng câu).
-    - Tự động ghi nhận bằng chứng học tập vào `learning_evidence` và sự kiện vào `learning_events` (chuẩn bị dữ liệu cho Adaptive Engine Phase 5).
-    - Tự động cập nhật trạng thái nhiệm vụ hàng ngày (`daily_plan_tasks`: `pending` -> `in_progress` -> `completed` / `skipped`).
-    - Tự động tính toán lại trạng thái kế hoạch ngày (`daily_plans`: `planned` -> `in_progress` -> `partially_completed` / `completed`).
-    - Progressive Learning Path Unlocking: Khi hoàn thành bài tập của topic trong Learning Path, topic đó tự động chuyển sang `completed` và mở khóa topic kế tiếp trong module.
-  - **Task Management (Reorder & Skip)**:
-    - Cho phép đổi thứ tự nhiệm vụ học trong ngày (`reorderDailyTasksAction`) với kiểm tra toàn vẹn danh sách task IDs.
-    - Cho phép bỏ qua nhiệm vụ (`skipDailyTaskAction`) kèm lý do người dùng ghi nhận vào database.
-- **UI Integration**:
-  - **Navigation Bar**: Thêm mục "📅 Kế hoạch ngày" (`/daily-plan`) trên toàn hệ thống.
-  - **Dashboard**: Thêm thẻ tiêu điểm kế hoạch học tập hôm nay (Today's Daily Plan) hiển thị số phút mục tiêu, tiến độ hoàn thành, số nhiệm vụ còn lại và nút truy cập nhanh.
-  - **Trang `/daily-plan`**: Giao diện tổng quan kế hoạch ngày, thanh tiến độ học trực quan, danh sách thẻ nhiệm vụ (skill, thời lượng, trạng thái, nhãn nội dung), nút di chuyển thứ tự lên/xuống, nút bỏ qua và modal thông tin minh bạch cho chủ đề `planned_curriculum`.
-  - **Trang `/daily-plan/practice/[taskId]`**: Trình học tập và luyện tập 3 bước (Học lý thuyết/từ vựng -> Làm bài tập tương tác -> Nhận điểm số, phản hồi sư phạm và phân tích chi tiết từng câu).
+- **Kiến trúc**: Modular Monolith (`src/modules/auth`, `src/modules/profile`, `src/modules/onboarding`, `src/modules/assessment`, `src/modules/learning-path`, `src/modules/daily-plan`, `src/modules/ai-tutor`, `src/lib/ai`).
+- **Phase 5 — AI Tutor Implementation**:
+  - **AI Provider Abstraction (`src/lib/ai/`)**:
+    - Chuẩn hóa giao diện `AIProvider` hỗ trợ cả text streaming và structured JSON generation.
+    - Hỗ trợ phân tầng tự động (`getAIProvider()`):
+      1. Google Gemini 1.5 Flash (`src/lib/ai/providers/gemini.ts`) khi có `GEMINI_API_KEY`.
+      2. OpenAI GPT-4o-mini (`src/lib/ai/providers/openai.ts`) khi có `OPENAI_API_KEY`.
+      3. Mock Provider (`src/lib/ai/providers/mock.ts`) sinh phản hồi sư phạm xác định cho môi trường offline và automated tests.
+    - Tích hợp timeout an toàn qua `AbortController` (10s) chống treo server.
+  - **Prompt Versioning & Pedagogical Tone Adaptation (`src/modules/ai-tutor/prompts.ts`)**:
+    - Prompt version xác định: `tutor_exercise_explanation_v1`.
+    - Thích ứng giọng điệu sư phạm theo trình độ CEFR thực tế của người học:
+      - A1/A2: Từ vựng giản dị, dịch nghĩa chi tiết, khích lệ nhẹ nhàng.
+      - B1/B2: Đi sâu vào sắc thái nghĩa, collocations, phân biệt các cấu trúc tương đồng.
+    - Gắn kết với mục tiêu chính của học viên (TOEIC, Giao tiếp công sở, Đời sống hàng ngày).
+    - Cấu trúc đầu ra bắt buộc theo Zod Schema (`AITutorExplanationSchema`): Lời giải thích, Tóm tắt quy tắc ngữ pháp/từ vựng, 2 ví dụ minh họa song ngữ Anh - Việt, Gợi ý ôn tập tiếp theo.
+  - **Anti-IDOR & Zero-Trust Exercise Context (`src/modules/ai-tutor/context.ts`)**:
+    - Xác thực quyền sở hữu bài nộp: Chỉ chủ sở hữu bài nộp mới được phép yêu cầu AI giải thích.
+    - Trích xuất dữ liệu câu hỏi và đáp án trực tiếp từ kết quả chấm thẩm quyền của server trong `practice_submissions`.
+    - Client không thể làm sai lệch ngữ cảnh câu hỏi hoặc tự nhận đáp án đúng/sai.
+  - **Server-Side Rate Limiter (`src/lib/ai/rate-limiter.ts`)**:
+    - Giới hạn 10 yêu cầu / 5 phút trên mỗi `user_id`.
+    - Thực thi qua stored procedure nguyên tử `check_and_increment_ai_rate_limit` trên PostgreSQL, kèm cơ chế tự phục hồi In-Memory Rate Limiter khi database RPC chưa sẵn sàng.
+    - Trả về mã lỗi `RATE_LIMITED` kèm `retryAfterSeconds`.
+  - **Usage Telemetry & Secret Sanitization (`src/lib/ai/usage-logger.ts`)**:
+    - Ghi nhận chi tiết vào `public.ai_generations`: `user_id`, `provider`, `model`, `prompt_version`, `status`, `latency_ms`, `token_count`, `metadata`.
+    - Bảo mật tuyệt đối: Không lưu trữ API keys, Authorization headers hay thông tin nhạy cảm vào database.
+  - **Resilient Degradation & Non-Destructive Invariance**:
+    - Khi AI Provider lỗi/timeout, hệ thống tự động trả về phản hồi sư phạm chuẩn mực dự phòng (fallback) trích xuất từ câu hỏi và lời giải thích của giáo trình.
+    - **Tính bất biến**: AI Tutor hoạt động 100% read-only đối với điểm số, tiến độ lộ trình và hồ sơ người học; không bao giờ xóa hay làm mất bài nộp đã lưu.
+  - **UI Integration (`src/app/(app)/daily-plan/practice/[taskId]/practice-session-view.tsx`)**:
+    - Tích hợp nút "🤖 Hỏi AI Tutor phân tích sâu hơn câu này" vào từng thẻ câu hỏi ở màn hình kết quả luyện tập.
+    - Giao diện phản hồi trực quan: Loading spinner, hiển thị thẻ phân tích chuyên sâu, quy tắc cốt lõi, ví dụ mở rộng song ngữ, gợi ý ôn tập và form đặt câu hỏi thắc mắc thêm.
+    - Hiển thị văn bản đáp án thật của người học và đáp án chuẩn thay vì mã `opt_` thô.
 
 ---
 
@@ -45,43 +50,45 @@
 - **Phase 1**: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql) — **Đã áp dụng trên Supabase remote**.
 - **Phase 2 (Cơ sở & Hardening)**: [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) & [supabase/migrations/20261014_phase_2_security_hardening.sql](file:///d:/AI_Product_Development/supabase/migrations/20261014_phase_2_security_hardening.sql) — **Đã áp dụng trên Supabase remote**.
 - **Phase 3 (Learning Path)**: [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql) — **Đã hoàn thiện mã nguồn, chờ người dùng áp dụng trên remote qua Supabase SQL Editor**.
-- **Phase 4 (Daily Plan & Practice — Migration mới)**: [supabase/migrations/20261016_phase_4_daily_plan_practice.sql](file:///d:/AI_Product_Development/supabase/migrations/20261016_phase_4_daily_plan_practice.sql)
+- **Phase 4 (Daily Plan & Practice)**: [supabase/migrations/20261016_phase_4_daily_plan_practice.sql](file:///d:/AI_Product_Development/supabase/migrations/20261016_phase_4_daily_plan_practice.sql) — **Đã hoàn thiện mã nguồn, chờ người dùng áp dụng trên remote qua Supabase SQL Editor**.
+- **Phase 5 (AI Tutor — Migration mới)**: [supabase/migrations/20261017_phase_5_ai_tutor.sql](file:///d:/AI_Product_Development/supabase/migrations/20261017_phase_5_ai_tutor.sql)
   - **Trạng thái**: **ĐÃ TẠO VÀ HOÀN TẤT AUDIT BẢO MẬT TRONG REPOSITORY. CHƯA CHẠY TRÊN SUPABASE REMOTE.**
   - **Bảng mới tạo**:
-    - `public.content_items`: Kho bài học lý thuyết/từ vựng/ngữ pháp có cờ `is_published` và `content_status`.
-    - `public.practice_exercises`: Danh sách bài tập, câu hỏi, các lựa chọn đáp án (JSONB).
-    - `public.practice_exercise_answers`: **SERVER-ONLY PRIVATE TABLE**. Lưu đáp án đúng và lời giải thích. Không cấp quyền SELECT cho authenticated, triệt tiêu nguy cơ lộ đề bài qua F12 Network tab.
-    - `public.daily_plans`: Kế hoạch ngày của từng người học theo ngày (`user_id`, `plan_date`, composite unique constraint `uq_user_daily_plan_date`).
-    - `public.daily_plan_tasks`: Các nhiệm vụ học cụ thể trong ngày (`daily_plan_id`, `position`, `status`, `estimated_minutes`, `activity_type`, `skill`).
-    - `public.practice_submissions`: Lịch sử nộp bài luyện tập, điểm số, tỷ lệ chính xác, chi tiết câu trả lời.
-    - `public.learning_events` & `public.learning_evidence`: Ghi nhận sự kiện học tập và bằng chứng đánh giá năng lực theo từng kỹ năng.
+    - `public.ai_generations`: Lưu lịch sử gọi AI, đo độ trễ, số token, version prompt và telemetry lỗi.
+    - `public.ai_rate_limits`: Lưu số lần gọi trong cửa sổ 5 phút của từng user.
+  - **Stored Procedure**:
+    - `public.check_and_increment_ai_rate_limit(p_user_id, p_window_start, p_max_requests)` với `SECURITY DEFINER SET search_path = ''` và kiểm tra tham số phòng thủ.
+    - `public.cleanup_expired_ai_rate_limits(p_older_than)` quy trình dọn dẹp các cửa sổ hết hạn định kỳ.
   - **Bảo mật & RLS**:
-    - Áp dụng Least Privilege: Thu hồi toàn bộ quyền INSERT/UPDATE/DELETE trực tiếp từ role `authenticated` trên các bảng kế hoạch và bài tập.
-    - Toàn bộ thao tác ghi, chấm điểm và chuyển trạng thái được thực hiện an toàn qua Server Actions / Admin Client.
-    - RPC functions chạy với `SECURITY DEFINER SET search_path = ''` và schema-qualified identifiers (`public.*`).
+    - RLS được bật và bắt buộc (FORCE ROW LEVEL SECURITY).
+    - `authenticated` chỉ được phép SELECT lịch sử của chính mình (`auth.uid() = user_id`).
+    - Thu hồi toàn bộ quyền INSERT/UPDATE/DELETE trực tiếp từ client trên các bảng AI.
+    - **Quyền EXECUTE của các stored procedure AI Tutor được thu hồi hoàn toàn khỏi public/anon/authenticated và chỉ cấp duy nhất cho `service_role`** (triệt tiêu nguy cơ DoS quota từ client).
 
 ---
 
 ## 3. Trạng thái kiểm thử
-- `npm test`: Exit code 0 (**68/68 tests passed** across 6 suites).
+- `npm test`: Exit code 0 (**96/96 tests passed** across 7 suites).
   - Assessment Core & Scoring Engine: 12 tests.
   - Assessment Lifecycle & IDOR: 18 tests.
   - Phase 3 Generator & Weakness Detection: 8 tests.
   - Phase 3 Lifecycle, Security & Concurrency: 18 tests.
-  - Phase 4 Daily Plan Generator Suite: 5 tests (mapping ngày trong tuần, quản lý ngân sách thời gian, ưu tiên topic mở khóa, minh bạch nội dung, tính xác định 100%).
-  - Phase 4 Practice Scoring & Lifecycle Engine: 7 subtests (chấm điểm tuyệt đối 100%, chấm điểm từng phần có phản hồi, xử lý bỏ trống câu trả lời, không phân biệt hoa thường, tái sắp xếp task hợp lệ & phát hiện ID giả mạo, cập nhật tự động trạng thái kế hoạch).
+  - Phase 4 Daily Plan Generator Suite: 5 tests.
+  - Phase 4 Practice Scoring & Lifecycle Engine: 7 subtests.
+  - **Phase 5 AI Tutor & Lifecycle Suite (`tests/ai-tutor/ai_tutor_and_lifecycle.test.mjs`)**: 28 tests (Prompt versioning, CEFR level adaptation, Zod runtime validation, Mock provider, Provider hierarchy fallback, Server-side rate limiter, Anti-IDOR, Secret protection, Resilient fallback, Non-destructive invariance, Concurrency bursts, Deep secret redaction, RPC permission hardening, Retention cleanup).
 - `npx tsc --noEmit`: Exit code 0 (TypeScript strict mode hoàn toàn sạch lỗi).
 - `npm run lint`: Exit code 0 ("No ESLint warnings or errors").
-- `npm run build`: Exit code 0 (Next.js production build thành công 12/12 static & dynamic routes bao gồm `/daily-plan` và `/daily-plan/practice/[taskId]`).
 - **Phân định rõ ràng các cấp độ kiểm thử**:
-  - *Unit & Logic tests*: Đã kiểm chứng 100% thuật toán sinh kế hoạch ngày, chấm điểm server-side, tính toán tiến độ, kiểm soát thứ tự nhiệm vụ và kiểm soát lỗi đầu vào.
-  - *Kiểm thử trên Supabase Remote*: Migration Phase 3 và Phase 4 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Các ràng buộc DB, RLS policies và triggers sẽ được kích hoạt khi người dùng chạy tuần tự 2 file migration qua Supabase SQL Editor.
+  - *Automated unit & integration tests*: Đã kiểm chứng 100% logic AI Tutor, prompt registry, validation, rate limiting, anti-IDOR và failure handling.
+  - *Kiểm thử trên Supabase Remote*: Migration Phase 3, Phase 4 và Phase 5 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Cần người dùng chạy tuần tự qua Supabase SQL Editor.
 
 ---
 
 ## 4. Việc cần làm tiếp theo (Next Action)
-- Người dùng thực hiện chạy 2 migration trên Supabase Dashboard -> SQL Editor theo thứ tự:
+- Người dùng thực hiện chạy 3 migration trên Supabase Dashboard -> SQL Editor theo thứ tự:
   1. `supabase/migrations/20261015_phase_3_learning_path.sql`
   2. `supabase/migrations/20261016_phase_4_daily_plan_practice.sql`
-- Tiến hành trải nghiệm thực tế luồng: Đăng nhập -> Xem Lộ trình -> Kích hoạt Lộ trình -> Xem Kế hoạch ngày -> Luyện tập bài tập Từ vựng / Ngữ pháp -> Xem kết quả phản hồi sư phạm -> Xem tiến độ cập nhật trên Dashboard.
-- Sẵn sàng chuyển tiếp sang **Phase 5 — Adaptive Engine & Spaced Repetition (SRS)**.
+  3. `supabase/migrations/20261017_phase_5_ai_tutor.sql`
+- Cấu hình biến môi trường server nếu dùng AI thật: `GEMINI_API_KEY` (hoặc `OPENAI_API_KEY`). Nếu không cấu hình, hệ thống sẽ tự động dùng MockAIProvider cho trải nghiệm mượt mà không crash.
+- Sẵn sàng chuyển tiếp sang **Phase 6 — Vocabulary Notebook & Spaced Repetition (SRS)**.
+

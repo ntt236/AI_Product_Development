@@ -9,6 +9,8 @@ import type {
   PracticeSubmissionResult,
 } from '@/modules/daily-plan/types';
 import { submitPracticeAction } from '@/modules/daily-plan/actions';
+import { getAITutorExplanationAction } from '@/modules/ai-tutor/actions';
+import type { AITutorExplanation } from '@/modules/ai-tutor/types';
 
 interface PracticeSessionViewProps {
   task: {
@@ -86,10 +88,55 @@ export function PracticeSessionView({
     });
   };
 
+  const [aiTutorExplanations, setAiTutorExplanations] = useState<Record<string, AITutorExplanation>>({});
+  const [loadingTutorId, setLoadingTutorId] = useState<string | null>(null);
+  const [aiTutorErrors, setAiTutorErrors] = useState<Record<string, string>>({});
+  const [followUpTexts, setFollowUpTexts] = useState<Record<string, string>>({});
+
+  const handleAskAITutor = async (exerciseId: string, customQuery?: string) => {
+    if (!submissionResult?.submission_id || loadingTutorId === exerciseId) return;
+
+    setLoadingTutorId(exerciseId);
+    setAiTutorErrors((prev) => ({ ...prev, [exerciseId]: '' }));
+
+    try {
+      const res = await getAITutorExplanationAction({
+        submissionId: submissionResult.submission_id,
+        exerciseId,
+        userQuery: customQuery,
+      });
+
+      if (!res.success || !res.explanation) {
+        setAiTutorErrors((prev) => ({
+          ...prev,
+          [exerciseId]: res.error || 'Không thể kết nối với AI Tutor lúc này.',
+        }));
+      } else {
+        setAiTutorExplanations((prev) => ({
+          ...prev,
+          [exerciseId]: res.explanation!,
+        }));
+        if (customQuery) {
+          setFollowUpTexts((prev) => ({ ...prev, [exerciseId]: '' }));
+        }
+      }
+    } catch (err: unknown) {
+      setAiTutorErrors((prev) => ({
+        ...prev,
+        [exerciseId]: err instanceof Error ? err.message : 'Lỗi hệ thống khi gọi AI Tutor.',
+      }));
+    } finally {
+      setLoadingTutorId(null);
+    }
+  };
+
   const handleResetForRetry = () => {
     setSelectedAnswers({});
     setSubmissionResult(null);
     setSecondsSpent(0);
+    setAiTutorExplanations({});
+    setAiTutorErrors({});
+    setFollowUpTexts({});
     setStep('practice');
   };
 
@@ -611,6 +658,178 @@ export function PracticeSessionView({
                     }}
                   >
                     💡 <strong>Giải thích chi tiết:</strong> {item.explanation}
+                  </div>
+
+                  {/* AI Tutor Section */}
+                  <div style={{ marginTop: '0.85rem' }}>
+                    {aiTutorExplanations[item.exercise_id] ? (
+                      <div
+                        style={{
+                          padding: '1.25rem',
+                          borderRadius: '10px',
+                          background: 'rgba(56, 189, 248, 0.05)',
+                          border: '1px solid rgba(56, 189, 248, 0.25)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            🤖 AI Tutor • Phân tích chuyên sâu
+                          </span>
+                          <Badge variant="info">Trình độ {contentItem.level.toUpperCase()}</Badge>
+                        </div>
+
+                        {/* Explanation */}
+                        <div style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-primary)' }}>
+                          {aiTutorExplanations[item.exercise_id].explanation}
+                        </div>
+
+                        {/* Rule summary */}
+                        <div
+                          style={{
+                            padding: '0.65rem 0.85rem',
+                            borderRadius: '6px',
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            borderLeft: '3px solid #34d399',
+                            fontSize: '0.85rem',
+                            color: '#e2e8f0',
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          📐 <strong>Quy tắc cần nhớ:</strong> {aiTutorExplanations[item.exercise_id].rule_summary}
+                        </div>
+
+                        {/* Examples */}
+                        {aiTutorExplanations[item.exercise_id].examples?.length > 0 && (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                            <strong style={{ color: 'var(--accent-cyan)' }}>Ví dụ mở rộng:</strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.35rem' }}>
+                              {aiTutorExplanations[item.exercise_id].examples.map((ex, exIdx) => (
+                                <div key={exIdx} style={{ paddingLeft: '0.5rem', borderLeft: '2px solid rgba(56, 189, 248, 0.2)' }}>
+                                  • {ex}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Next step tip */}
+                        <div style={{ fontSize: '0.85rem', color: '#fbbf24', fontStyle: 'italic' }}>
+                          💡 <strong>Gợi ý ôn tập:</strong> {aiTutorExplanations[item.exercise_id].next_step_tip}
+                        </div>
+
+                        {/* Follow-up question input */}
+                        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Hỏi thêm AI Tutor về câu này..."
+                            value={followUpTexts[item.exercise_id] || ''}
+                            onChange={(e) =>
+                              setFollowUpTexts((prev) => ({ ...prev, [item.exercise_id]: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (followUpTexts[item.exercise_id] || '').trim()) {
+                                handleAskAITutor(item.exercise_id, (followUpTexts[item.exercise_id] || '').trim());
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '0.5rem 0.85rem',
+                              borderRadius: '6px',
+                              background: 'rgba(0, 0, 0, 0.2)',
+                              border: '1px solid var(--border-color)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.85rem',
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAskAITutor(item.exercise_id, (followUpTexts[item.exercise_id] || '').trim())
+                            }
+                            disabled={loadingTutorId === item.exercise_id || !(followUpTexts[item.exercise_id] || '').trim()}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                          >
+                            {loadingTutorId === item.exercise_id ? 'Đang gửi...' : 'Hỏi tiếp'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : loadingTutorId === item.exercise_id ? (
+                      <div
+                        style={{
+                          padding: '0.85rem 1rem',
+                          borderRadius: '8px',
+                          background: 'rgba(56, 189, 248, 0.06)',
+                          border: '1px dashed rgba(56, 189, 248, 0.3)',
+                          fontSize: '0.85rem',
+                          color: 'var(--accent-cyan)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                        }}
+                      >
+                        <span>🤖 AI Tutor đang phân tích câu hỏi theo trình độ {contentItem.level.toUpperCase()}...</span>
+                      </div>
+                    ) : (
+                      <div>
+                        {aiTutorErrors[item.exercise_id] && (
+                          <div
+                            style={{
+                              padding: '0.65rem 0.85rem',
+                              borderRadius: '6px',
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#f87171',
+                              fontSize: '0.85rem',
+                              marginBottom: '0.5rem',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span>⚠️ {aiTutorErrors[item.exercise_id]}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleAskAITutor(item.exercise_id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--accent-cyan)',
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                fontSize: '0.85rem',
+                              }}
+                            >
+                              Thử lại
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleAskAITutor(item.exercise_id)}
+                          style={{
+                            background: 'rgba(56, 189, 248, 0.08)',
+                            border: '1px solid rgba(56, 189, 248, 0.25)',
+                            borderRadius: '8px',
+                            padding: '0.55rem 1rem',
+                            color: 'var(--accent-cyan)',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.45rem',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          🤖 Hỏi AI Tutor phân tích sâu hơn câu này
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

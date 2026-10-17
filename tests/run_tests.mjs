@@ -21,7 +21,7 @@ const files = findTestFiles(join(process.cwd(), 'tests'));
 
 console.log(`Chạy ${files.length} test suite(s)...`);
 
-const result = spawnSync('npx', ['tsx', '--test', ...files], {
+const result = spawnSync('npx', ['tsx', '--conditions=react-server', '--test', ...files], {
   stdio: 'inherit',
   shell: true,
 });
