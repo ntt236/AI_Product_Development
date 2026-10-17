@@ -8,6 +8,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { GOAL_OPTIONS } from '@/modules/onboarding/constants';
 import { getUserLatestAssessmentResult } from '@/modules/assessment/services';
 import { getUserLearningPath } from '@/modules/learning-path/services';
+import { getDailyPlan } from '@/modules/daily-plan/services';
 
 export const metadata = {
   title: 'Dashboard — AI English Learning Platform',
@@ -52,6 +53,9 @@ export default async function DashboardPage() {
   const learningPathData = await getUserLearningPath(user.id);
   const currentPath = learningPathData.path;
 
+  // Fetch today's daily plan (Phase 4)
+  const todayPlan = await getDailyPlan(user.id);
+
   const primaryGoal = goals?.find((g) => g.priority === 'primary');
   const secondaryGoals = goals?.filter((g) => g.priority === 'secondary') || [];
 
@@ -86,7 +90,7 @@ export default async function DashboardPage() {
       />
 
       {/* Main Dashboard Hero */}
-      <div className="header" style={{ textAlign: 'left', marginBottom: '2.5rem' }}>
+      <div className="header" style={{ textAlign: 'left', marginBottom: '2rem' }}>
         <div className="hero-badge">
           <span>●</span>
           <span>Learner Workspace</span>
@@ -97,6 +101,92 @@ export default async function DashboardPage() {
         <p className="subtitle" style={{ margin: '0' }}>
           Thông tin mục tiêu và thiết lập cá nhân hóa cho hành trình chinh phục tiếng Anh.
         </p>
+      </div>
+
+      {/* Phase 4: Today's Learning Plan Card */}
+      <div
+        className="card"
+        style={{
+          marginBottom: '2rem',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.35)',
+          borderRadius: '16px',
+          padding: '1.75rem',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '1.4rem' }}>📅</span>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
+                Kế hoạch học tập hôm nay (Daily Plan)
+              </h3>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+              {todayPlan
+                ? `Mục tiêu hôm nay: ${todayPlan.target_minutes} phút • Đã hoàn thành ${todayPlan.completed_minutes} phút`
+                : 'Khởi tạo bài học và bài tập hôm nay theo lộ trình học của bạn.'}
+            </p>
+          </div>
+
+          <Link href="/daily-plan" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span>🚀 {todayPlan ? 'Vào Kế hoạch ngày' : 'Bắt đầu học ngay'}</span>
+          </Link>
+        </div>
+
+        {todayPlan && (
+          <div>
+            {/* Progress mini bar */}
+            <div style={{ margin: '1rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                <span>
+                  Tiến độ nhiệm vụ: {todayPlan.tasks?.filter((t) => t.status === 'completed').length || 0} /{' '}
+                  {todayPlan.tasks?.length || 0} hoàn thành
+                </span>
+                <span>
+                  {todayPlan.target_minutes > 0
+                    ? Math.min(100, Math.round((todayPlan.completed_minutes / todayPlan.target_minutes) * 100))
+                    : 0}
+                  %
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${todayPlan.target_minutes > 0 ? Math.min(100, Math.round((todayPlan.completed_minutes / todayPlan.target_minutes) * 100)) : 0}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, var(--accent-cyan), #10b981)',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Tasks preview pills */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+              {todayPlan.tasks?.map((t) => (
+                <span
+                  key={t.id}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '8px',
+                    background: t.status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                    border: t.status === 'completed' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--border-color)',
+                    fontSize: '0.85rem',
+                    color: t.status === 'completed' ? '#34d399' : 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <span>{t.status === 'completed' ? '✓' : '○'}</span>
+                  <span>{t.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({t.estimated_minutes}p)</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Phase 3: Learning Path Spotlight Banner */}

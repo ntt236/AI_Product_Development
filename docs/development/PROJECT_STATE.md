@@ -1,71 +1,87 @@
 # Project State — AI English Learning Platform
 
-**Last Updated:** 2026-10-15  
-**Active Branch:** `phase-3`  
-**Current Phase:** Phase 3 — Learner Profile & Adaptive Learning Path (Code, UI, Migration & Tests Complete)  
-**Next Phase:** Phase 4 — Content Delivery, Daily Practice & SRS Engine  
+**Last Updated:** 2026-10-16  
+**Active Branch:** `phase-4`  
+**Current Phase:** Phase 4 — Daily Plan + Practice (Code, UI, Content Seeding, Server Scoring, Migration & Tests Complete)  
+**Next Phase:** Phase 5 — Adaptive Engine & Spaced Repetition (SRS)  
 
 ---
 
 ## 1. Trạng thái mã nguồn & kiến trúc
 - **Framework**: Next.js 15.5.27 (App Router), React 19, TypeScript strict mode.
-- **Kiến trúc**: Modular Monolith (`src/modules/auth`, `src/modules/profile`, `src/modules/onboarding`, `src/modules/assessment`, `src/modules/learning-path`).
-- **Phase 3 — Learner Profile & Adaptive Learning Path**:
-  - **Learner Profile Synthesis**: `getLearnerProfileSummary()` tổng hợp đa nguồn từ `profiles`, `goals`, `learner_preferences`, và `learner_skill_profiles`.
-  - **Weakness Detection**: Logic rule-based thuần túy tính toán `Priority Score = (1 - ability_score) * goal_weight` với quy tắc tie-breaking xác định (Vocabulary -> Grammar -> Listening -> Reading).
-  - **Khung 3 Milestones Thích ứng**:
-    - Milestone 1: Củng cố kỹ năng cốt lõi / Điểm yếu ưu tiên.
-    - Milestone 2: Phát triển năng lực phục vụ Primary Goal (TOEIC / Giao tiếp / Nền tảng).
-    - Milestone 3: Luyện tập tích hợp và đánh giá tiến độ.
-  - **Starter Path Fallback**: Nếu học viên chưa làm Placement Test, hệ thống sinh lộ trình tiêu chuẩn theo mục tiêu và hiển thị thông báo khuyến nghị làm bài test để cá nhân hóa sâu hơn.
-  - **Dynamic Workload**: Tính toán tự động tổng thời lượng và số tuần dự kiến dựa trên `daily_minutes` và `preferred_study_days` của người học.
-  - **User Sovereignty & State Machine**:
-    - Lộ trình mới luôn ở trạng thái `proposed`.
-    - Người học có toàn quyền `Accept`, `Reject`, `Pause`, `Resume` và `Customize`.
-    - Trạng thái `rejected` và `completed` là terminal state, không thể tự kích hoạt lại.
-    - Invariant: Tối đa 1 lộ trình `active` cho mỗi user. Khi kích hoạt path mới, path active cũ tự động chuyển sang `archived`.
-  - **Versioning & Optimistic Concurrency**:
-    - Mọi thay đổi cấu trúc đều yêu cầu `expected_version` khớp với `current_version`.
-    - Tự động tạo bản ghi bất biến (immutable snapshot) trong `learning_path_versions` với `created_by: 'user' | 'system'`.
-  - **AI Anti-Overwrite**: Thuật toán sinh lộ trình hoàn toàn là deterministic rule-based. AI trong tương lai chỉ đóng vai trò đề xuất / giải thích và không thể tự ý ghi đè lựa chọn của người dùng.
-  - **Minh bạch nội dung (`planned_curriculum`)**: Mọi topic trong Phase 3 đều được đánh dấu rõ ràng `planned_curriculum` kèm thông báo bài học sẽ sẵn sàng trong Phase 4, ngăn chặn tạo trải nghiệm giả lập.
+- **Kiến trúc**: Modular Monolith (`src/modules/auth`, `src/modules/profile`, `src/modules/onboarding`, `src/modules/assessment`, `src/modules/learning-path`, `src/modules/daily-plan`).
+- **Phase 4 — Daily Plan + Practice Implementation**:
+  - **Deterministic Daily Plan Generator (`src/modules/daily-plan/generator.ts`)**:
+    - Phân bổ ngân sách thời gian học (`daily_minutes`) chính xác, không tạo nhiệm vụ vượt quá ngân sách.
+    - Nhận diện ngày học theo lịch (`preferred_study_days`) hoặc ngày học linh hoạt ngoài lịch (`flexible_catchup`).
+    - Ưu tiên các topic đã mở khóa (`status = 'available'`) từ Learning Path đang kích hoạt (`status = 'active'`).
+    - Khớp chính xác với kho bài học thực nghiệm (`content_items`), gán nhãn trung thực `available` (có bài tập tương tác) hoặc `planned_curriculum` (chương trình dự kiến, bài tập sắp ra mắt).
+    - Hoàn toàn xác định (deterministic rule-based): Cùng dữ liệu đầu vào luôn sinh ra cùng kế hoạch 100%.
+  - **Foundational Curated Content & Anti-Fake Rules**:
+    - Seed dữ liệu bài học thực tế, kiểm chứng chất lượng cao: Từ vựng sinh hoạt hàng ngày (`vocab-daily-routine` với 6 từ vựng, phiên âm IPA, nghĩa tiếng Việt, câu ví dụ) và Ngữ pháp Thì hiện tại đơn (`grammar-present-simple` với quy tắc, công thức, cách chia động từ, ví dụ).
+    - 10 bài tập trắc nghiệm thực tế, có phương án lựa chọn và lời giải thích sư phạm chi tiết.
+    - Tuyệt đối không tạo bài tập giả lập, không tạo điểm số ảo, không nhận vơ bài nghe khi chỉ có văn bản/transcript.
+  - **Server-Side Scoring & Zero-Trust Answer Protection (`src/modules/daily-plan/services.ts`)**:
+    - Đáp án đúng (`practice_exercise_answers`) được lưu trữ tại bảng riêng biệt, **KHÔNG CẤP QUYỀN SELECT CHO AUTHENTICATED ROLE**. Trình duyệt client không bao giờ nhận được đáp án trước khi nộp bài.
+    - Server Action `submitPracticeAction()` xác thực runtime bằng Zod, chỉ server tính điểm, đánh giá đúng/sai từng câu và trả về phản hồi/giải thích sau khi đã chấm.
+  - **Evidence, Event Persistence & Progress Lifecycle**:
+    - Ghi nhận chi tiết bài làm vào `practice_submissions` (điểm số, tỷ lệ % đúng, thời gian làm bài, chi tiết từng câu).
+    - Tự động ghi nhận bằng chứng học tập vào `learning_evidence` và sự kiện vào `learning_events` (chuẩn bị dữ liệu cho Adaptive Engine Phase 5).
+    - Tự động cập nhật trạng thái nhiệm vụ hàng ngày (`daily_plan_tasks`: `pending` -> `in_progress` -> `completed` / `skipped`).
+    - Tự động tính toán lại trạng thái kế hoạch ngày (`daily_plans`: `planned` -> `in_progress` -> `partially_completed` / `completed`).
+    - Progressive Learning Path Unlocking: Khi hoàn thành bài tập của topic trong Learning Path, topic đó tự động chuyển sang `completed` và mở khóa topic kế tiếp trong module.
+  - **Task Management (Reorder & Skip)**:
+    - Cho phép đổi thứ tự nhiệm vụ học trong ngày (`reorderDailyTasksAction`) với kiểm tra toàn vẹn danh sách task IDs.
+    - Cho phép bỏ qua nhiệm vụ (`skipDailyTaskAction`) kèm lý do người dùng ghi nhận vào database.
 - **UI Integration**:
-  - Navigation Bar: Thêm mục "🗺️ Lộ trình học" (`/learning-path`) trên toàn hệ thống.
-  - Dashboard: Thêm thẻ tiêu điểm Lộ trình học cá nhân hóa hiển thị động theo trạng thái (`proposed`, `active`, `paused`, `not_assessed`).
-  - Trang `/learning-path`: Giao diện chi tiết hỗ trợ timeline 3 milestones, tab phân tích hồ sơ & điểm yếu, tab lịch sử phiên bản snapshot, chế độ tùy chỉnh cấu trúc và modal thông báo planned curriculum.
+  - **Navigation Bar**: Thêm mục "📅 Kế hoạch ngày" (`/daily-plan`) trên toàn hệ thống.
+  - **Dashboard**: Thêm thẻ tiêu điểm kế hoạch học tập hôm nay (Today's Daily Plan) hiển thị số phút mục tiêu, tiến độ hoàn thành, số nhiệm vụ còn lại và nút truy cập nhanh.
+  - **Trang `/daily-plan`**: Giao diện tổng quan kế hoạch ngày, thanh tiến độ học trực quan, danh sách thẻ nhiệm vụ (skill, thời lượng, trạng thái, nhãn nội dung), nút di chuyển thứ tự lên/xuống, nút bỏ qua và modal thông tin minh bạch cho chủ đề `planned_curriculum`.
+  - **Trang `/daily-plan/practice/[taskId]`**: Trình học tập và luyện tập 3 bước (Học lý thuyết/từ vựng -> Làm bài tập tương tác -> Nhận điểm số, phản hồi sư phạm và phân tích chi tiết từng câu).
 
 ---
 
 ## 2. Trạng thái Database Schema & Migration
 - **Phase 1**: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql) — **Đã áp dụng trên Supabase remote**.
 - **Phase 2 (Cơ sở & Hardening)**: [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) & [supabase/migrations/20261014_phase_2_security_hardening.sql](file:///d:/AI_Product_Development/supabase/migrations/20261014_phase_2_security_hardening.sql) — **Đã áp dụng trên Supabase remote**.
-- **Phase 3 (Migration mới)**: [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql)
-  - **Trạng thái**: **ĐÃ TẠO VÀ HOÀN TẤT AUDIT SQL INTEGRITY & SECURITY HARDENING TRONG REPOSITORY. CHƯA CHẠY TRÊN SUPABASE REMOTE.**
-  - **Bảo vệ toàn vẹn & Hardening**:
-    - `SECURITY DEFINER SET search_path = ''`: Toàn bộ helper, trigger và RPC functions được thiết lập search path rỗng với schema-qualified identifiers (`public.*`, `auth.*`), triệt tiêu rủi ro search-path hijacking. Các parser syntax constructs (`COALESCE`, `NULLIF`, `TRIM`) và system functions (`now()`, `jsonb_build_object()`, `jsonb_agg()`, `array_length()`, `unnest()`, `count()`) tuân thủ cú pháp chuẩn PostgreSQL không bị schema-qualify sai quy cách.
-    - Check Constraint `estimated_minutes`: Bảng `public.learning_path_items` thiết lập constraint `check ((item_type = 'topic' and estimated_minutes between 5 and 180) or (item_type in ('milestone', 'module') and estimated_minutes >= 0))`, hoàn toàn đồng bộ với logic khởi tạo dữ liệu trong `services.ts` (Milestone & Module mang 0 phút, Topic mang thời lượng học cụ thể 5–180 phút).
-    - Sibling-Group Contract: `save_learning_path_customization` bắt buộc mảng `p_reordered_item_ids` đại diện cho một nhóm đồng cấp hoàn chỉnh (`parent_id` và `item_type` đồng nhất). Cấm trùng lặp, cấm sắp xếp chéo cha, cấm bỏ sót hạng mục. Mọi biến PL/pgSQL đều được khai báo đầy đủ (`v_found_count`, `v_distinct_count`, `v_total_sibling_count`, v.v.).
-    - Deterministic Hierarchical Snapshot: Snapshot JSON bất biến được xây dựng trực tiếp từ database rows theo thứ tự phân cấp Milestone -> Module -> Topic (`position asc`), loại trừ rủi ro nhận JSON giả mạo từ client.
-    - Race condition serialization: `activate_learning_path` thực hiện khóa dòng người dùng (`PERFORM 1 FROM public.learning_paths WHERE user_id = v_caller_id FOR UPDATE`), đồng thời bẫy lỗi `unique_violation` từ partial unique index `uq_user_single_active_path`.
-    - Progressive Unlocking: Kích hoạt đồng thời Milestone 1, Module 1, và Topic 1 sang `available`; các hạng mục kế tiếp duy trì `locked`.
-    - Least Privilege RLS: Thu hồi INSERT/UPDATE/DELETE từ `authenticated` trên cả 3 bảng; client chỉ có quyền SELECT; thao tác ghi qua Server Actions và RPCs.
-    - Quyền Function: `REVOKE EXECUTE FROM public, anon` trên toàn bộ functions; chỉ cấp quyền cần thiết cho `authenticated` và `service_role`.
+- **Phase 3 (Learning Path)**: [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql) — **Đã hoàn thiện mã nguồn, chờ người dùng áp dụng trên remote qua Supabase SQL Editor**.
+- **Phase 4 (Daily Plan & Practice — Migration mới)**: [supabase/migrations/20261016_phase_4_daily_plan_practice.sql](file:///d:/AI_Product_Development/supabase/migrations/20261016_phase_4_daily_plan_practice.sql)
+  - **Trạng thái**: **ĐÃ TẠO VÀ HOÀN TẤT AUDIT BẢO MẬT TRONG REPOSITORY. CHƯA CHẠY TRÊN SUPABASE REMOTE.**
+  - **Bảng mới tạo**:
+    - `public.content_items`: Kho bài học lý thuyết/từ vựng/ngữ pháp có cờ `is_published` và `content_status`.
+    - `public.practice_exercises`: Danh sách bài tập, câu hỏi, các lựa chọn đáp án (JSONB).
+    - `public.practice_exercise_answers`: **SERVER-ONLY PRIVATE TABLE**. Lưu đáp án đúng và lời giải thích. Không cấp quyền SELECT cho authenticated, triệt tiêu nguy cơ lộ đề bài qua F12 Network tab.
+    - `public.daily_plans`: Kế hoạch ngày của từng người học theo ngày (`user_id`, `plan_date`, composite unique constraint `uq_user_daily_plan_date`).
+    - `public.daily_plan_tasks`: Các nhiệm vụ học cụ thể trong ngày (`daily_plan_id`, `position`, `status`, `estimated_minutes`, `activity_type`, `skill`).
+    - `public.practice_submissions`: Lịch sử nộp bài luyện tập, điểm số, tỷ lệ chính xác, chi tiết câu trả lời.
+    - `public.learning_events` & `public.learning_evidence`: Ghi nhận sự kiện học tập và bằng chứng đánh giá năng lực theo từng kỹ năng.
+  - **Bảo mật & RLS**:
+    - Áp dụng Least Privilege: Thu hồi toàn bộ quyền INSERT/UPDATE/DELETE trực tiếp từ role `authenticated` trên các bảng kế hoạch và bài tập.
+    - Toàn bộ thao tác ghi, chấm điểm và chuyển trạng thái được thực hiện an toàn qua Server Actions / Admin Client.
+    - RPC functions chạy với `SECURITY DEFINER SET search_path = ''` và schema-qualified identifiers (`public.*`).
 
 ---
 
 ## 3. Trạng thái kiểm thử
-- `npm test`: Exit code 0 (**51/51 tests passed** across 4 suites: Phase 2 Assessment + Scoring Engine + Phase 3 Generator/Weakness + Phase 3 Lifecycle/Concurrency).
+- `npm test`: Exit code 0 (**68/68 tests passed** across 6 suites).
+  - Assessment Core & Scoring Engine: 12 tests.
+  - Assessment Lifecycle & IDOR: 18 tests.
+  - Phase 3 Generator & Weakness Detection: 8 tests.
+  - Phase 3 Lifecycle, Security & Concurrency: 18 tests.
+  - Phase 4 Daily Plan Generator Suite: 5 tests (mapping ngày trong tuần, quản lý ngân sách thời gian, ưu tiên topic mở khóa, minh bạch nội dung, tính xác định 100%).
+  - Phase 4 Practice Scoring & Lifecycle Engine: 7 subtests (chấm điểm tuyệt đối 100%, chấm điểm từng phần có phản hồi, xử lý bỏ trống câu trả lời, không phân biệt hoa thường, tái sắp xếp task hợp lệ & phát hiện ID giả mạo, cập nhật tự động trạng thái kế hoạch).
 - `npx tsc --noEmit`: Exit code 0 (TypeScript strict mode hoàn toàn sạch lỗi).
-- `npm run lint`: Exit code 0 (0 warnings, 0 errors).
-- `npm run build`: Exit code 0 (Production build thành công cho tất cả static & dynamic routes bao gồm `/learning-path` và `/dashboard`).
+- `npm run lint`: Exit code 0 ("No ESLint warnings or errors").
+- `npm run build`: Exit code 0 (Next.js production build thành công 12/12 static & dynamic routes bao gồm `/daily-plan` và `/daily-plan/practice/[taskId]`).
 - **Phân định rõ ràng các cấp độ kiểm thử**:
-  - *Unit & Logic tests*: Đã kiểm chứng 100% logic Priority Score, Weakness Ranking, Dynamic Workload, Starter Path fallback và tính xác định (deterministic).
-  - *Lifecycle & Concurrency tests*: Đã kiểm chứng mô phỏng toàn bộ luồng State Machine, Progressive Unlocking (Milestone 1 -> Module 1 -> Topic 1), IDOR, chống chèn ID lộ trình khác, kiểm soát đồng thời lạc quan (`expected_version`), từ chối ID trùng lặp, từ chối danh sách thiếu (omitted siblings), từ chối sắp xếp chéo cha (cross-parent), và từ chối đột biến bảng trực tiếp.
-  - *Kiểm thử trên Supabase Remote*: Migration Phase 3 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Do đó, các RLS policies và RPC functions của Phase 3 chưa được kiểm thử trên database thật cho đến khi người dùng chạy migration qua SQL Editor.
+  - *Unit & Logic tests*: Đã kiểm chứng 100% thuật toán sinh kế hoạch ngày, chấm điểm server-side, tính toán tiến độ, kiểm soát thứ tự nhiệm vụ và kiểm soát lỗi đầu vào.
+  - *Kiểm thử trên Supabase Remote*: Migration Phase 3 và Phase 4 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Các ràng buộc DB, RLS policies và triggers sẽ được kích hoạt khi người dùng chạy tuần tự 2 file migration qua Supabase SQL Editor.
 
 ---
 
 ## 4. Việc cần làm tiếp theo (Next Action)
-- Người dùng review nội dung SQL và chạy migration Phase 3 [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql) trên Supabase Dashboard -> SQL Editor.
-- Tiến hành kiểm thử trực tiếp trên ứng dụng với tài khoản học viên thực tế.
-- Chuyển sang chuẩn bị cho **Phase 4 — Content Delivery, Daily Practice & SRS Engine**.
+- Người dùng thực hiện chạy 2 migration trên Supabase Dashboard -> SQL Editor theo thứ tự:
+  1. `supabase/migrations/20261015_phase_3_learning_path.sql`
+  2. `supabase/migrations/20261016_phase_4_daily_plan_practice.sql`
+- Tiến hành trải nghiệm thực tế luồng: Đăng nhập -> Xem Lộ trình -> Kích hoạt Lộ trình -> Xem Kế hoạch ngày -> Luyện tập bài tập Từ vựng / Ngữ pháp -> Xem kết quả phản hồi sư phạm -> Xem tiến độ cập nhật trên Dashboard.
+- Sẵn sàng chuyển tiếp sang **Phase 5 — Adaptive Engine & Spaced Repetition (SRS)**.

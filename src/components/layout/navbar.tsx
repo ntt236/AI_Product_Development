@@ -5,7 +5,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 export interface NavbarProps {
   displayName?: string;
   email?: string;
-  activePath?: 'dashboard' | 'learning-path' | 'assessment';
+  activePath?: 'dashboard' | 'daily-plan' | 'learning-path' | 'assessment';
 }
 
 export function Navbar({ displayName, email, activePath }: NavbarProps) {
@@ -19,7 +19,7 @@ export function Navbar({ displayName, email, activePath }: NavbarProps) {
           <span style={{ fontWeight: 700 }}>AI English Platform</span>
         </Link>
 
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Link
             href="/dashboard"
             style={{
@@ -34,6 +34,21 @@ export function Navbar({ displayName, email, activePath }: NavbarProps) {
             }}
           >
             📊 Dashboard
+          </Link>
+          <Link
+            href="/daily-plan"
+            style={{
+              color: activePath === 'daily-plan' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+              textDecoration: 'none',
+              fontSize: '0.95rem',
+              fontWeight: activePath === 'daily-plan' ? 600 : 400,
+              padding: '0.35rem 0.65rem',
+              borderRadius: '6px',
+              backgroundColor: activePath === 'daily-plan' ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            📅 Kế hoạch ngày
           </Link>
           <Link
             href="/learning-path"
