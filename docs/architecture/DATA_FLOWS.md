@@ -250,5 +250,108 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
     * Logic sinh lộ trình là rule-based thuần túy, không phụ thuộc vào LLM.
     * Các đề xuất AI trong tương lai chỉ đóng vai trò khuyến nghị; người dùng nắm toàn quyền quyết định (User Sovereignty). Không hệ thống tự động nào được phép ghi đè lộ trình đã tùy chỉnh mà không tạo version mới và được người dùng xác nhận.
 
+---
+
+## 5. Daily Plan Generation & Task Management Flow (Phase 4)
+
+```text
+[User Browser / Dashboard / /daily-plan]
+   │
+   ├─ (1) Tải hoặc khởi tạo kế hoạch ngày:
+   │      ↓
+   │   Server Action: getTodayDailyPlanAction() [src/modules/daily-plan/actions.ts]
+   │      ├─ Xác thực người dùng qua supabase.auth.getUser()
+   │      ├─ Gọi getOrCreateTodayDailyPlan(userId) [src/modules/daily-plan/services.ts]
+   │      │    ├─ Kiểm tra bảng public.daily_plans theo (user_id, plan_date)
+   │      │    ├─ Nếu ĐÃ CÓ: Trả về plan cùng danh sách daily_plan_tasks (kèm join content_items)
+   │      │    └─ Nếu CHƯA CÓ:
+   │      │         ├─ Đọc preferences (daily_minutes, preferred_study_days, primary_goal)
+   │      │         ├─ Đọc active learning path & các topic items
+   │      │         ├─ Đọc kho content_items đã phát hành (is_published = true)
+   │      │         ├─ Gọi generator thuần túy: generateDailyPlanProposal()
+   │      │         │    ├─ Nhận diện ngày theo lịch hay học bù (flexible_catchup)
+   │      │         │    ├─ Lọc các topic available, tính toán ngân sách thời gian
+   │      │         │    ├─ Khớp nội dung thực tế (available) hoặc dự kiến (planned_curriculum)
+   │      │         │    └─ Sinh danh sách task candidate
+   │      │         ├─ INSERT INTO public.daily_plans (user_id, plan_date, target_minutes, status='planned')
+   │      │         └─ INSERT INTO public.daily_plan_tasks (daily_plan_id, position, status='pending', ...)
+   │      └─ Trả về DailyPlan DTO cho giao diện
+   │
+   ├─ (2) Thay đổi thứ tự nhiệm vụ trong ngày (Reorder):
+   │      ↓
+   │   Server Action: reorderDailyTasksAction(planId, taskIds)
+   │      ├─ Zod validation: planId (UUID), taskIds (UUID[])
+   │      ├─ Xác thực quyền sở hữu (daily_plans.user_id === user.id)
+   │      ├─ Kiểm tra tính toàn vẹn: danh sách taskIds phải khớp hoàn toàn với số lượng và ID của plan
+   │      ├─ Cập nhật vị trí tuần tự: UPDATE daily_plan_tasks SET position = index WHERE id = taskIds[index]
+   │      └─ revalidatePath('/daily-plan')
+   │
+   └─ (3) Bỏ qua nhiệm vụ (Skip Task):
+          ↓
+       Server Action: skipDailyTaskAction(taskId, reason)
+          ├─ Zod validation: taskId (UUID), reason (tùy chọn)
+          ├─ Xác thực quyền sở hữu thông qua daily_plans
+          ├─ UPDATE daily_plan_tasks SET status = 'skipped' WHERE id = taskId
+          ├─ Tự động tính toán lại trạng thái daily_plans (partially_completed / completed / in_progress)
+          └─ revalidatePath('/daily-plan')
+```
+
+* **Entry point**: [src/modules/daily-plan/actions.ts](file:///d:/AI_Product_Development/src/modules/daily-plan/actions.ts) & [src/modules/daily-plan/services.ts](file:///d:/AI_Product_Development/src/modules/daily-plan/services.ts).
+* **Dữ liệu đọc/ghi**:
+  * `public.daily_plans`: Tạo tự động theo ngày cho mỗi người học (`uq_user_daily_plan_date`).
+  * `public.daily_plan_tasks`: Các bài học/bài tập cụ thể trong ngày, bảo đảm không trùng lặp và không vượt ngân sách thời gian.
+* **Quyền truy cập & Ranh giới bảo mật**:
+  * Client role `authenticated` bị thu hồi quyền INSERT/UPDATE/DELETE trực tiếp qua RLS; mọi thay đổi thực hiện qua Server Action được xác thực người dùng chặt chẽ.
+
+---
+
+## 6. Interactive Practice, Server-Side Scoring & Evidence Persistence Flow (Phase 4)
+
+```text
+[User Browser: /daily-plan/practice/:taskId]
+   │
+   ├─ (1) Tải nội dung bài học & câu hỏi thực hành:
+   │      ↓
+   │   Server Action: getPracticeContentAction(taskId)
+   │      ├─ Xác thực người dùng và quyền sở hữu task
+   │      ├─ Đọc thông tin content_item (từ vựng / ngữ pháp)
+   │      ├─ Đọc danh sách câu hỏi từ public.practice_exercises (prompt, options, exercise_type)
+   │      └─ 🚨 ZERO-TRUST: TUYỆT ĐỐI KHÔNG đọc bảng practice_exercise_answers ra client.
+   │
+   ├─ (2) Người học xem lý thuyết và hoàn thành bài tập tương tác:
+   │      └─ Giao diện client lưu câu trả lời tạm thời trong React state.
+   │
+   └─ (3) Nộp bài và chấm điểm phía Server:
+          ↓
+       Server Action: submitPracticeAction(taskId, answers, timeSpentSeconds)
+          ├─ Zod validation: runtime schema validation
+          ├─ Xác thực người dùng và quyền sở hữu task
+          ├─ Sử dụng Admin Client để truy vấn đáp án chính xác từ public.practice_exercise_answers
+          ├─ Tính toán điểm số trên server:
+          │    ├─ So sánh chuẩn hóa (case-insensitive, trimmed)
+          │    ├─ Tính tổng số câu đúng, tỷ lệ % (0–100%) và điểm quy đổi (thang 100)
+          │    └─ Xây dựng phản hồi sư phạm: từng câu hỏi kèm câu trả lời của user, đáp án đúng và lời giải thích
+          ├─ Ghi nhận lịch sử làm bài vào public.practice_submissions
+          ├─ Ghi nhận bằng chứng năng lực vào public.learning_evidence (chuẩn bị dữ liệu cho Adaptive Engine)
+          ├─ Ghi nhận sự kiện học tập vào public.learning_events
+          ├─ Cập nhật trạng thái nhiệm vụ: daily_plan_tasks SET status = 'completed'
+          ├─ Cập nhật trạng thái kế hoạch ngày: recalculatePlanStatus()
+          ├─ Progressive Unlocking:
+          │    └─ Nếu nhiệm vụ gắn với topic trong Learning Path: Đánh dấu topic đó 'completed' và mở khóa topic kế tiếp trong module
+          ├─ revalidatePath('/daily-plan'), revalidatePath('/dashboard'), revalidatePath('/learning-path')
+          └─ Trả về PracticeSubmissionResult hiển thị màn hình kết quả và phản hồi sư phạm chi tiết.
+```
+
+* **Entry point**: [src/modules/daily-plan/actions.ts](file:///d:/AI_Product_Development/src/modules/daily-plan/actions.ts) & [src/modules/daily-plan/services.ts](file:///d:/AI_Product_Development/src/modules/daily-plan/services.ts).
+* **Dữ liệu đọc/ghi**:
+  * `public.practice_exercise_answers`: Bảng cô lập, **KHÔNG CÓ RLS POLICY CHO ROLE AUTHENTICATED**. Chỉ server truy cập để chấm điểm.
+  * `public.practice_submissions`: Lưu kết quả, điểm số, thời gian làm bài.
+  * `public.learning_evidence`: Thu thập bằng chứng năng lực (`ability_estimate`, `confidence_level`, `sample_count`).
+  * `public.learning_events`: Nhật ký sự kiện (`daily_practice_completed`) phục vụ analytics và thích ứng lộ trình.
+* **Quyền truy cập & Ranh giới bảo mật**:
+  * Chống gian lận: Trình duyệt không thể xem trước đáp án bằng cách soi Network tab hoặc localStorage.
+  * Server là Source of Truth duy nhất cho điểm số và trạng thái hoàn thành.
+
+
 
 

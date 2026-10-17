@@ -225,11 +225,75 @@ create index if not exists idx_user_vocab_due on public.user_vocabulary(user_id,
 create index if not exists idx_learning_events_user_time on public.learning_events(user_id, occurred_at desc);
 ```
 
-## 6. Thứ tự tạo bảng
-**Phase 1:** `profiles`, `goals`, `learner_preferences`, `content_items`, `exercises`, `assessments`, `assessment_questions`, `assessment_attempts`, `assessment_answers`, `assessment_results`, `learner_skill_profiles`.
+## 6. Physical Tables Triển Khai Thực Tế
 
-**Phase 2:** `learner_knowledge_mastery`, `learning_events`, `learning_evidence`, `learning_paths`, `learning_path_versions`, `learning_path_items`, `daily_plans`, `daily_plan_activities`, `vocabulary_items`, `user_vocabulary`.
+### Phase 4 — Daily Plan & Interactive Practice Tables (Migration: `20261016_phase_4_daily_plan_practice.sql`)
 
-**Phase 3:** TOEIC tables, `ai_generations`, `ai_feedback`, `recommendations`, content tables chuyên biệt.
+1. **`content_items`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `slug text not null unique`, `title text not null`, `description text`
+   - `content_type text not null check (content_type in ('vocabulary_lesson', 'grammar_lesson', 'reading_comprehension', 'listening_practice'))`
+   - `skill text not null check (skill in ('vocabulary', 'grammar', 'reading', 'listening', 'speaking', 'writing', 'toeic'))`
+   - `target_level text not null default 'a1'`
+   - `estimated_minutes integer not null check (estimated_minutes between 3 and 120)`
+   - `content_status text not null default 'available' check (content_status in ('available', 'planned_curriculum'))`
+   - `is_published boolean not null default true`
+   - `metadata jsonb not null default '{}'::jsonb`
+   - RLS: `authenticated` chỉ có quyền SELECT các bản ghi `is_published = true`.
 
-Đây là logical schema, chưa phải migration hoàn chỉnh. Trước khi chạy SQL thật cần bổ sung trigger `updated_at`, kiểm tra foreign key, RLS đầy đủ và test quyền truy cập.
+2. **`practice_exercises`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `content_item_id uuid not null references public.content_items(id) on delete cascade`
+   - `exercise_type text not null check (exercise_type in ('multiple_choice', 'fill_in_the_blank', 'sentence_ordering'))`
+   - `prompt text not null`
+   - `options jsonb not null default '[]'::jsonb` (danh sách phương án lựa chọn, không chứa cờ đáp án)
+   - `position integer not null default 1`
+   - `points integer not null default 10`
+   - RLS: `authenticated` chỉ có quyền SELECT.
+
+3. **`practice_exercise_answers` (SERVER-ONLY ZERO-TRUST ANSWER KEY)**:
+   - `exercise_id uuid primary key references public.practice_exercises(id) on delete cascade`
+   - `correct_answer text not null`
+   - `explanation text`
+   - **RLS & Security Policy**: **KHÔNG CÓ POLICY SELECT CHO AUTHENTICATED**. Quyền truy cập trực tiếp bị thu hồi hoàn toàn. Chỉ server-side backend (Admin Client/Server Actions) được truy vấn để tính điểm và tạo phản hồi sư phạm sau khi người học nộp bài.
+
+4. **`daily_plans`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `plan_date date not null default current_date`
+   - `target_minutes integer not null default 30 check (target_minutes between 5 and 240)`
+   - `status text not null default 'planned' check (status in ('planned', 'in_progress', 'partially_completed', 'completed', 'missed'))`
+   - `generation_reason text not null default 'active_path_scheduled'`
+   - Ràng buộc: `unique(user_id, plan_date)` (mỗi học viên duy nhất 1 kế hoạch mỗi ngày).
+   - RLS: `authenticated` chỉ có quyền SELECT kế hoạch của chính mình (`auth.uid() = user_id`). Quyền ghi qua Server Actions.
+
+5. **`daily_plan_tasks`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `daily_plan_id uuid not null references public.daily_plans(id) on delete cascade`
+   - `learning_path_item_id uuid references public.learning_path_items(id) on delete set null`
+   - `content_item_id uuid references public.content_items(id) on delete set null`
+   - `position integer not null default 1`
+   - `activity_type text not null check (activity_type in ('lesson', 'practice', 'review_srs', 'assessment'))`
+   - `skill text check (skill in ('vocabulary', 'grammar', 'reading', 'listening', 'speaking', 'writing', 'toeic'))`
+   - `title text not null`, `description text`
+   - `estimated_minutes integer not null check (estimated_minutes between 1 and 120)`
+   - `content_status text not null default 'available' check (content_status in ('available', 'planned_curriculum'))`
+   - `status text not null default 'pending' check (status in ('pending', 'in_progress', 'completed', 'skipped'))`
+   - `skip_reason text`
+   - RLS: `authenticated` chỉ có quyền SELECT các task thuộc `daily_plans` của chính mình.
+
+6. **`practice_submissions`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `daily_plan_task_id uuid references public.daily_plan_tasks(id) on delete set null`
+   - `content_item_id uuid not null references public.content_items(id) on delete cascade`
+   - `raw_score integer not null default 0`, `max_score integer not null default 0`
+   - `score_percentage numeric(5,2) not null default 0.00 check (score_percentage between 0 and 100)`
+   - `time_spent_seconds integer not null default 0`
+   - `user_answers jsonb not null default '[]'::jsonb`
+   - `feedback_summary jsonb not null default '{}'::jsonb`
+   - RLS: `authenticated` chỉ có quyền SELECT các bài nộp của chính mình.
+
+7. **`learning_events` & `learning_evidence`**:
+   - Ghi nhận lịch sử tương tác học tập và bằng chứng đánh giá năng lực theo từng kỹ năng, sẵn sàng cung cấp dữ liệu cho Adaptive Engine và Spaced Repetition (SRS) ở Phase 5.
+
