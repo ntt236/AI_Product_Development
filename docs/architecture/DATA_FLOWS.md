@@ -352,6 +352,67 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * Chống gian lận: Trình duyệt không thể xem trước đáp án bằng cách soi Network tab hoặc localStorage.
   * Server là Source of Truth duy nhất cho điểm số và trạng thái hoàn thành.
 
+---
 
+## 7. Contextual AI Tutor Explanation & Usage Telemetry Flow (Phase 5)
 
+```text
+[User Browser: /daily-plan/practice/:taskId (Review Card)]
+   │
+   ├─ (1) Người học bấm "🤖 Hỏi AI Tutor phân tích sâu hơn câu này" (hoặc nhập câu hỏi thêm)
+   │      ↓
+   │   Server Action: getAITutorExplanationAction(input) [src/modules/ai-tutor/actions.ts]
+   │      │
+   │      ├─ [Step 1] Xác thực phiên người dùng qua Supabase SSR Auth
+   │      │     └─ Bắt buộc authenticated user (tránh gọi model ẩn danh lãng phí token)
+   │      │
+   │      ├─ [Step 2] Runtime Schema Validation (Zod)
+   │      │     └─ ExerciseExplanationRequestSchema: Kiểm tra UUID submissionId, exerciseId, userQuery <= 300 ký tự
+   │      │
+   │      ├─ [Step 3] Server-Side Rate Limiter (checkAIRateLimit)
+   │      │     ├─ Gọi atomic RPC: public.check_and_increment_ai_rate_limit(userId, windowStart, maxRequests=10)
+   │      │     ├─ Nếu vượt giới hạn (10 reqs / 5 phút): Ghi nhận log RATE_LIMITED và trả về 429 + retryAfterSeconds
+   │      │     └─ Cơ chế tự phục hồi: Tự động fallback sang In-Memory Rate Limiter nếu database RPC chưa sẵn sàng
+   │      │
+   │      ├─ [Step 4] Authorization & Verified Context Retrieval (Anti-IDOR)
+   │      │     ├─ Kiểm tra quyền sở hữu bài nộp: practice_submissions WHERE id = submissionId AND user_id = userId
+   │      │     ├─ Trích xuất câu hỏi, câu trả lời của học viên và đáp án từ feedback đã được server chấm
+   │      │     └─ 🚨 TUYỆT ĐỐI KHÔNG tin tưởng điểm số, cờ đúng/sai hay đáp án từ client gửi lên
+   │      │
+   │      ├─ [Step 5] Lấy ngữ cảnh cá nhân hóa (Learner Context)
+   │      │     ├─ Trình độ CEFR ước lượng hiện tại từ public.profiles (A1, A2, B1, B2...)
+   │      │     └─ Mục tiêu học tập ưu tiên từ public.goals (TOEIC, Giao tiếp công sở, Đời sống...)
+   │      │
+   │      ├─ [Step 6] Xây dựng Prompt phiên bản hóa (Prompt Versioning)
+   │      │     ├─ Version định danh: tutor_exercise_explanation_v1
+   │      │     ├─ Thích ứng giọng điệu sư phạm theo CEFR level (A1/A2 dùng từ ngữ đơn giản; B1/B2 đi sâu vào collocations)
+   │      │     └─ Định dạng bắt buộc: Schema JSON có cấu trúc (explanation, rule_summary, examples, next_step_tip)
+   │      │
+   │      ├─ [Step 7] Triệu gọi AI Provider với Bounded Timeout & Output Validation
+   │      │     ├─ Quản lý Provider phân tầng: Gemini 1.5 Flash -> OpenAI GPT-4o-mini -> Mock Provider (offline/test)
+   │      │     ├─ Thiết lập AbortController (timeout 10,000ms) chống treo server
+   │      │     └─ Kiểm tra cấu trúc đầu ra qua Zod: AITutorExplanationSchema
+   │      │
+   │      ├─ [Step 8] Ghi nhật ký sử dụng & Giám sát hiệu năng (Usage Telemetry)
+   │      │     ├─ Ghi vào public.ai_generations: user_id, provider, model, prompt_version, latency_ms, tokens, metadata
+   │      │     └─ Bảo vệ dữ liệu nhạy cảm: Tuyệt đối không lưu API Key, Authorization Token hoặc mật khẩu vào log
+   │      │
+   │      └─ [Step 9] Xử lý lỗi linh hoạt & Fallback sư phạm an toàn (Resilient Fallback)
+   │            ├─ Nếu AI Provider lỗi/timeout/hết quota: Trả về lời giải thích sư phạm chuẩn mực trích xuất từ giáo trình
+   │            └─ 🔒 BẤT BIẾN: Thất bại của AI Tutor KHÔNG BAO GIỜ làm mất, xóa hay sai lệch điểm số bài tập đã nộp
+   │
+   └─ (2) Giao diện Client hiển thị Card AI Tutor giàu tương tác:
+          ├─ Phân tích chuyên sâu tại sao đúng / tại sao sai
+          ├─ Quy tắc ngữ pháp / từ vựng cốt lõi cần nhớ
+          ├─ 2 ví dụ mở rộng song ngữ Anh - Việt
+          └─ Gợi ý hành động ôn tập bài học tiếp theo
+```
 
+* **Entry point**: [src/modules/ai-tutor/actions.ts](file:///d:/AI_Product_Development/src/modules/ai-tutor/actions.ts) & [src/modules/ai-tutor/services.ts](file:///d:/AI_Product_Development/src/modules/ai-tutor/services.ts).
+* **Dữ liệu đọc/ghi**:
+  * Đọc: `public.practice_submissions` (xác minh quyền sở hữu và lấy câu trả lời), `public.content_items` (thông tin bài học), `public.profiles` (trình độ CEFR), `public.goals` (mục tiêu học tập).
+  * Ghi: `public.ai_generations` (nhật ký sử dụng token, độ trễ và telemetry), `public.ai_rate_limits` (theo dõi tần suất gọi API).
+* **Quyền truy cập & Ranh giới bảo mật**:
+  * Anti-IDOR: Người dùng A không thể soi bài nộp của Người dùng B để yêu cầu AI giải thích.
+  * Server-Only AI Execution: API key nằm 100% trên server env (`GEMINI_API_KEY`, `OPENAI_API_KEY`), không xuất hiện trên client.
+  * Non-destructive Invariance: AI Tutor hoạt động ở chế độ Read-Only đối với điểm số, tiến độ lộ trình và hồ sơ người học. Không AI prompt nào có quyền trực tiếp cập nhật điểm số hay trình độ CEFR.

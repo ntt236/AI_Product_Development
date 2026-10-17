@@ -295,5 +295,33 @@ create index if not exists idx_learning_events_user_time on public.learning_even
    - RLS: `authenticated` chỉ có quyền SELECT các bài nộp của chính mình.
 
 7. **`learning_events` & `learning_evidence`**:
-   - Ghi nhận lịch sử tương tác học tập và bằng chứng đánh giá năng lực theo từng kỹ năng, sẵn sàng cung cấp dữ liệu cho Adaptive Engine và Spaced Repetition (SRS) ở Phase 5.
+   - Ghi nhận lịch sử tương tác học tập và bằng chứng đánh giá năng lực theo từng kỹ năng, sẵn sàng cung cấp dữ liệu cho Adaptive Engine và Spaced Repetition (SRS).
 
+### Phase 5 — AI Tutor & Usage Telemetry Tables (Migration: `20261017_phase_5_ai_tutor.sql`)
+
+1. **`ai_generations`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `feature text not null default 'exercise_explanation'`
+   - `provider text not null default 'mock'`
+   - `model text not null default 'mock-tutor-v1'`
+   - `prompt_version text not null default 'tutor_exercise_explanation_v1'`
+   - `status text not null default 'success' check (status in ('success', 'fallback', 'error'))`
+   - `prompt_tokens integer not null default 0`, `completion_tokens integer not null default 0`, `total_tokens integer not null default 0`
+   - `latency_ms integer not null default 0`
+   - `estimated_cost_usd numeric(10,6) default 0.000000`
+   - `error_code text`
+   - `metadata jsonb not null default '{}'::jsonb` (chỉ lưu metadata câu hỏi/bài nộp, **tuyệt đối không lưu secret/API keys**)
+   - `created_at timestamptz not null default now()`
+   - Index: `idx_ai_generations_user_created`, `idx_ai_generations_feature_status`, `idx_ai_generations_prompt_version`.
+   - RLS: `authenticated` chỉ có quyền SELECT lịch sử gọi của chính mình (`auth.uid() = user_id`). Quyền ghi thu hồi hoàn toàn khỏi `authenticated`/`anon` (chỉ backend admin/service role ghi).
+
+2. **`ai_rate_limits`**:
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `window_start timestamptz not null`
+   - `request_count integer not null default 1`
+   - `created_at timestamptz not null default now()`, `updated_at timestamptz not null default now()`
+   - Ràng buộc: `unique(user_id, window_start)`.
+   - Atomic Stored Procedure: `public.check_and_increment_ai_rate_limit(p_user_id, p_window_start, p_max_requests)` chạy dưới quyền `SECURITY DEFINER SET search_path = ''` với kiểm tra tham số phòng thủ. **Quyền EXECUTE được thu hồi hoàn toàn khỏi public/anon/authenticated và chỉ cấp cho `service_role`** để triệt tiêu nguy cơ DoS quota từ client.
+   - Operational Maintenance Function: `public.cleanup_expired_ai_rate_limits(p_older_than interval default interval '1 day')` cho phép dọn dẹp an toàn các cửa sổ rate limit đã hết hạn mà không ảnh hưởng tới cửa sổ đang hoạt động. Quyền EXECUTE chỉ cấp cho `service_role`.
