@@ -68,18 +68,19 @@
 ---
 
 ## 3. Trạng thái kiểm thử
-- `npm test`: Exit code 0 (**96/96 tests passed** across 7 suites).
+- `npm test`: Exit code 0 (**104/104 tests passed** across 8 suites).
   - Assessment Core & Scoring Engine: 12 tests.
   - Assessment Lifecycle & IDOR: 18 tests.
   - Phase 3 Generator & Weakness Detection: 8 tests.
   - Phase 3 Lifecycle, Security & Concurrency: 18 tests.
   - Phase 4 Daily Plan Generator Suite: 5 tests.
   - Phase 4 Practice Scoring & Lifecycle Engine: 7 subtests.
+  - **Learning Path Real Content Linkage & Lifecycle Suite (`tests/learning-path/content_linkage_and_lifecycle.test.mjs`)**: 8 tests (Real content matching, non-spoofed planned items, elimination of Phase 4 outdated notices, start practice task integration, progressive unlocking without reset).
   - **Phase 5 AI Tutor & Lifecycle Suite (`tests/ai-tutor/ai_tutor_and_lifecycle.test.mjs`)**: 28 tests (Prompt versioning, CEFR level adaptation, Zod runtime validation, Mock provider, Provider hierarchy fallback, Server-side rate limiter, Anti-IDOR, Secret protection, Resilient fallback, Non-destructive invariance, Concurrency bursts, Deep secret redaction, RPC permission hardening, Retention cleanup).
 - `npx tsc --noEmit`: Exit code 0 (TypeScript strict mode hoàn toàn sạch lỗi).
 - `npm run lint`: Exit code 0 ("No ESLint warnings or errors").
 - **Phân định rõ ràng các cấp độ kiểm thử**:
-  - *Automated unit & integration tests*: Đã kiểm chứng 100% logic AI Tutor, prompt registry, validation, rate limiting, anti-IDOR và failure handling.
+  - *Automated unit & integration tests*: Đã kiểm chứng 100% logic AI Tutor, Learning Path content linkage, prompt registry, validation, rate limiting, anti-IDOR và failure handling.
   - *Kiểm thử trên Supabase Remote*: Migration Phase 3, Phase 4 và Phase 5 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Cần người dùng chạy tuần tự qua Supabase SQL Editor.
 
 ---

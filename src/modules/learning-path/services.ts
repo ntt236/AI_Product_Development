@@ -12,6 +12,8 @@ import type {
   GeneratedPathProposal,
 } from './types';
 import { generateLearningPathProposal } from './generator';
+import { matchTopicToContentItem } from './curriculum';
+import { getOrCreateTodayDailyPlan } from '@/modules/daily-plan/services';
 import { GOAL_OPTIONS } from '@/modules/onboarding/constants';
 
 /**
@@ -136,6 +138,60 @@ export async function getUserLearningPath(userId: string): Promise<{
     .eq('learning_path_id', chosenPath.id)
     .order('position', { ascending: true });
 
+  // Fetch published curated content to reconcile real interactive availability
+  const adminClient = createAdminClient();
+  const { data: publishedContent } = await adminClient
+    .from('content_items')
+    .select('id, slug, title, skill')
+    .eq('is_published', true);
+
+  const enrichedItems: LearningPathItem[] = ((items || []) as LearningPathItem[]).map((item) => {
+    if (item.item_type !== 'topic') {
+      return item;
+    }
+
+    const matchedContent = matchTopicToContentItem(
+      item,
+      (publishedContent as Array<{ id: string; slug: string; title: string; skill: string }>) || []
+    );
+
+    if (matchedContent) {
+      return {
+        ...item,
+        content_status: 'available',
+        content_item_id: matchedContent.id,
+        content_item_slug: matchedContent.slug,
+      };
+    }
+
+    return {
+      ...item,
+      content_status: 'planned_curriculum',
+      content_item_id: null,
+      content_item_slug: null,
+    };
+  });
+
+  // Self-heal stored content_status in DB if disparate (non-blocking)
+  for (const enriched of enrichedItems) {
+    if (enriched.item_type === 'topic') {
+      const original = (items || []).find((i) => i.id === enriched.id);
+      if (original && original.content_status !== enriched.content_status) {
+        await adminClient
+          .from('learning_path_items')
+          .update({
+            content_status: enriched.content_status,
+            metadata: {
+              ...(original.metadata || {}),
+              ...(enriched.content_item_slug ? { content_item_slug: enriched.content_item_slug } : {}),
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', enriched.id);
+      }
+    }
+  }
+
   // Fetch versions
   const { data: versions } = await supabase
     .from('learning_path_versions')
@@ -145,7 +201,7 @@ export async function getUserLearningPath(userId: string): Promise<{
 
   return {
     path: chosenPath as LearningPath,
-    items: (items || []) as LearningPathItem[],
+    items: enrichedItems,
     versions: (versions || []) as LearningPathVersion[],
     profile,
   };
@@ -293,8 +349,9 @@ export async function generateAndPersistProposedPath(
           target_level: t.target_level,
           position: topicPos++,
           estimated_minutes: t.estimated_minutes,
-          content_status: 'planned_curriculum',
+          content_status: t.content_status || 'planned_curriculum',
           status: 'locked',
+          metadata: t.content_item_slug ? { content_item_slug: t.content_item_slug } : {},
         });
       }
     }
@@ -681,4 +738,136 @@ async function fallbackCustomizeLearningPathStructure(
     .eq('user_id', userId);
 
   return { success: true, newVersion };
+}
+
+/**
+ * Resolves or creates a runnable practice session in today's Daily Plan
+ * for an available Learning Path topic.
+ */
+export async function startPracticeForTopic(
+  userId: string,
+  topicId: string
+): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  if (!userId || !topicId) {
+    return { success: false, error: 'Thiếu thông tin người dùng hoặc chủ đề học tập.' };
+  }
+
+  const adminClient = createAdminClient();
+
+  // 1. Fetch topic and verify ownership via learning_paths
+  const { data: topic } = await adminClient
+    .from('learning_path_items')
+    .select('id, learning_path_id, item_type, title, description, skill, status, content_status, metadata, estimated_minutes')
+    .eq('id', topicId)
+    .maybeSingle();
+
+  if (!topic || topic.item_type !== 'topic') {
+    return { success: false, error: 'Không tìm thấy chủ đề học tập hợp lệ.' };
+  }
+
+  const { data: path } = await adminClient
+    .from('learning_paths')
+    .select('id, user_id, status')
+    .eq('id', topic.learning_path_id)
+    .maybeSingle();
+
+  if (!path || path.user_id !== userId) {
+    return { success: false, error: 'Bạn không có quyền truy cập vào chủ đề này.' };
+  }
+
+  // 2. Reject locked topics
+  if (topic.status === 'locked') {
+    return {
+      success: false,
+      error: 'Chủ đề này đang tạm khóa theo thứ tự lộ trình. Hãy hoàn thành các bài học trước để mở khóa.',
+    };
+  }
+
+  // 3. Find matching published curated content
+  const { data: publishedContent } = await adminClient
+    .from('content_items')
+    .select('id, slug, title, skill, description')
+    .eq('is_published', true);
+
+  const matchedContent = matchTopicToContentItem(
+    topic,
+    (publishedContent as Array<{ id: string; slug: string; title: string; skill: string; description?: string }>) || []
+  );
+
+  if (!matchedContent) {
+    return {
+      success: false,
+      error: 'Chủ đề này đang được đội ngũ sư phạm biên soạn và chưa có bài tập tương tác.',
+    };
+  }
+
+  // 4. Get or create today's daily plan
+  const planRes = await getOrCreateTodayDailyPlan(userId);
+  if (!planRes.success || !planRes.plan) {
+    return { success: false, error: planRes.error || 'Không thể khởi tạo kế hoạch học tập hôm nay.' };
+  }
+
+  const todayPlan = planRes.plan;
+
+  // 5. Check if today's daily plan already has a task for this topic
+  const { data: existingTask } = await adminClient
+    .from('daily_plan_tasks')
+    .select('id')
+    .eq('daily_plan_id', todayPlan.id)
+    .eq('learning_path_item_id', topicId)
+    .maybeSingle();
+
+  if (existingTask) {
+    return { success: true, taskId: existingTask.id };
+  }
+
+  // 6. Check if today's daily plan already has a task with the exact same content_item_id
+  const { data: existingContentTask } = await adminClient
+    .from('daily_plan_tasks')
+    .select('id')
+    .eq('daily_plan_id', todayPlan.id)
+    .eq('content_item_id', matchedContent.id)
+    .maybeSingle();
+
+  if (existingContentTask) {
+    // Associate with this learning_path_item_id if it was unlinked
+    await adminClient
+      .from('daily_plan_tasks')
+      .update({ learning_path_item_id: topicId, updated_at: new Date().toISOString() })
+      .eq('id', existingContentTask.id);
+    return { success: true, taskId: existingContentTask.id };
+  }
+
+  // 7. Insert new task into today's daily plan
+  const { data: tasks } = await adminClient
+    .from('daily_plan_tasks')
+    .select('position')
+    .eq('daily_plan_id', todayPlan.id);
+
+  const maxPosition = (tasks || []).reduce((max, t) => Math.max(max, t.position), 0);
+
+  const { data: newTask, error: insertError } = await adminClient
+    .from('daily_plan_tasks')
+    .insert({
+      daily_plan_id: todayPlan.id,
+      user_id: userId,
+      learning_path_item_id: topicId,
+      content_item_id: matchedContent.id,
+      title: topic.title,
+      description: topic.description || matchedContent.description || null,
+      activity_type: 'practice',
+      skill: topic.skill || matchedContent.skill,
+      position: maxPosition + 1,
+      estimated_minutes: topic.estimated_minutes > 0 ? topic.estimated_minutes : 15,
+      content_status: 'available',
+      status: 'pending',
+    })
+    .select('id')
+    .single();
+
+  if (insertError || !newTask) {
+    return { success: false, error: 'Không thể thêm nhiệm vụ học tập vào Kế hoạch ngày.' };
+  }
+
+  return { success: true, taskId: newTask.id };
 }

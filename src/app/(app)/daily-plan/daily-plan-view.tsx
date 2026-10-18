@@ -487,7 +487,7 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
             </div>
 
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
-              Chủ đề <strong>{selectedPlannedTask.title}</strong> thuộc khung lộ trình của bạn, nhưng bài tập tương tác chuyên sâu đang được chuẩn bị để phát hành đầy đủ trong Phase 5.
+              Chủ đề <strong>{selectedPlannedTask.title}</strong> thuộc khung lộ trình của bạn, nhưng bài tập tương tác chuyên sâu đang được đội ngũ sư phạm hoàn thiện và sẽ sớm khả dụng.
             </p>
 
             <div

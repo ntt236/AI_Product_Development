@@ -9,7 +9,9 @@ import {
   pauseLearningPath,
   resumeLearningPath,
   customizeLearningPathStructure,
+  startPracticeForTopic,
 } from './services';
+import { revalidatePath } from 'next/cache';
 import type {
   LearningPath,
   LearningPathItem,
@@ -225,6 +227,46 @@ export async function customizePathAction(
     );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Lỗi hệ thống khi tùy chỉnh lộ trình.';
+    return { success: false, error: msg };
+  }
+}
+
+export interface StartTopicPracticeResponse {
+  success: boolean;
+  taskId?: string;
+  error?: string;
+}
+
+/**
+ * Starts a practice session for an available Learning Path topic,
+ * ensuring a corresponding task exists in today's Daily Plan.
+ */
+export async function startTopicPracticeAction(
+  topicId: string
+): Promise<StartTopicPracticeResponse> {
+  if (!topicId || typeof topicId !== 'string') {
+    return { success: false, error: 'ID chủ đề không hợp lệ.' };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' };
+  }
+
+  try {
+    const res = await startPracticeForTopic(user.id, topicId);
+    if (res.success) {
+      revalidatePath('/learning-path');
+      revalidatePath('/daily-plan');
+    }
+    return res;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Lỗi hệ thống khi chuẩn bị bài luyện tập.';
     return { success: false, error: msg };
   }
 }
