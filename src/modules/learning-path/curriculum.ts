@@ -266,7 +266,8 @@ export const CURRICULUM_BANK: Record<
         skill: 'listening',
         target_level: 'a1',
         estimated_minutes: 20,
-        content_status: 'planned_curriculum',
+        content_status: 'available',
+        content_item_slug: 'listening-daily-conversations-introducing-yourself',
       },
     ],
     a2: [
@@ -353,7 +354,17 @@ export function matchTopicToContentItem<T extends { id: string; slug: string; ti
         return true;
       }
 
-      // 3. Exact slug match or title match
+      // 3. Listening: Daily Conversations - Introducing Yourself
+      if (
+        (titleLower.includes('chào hỏi') ||
+          titleLower.includes('thông tin cá nhân') ||
+          titleLower.includes('introducing')) &&
+        (c.slug.includes('introducing-yourself') || c.slug.includes('daily-conversations'))
+      ) {
+        return true;
+      }
+
+      // 4. Exact slug match or title match
       if (c.title.toLowerCase() === titleLower || titleLower.includes(c.title.toLowerCase())) {
         return true;
       }
