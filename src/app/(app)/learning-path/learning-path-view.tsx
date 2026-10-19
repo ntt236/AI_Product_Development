@@ -17,6 +17,7 @@ import {
   resumePathAction,
   customizePathAction,
   generateProposedPathAction,
+  startTopicPracticeAction,
 } from '@/modules/learning-path/actions';
 
 interface LearningPathViewProps {
@@ -46,6 +47,24 @@ export function LearningPathView({
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [customReason, setCustomReason] = useState('Ưu tiên luyện kỹ năng theo nguyện vọng');
   const [selectedTopicInfo, setSelectedTopicInfo] = useState<LearningPathItem | null>(null);
+  const [isStartingPractice, startPracticeTransition] = useTransition();
+  const [practiceError, setPracticeError] = useState<string | null>(null);
+
+  const handleStartTopicPractice = (topicId: string) => {
+    setPracticeError(null);
+    startPracticeTransition(async () => {
+      const res = await startTopicPracticeAction(topicId);
+      if (!res.success || !res.taskId) {
+        setPracticeError(res.error || 'Không thể chuẩn bị bài luyện tập cho chủ đề này.');
+      } else {
+        router.push(`/daily-plan/practice/${res.taskId}`);
+      }
+    });
+  };
+
+  const hasPlannedCurriculum = initialItems.some(
+    (i: LearningPathItem) => i.item_type === 'topic' && i.content_status === 'planned_curriculum'
+  );
 
   const allModules = initialItems
     .filter((it) => it.item_type === 'module')
@@ -680,6 +699,31 @@ export function LearningPathView({
       {/* TAB 1: 3 MILESTONES TIMELINE */}
       {activeTab === 'timeline' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Informative Advisory Banner if there are planned curriculum topics */}
+          {hasPlannedCurriculum && (
+            <div
+              style={{
+                padding: '1rem 1.25rem',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(56, 189, 248, 0.06)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+              }}
+            >
+              <span style={{ fontSize: '1.35rem' }}>💡</span>
+              <div>
+                <div style={{ color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                  Nội dung đang được hoàn thiện
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
+                  Một số chủ đề trong lộ trình chưa có bài học tương tác. Bạn vẫn có thể học những nội dung đã sẵn sàng trong Kế hoạch ngày.
+                </p>
+              </div>
+            </div>
+          )}
+
           {milestones.map((m, index) => {
             const isExpanded = expandedMilestones[m.id] ?? true;
             const modules = getModulesForMilestone(m.id);
@@ -813,19 +857,47 @@ export function LearningPathView({
                                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                     ⏱️ {t.estimated_minutes}p
                                   </span>
-                                  {/* Transparency Badge */}
-                                  <span
-                                    style={{
-                                      fontSize: '0.75rem',
-                                      padding: '0.2rem 0.5rem',
-                                      borderRadius: '4px',
-                                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                      color: 'var(--accent-amber)',
-                                      border: '1px solid rgba(245, 158, 11, 0.25)',
-                                    }}
-                                  >
-                                    Planned Curriculum
-                                  </span>
+                                  {/* Status Badges */}
+                                  {t.status === 'completed' ? (
+                                    <span
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                        color: '#34d399',
+                                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                                      }}
+                                    >
+                                      🎉 Đã xong
+                                    </span>
+                                  ) : t.content_status === 'available' ? (
+                                    <span
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                                        color: 'var(--accent-cyan)',
+                                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                                      }}
+                                    >
+                                      ✅ Khả dụng
+                                    </span>
+                                  ) : (
+                                    <span
+                                      style={{
+                                        fontSize: '0.75rem',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                        color: 'var(--accent-amber)',
+                                        border: '1px solid rgba(245, 158, 11, 0.25)',
+                                      }}
+                                    >
+                                      📋 Đang chuẩn bị
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -1000,31 +1072,117 @@ export function LearningPathView({
               {selectedTopicInfo.description}
             </p>
 
-            <div
-              style={{
-                padding: '1rem',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
-                marginBottom: '1.5rem',
-              }}
-            >
-              <div style={{ color: 'var(--accent-amber)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                ⚠️ Nội dung đang được chuẩn bị cho Phase 4
-              </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
-                Hệ thống chỉ thiết lập khung chương trình (Planned Curriculum). Bài học tương tác, tài liệu luyện tập và bài tập trắc nghiệm sẽ được triển khai trong Phase 4 (Content Delivery &amp; Daily Practice).
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setSelectedTopicInfo(null)}
-                className="btn btn-secondary btn-sm"
+            {practiceError && (
+              <div
+                style={{
+                  padding: '0.75rem 1rem',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#f87171',
+                  fontSize: '0.85rem',
+                  marginBottom: '1rem',
+                }}
               >
-                Đã hiểu &amp; Đóng
-              </button>
-            </div>
+                ⚠️ {practiceError}
+              </div>
+            )}
+
+            {selectedTopicInfo.content_status === 'available' ? (
+              <>
+                <div
+                  style={{
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                    marginBottom: '1.25rem',
+                  }}
+                >
+                  <div style={{ color: '#34d399', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                    ✅ Nội dung học tập &amp; Bài tập đã sẵn sàng
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
+                    Chủ đề này đã có đầy đủ bài học và bài tập trắc nghiệm tương tác với hệ thống chấm điểm tự động.
+                  </p>
+                </div>
+
+                {selectedTopicInfo.status === 'locked' && (
+                  <div
+                    style={{
+                      padding: '0.75rem 1rem',
+                      borderRadius: '6px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid var(--border-color)',
+                      marginBottom: '1.25rem',
+                      fontSize: '0.85rem',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    🔒 <strong>Đang tạm khóa:</strong> Hãy hoàn thành các chủ đề trước trong lộ trình để mở khóa bài học này.
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button
+                    onClick={() => {
+                      setSelectedTopicInfo(null);
+                      setPracticeError(null);
+                    }}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Đóng
+                  </button>
+                  {selectedTopicInfo.status !== 'locked' && (
+                    <button
+                      onClick={() => handleStartTopicPractice(selectedTopicInfo.id)}
+                      disabled={isStartingPractice}
+                      className="btn btn-primary btn-sm"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      {isStartingPractice ? (
+                        <span>⏳ Đang chuẩn bị...</span>
+                      ) : selectedTopicInfo.status === 'completed' ? (
+                        <span>🔄 Luyện tập lại bài học</span>
+                      ) : (
+                        <span>✍️ Bắt đầu học &amp; Luyện tập</span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    marginBottom: '1.5rem',
+                  }}
+                >
+                  <div style={{ color: 'var(--accent-amber)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                    📋 Nội dung giáo trình đang được chuẩn bị
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
+                    Chủ đề này nằm trong khung kế hoạch chuẩn đầu ra của lộ trình. Bài học tương tác và bài tập trắc nghiệm đang được đội ngũ sư phạm hoàn thiện và sẽ sớm khả dụng.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => {
+                      setSelectedTopicInfo(null);
+                      setPracticeError(null);
+                    }}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Đã hiểu &amp; Đóng
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

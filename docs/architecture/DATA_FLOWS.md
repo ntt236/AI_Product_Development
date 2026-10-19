@@ -416,3 +416,60 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * Anti-IDOR: Người dùng A không thể soi bài nộp của Người dùng B để yêu cầu AI giải thích.
   * Server-Only AI Execution: API key nằm 100% trên server env (`GEMINI_API_KEY`, `OPENAI_API_KEY`), không xuất hiện trên client.
   * Non-destructive Invariance: AI Tutor hoạt động ở chế độ Read-Only đối với điểm số, tiến độ lộ trình và hồ sơ người học. Không AI prompt nào có quyền trực tiếp cập nhật điểm số hay trình độ CEFR.
+
+---
+
+## 6. Listening Lesson Practice & Audio Delivery Flow (Hội thoại giới thiệu bản thân)
+
+```text
+[User Browser]
+   │
+   ├─ (1) Mở bài luyện nghe: GET /daily-plan/practice/[taskId]
+   │      ↓
+   │   Server: getContentItemWithExercises(content_item_id) [src/modules/daily-plan/services.ts]
+   │      ├─ Đọc public.content_items (slug: listening-daily-conversations-introducing-yourself)
+   │      ├─ Đọc public.practice_exercises (5 câu trắc nghiệm, options)
+   │      └─ 🔒 BẢO MẬT: TUYỆT ĐỐI KHÔNG đọc public.practice_exercise_answers cho client
+   │      ↓
+   │   Client: Nhận dữ liệu bài học & câu hỏi (Chưa có đáp án đúng, chưa hiển thị transcript)
+   │
+   ├─ (2) Bước 1: Học lý thuyết & Nghe trước (Study Phase)
+   │      ├─ Tải file audio: GET /audio/daily-conversations-introducing-yourself.wav
+   │      ├─ HTML5 Audio Player (tùy chỉnh tốc độ 0.8x / 1.0x / 1.2x)
+   │      ├─ Hiển thị Mục tiêu bài học & Mẹo bắt từ khóa (born in, originally from, currently live...)
+   │      └─ 🔒 NGUYÊN TẮC SƯ PHẠM: Lời thoại (Transcript) được ẩn để rèn luyện phản xạ nghe tự nhiên
+   │
+   ├─ (3) Bước 2: Làm bài tập trắc nghiệm (Practice Phase)
+   │      ├─ Audio Player duy trì cố định ở đầu trang, người học có thể nghe lại nhiều lần
+   │      ├─ Người học chọn đáp án cho 5 câu hỏi (Nơi sinh David, Quê Sarah, Nơi ở New York, Sở thích...)
+   │      └─ Bấm "Nộp bài" ➔ Gửi payload: { exercise_id, selected_option_id }[]
+   │
+   ├─ (4) Bước 3: Đánh giá & Chấm điểm phía Server (Server-Side Evaluation)
+   │      ↓
+   │   Server Action: submitPracticeAction() [src/modules/daily-plan/actions.ts]
+   │      ├─ Xác thực người dùng qua supabase.auth.getUser()
+   │      ├─ createAdminClient() truy vấn bảng bảo mật public.practice_exercise_answers
+   │      ├─ Chấm điểm nguyên tử: So sánh selected_option_id với correct_option_id
+   │      ├─ Ghi bài nộp vào public.practice_submissions (score, max_score, accuracy, feedback)
+   │      ├─ Ghi nhận bằng chứng học tập vào public.learning_evidence (skill: 'listening')
+   │      ├─ Ghi nhận sự kiện vào public.learning_events (event_type: 'practice_submitted')
+   │      ├─ Cập nhật public.daily_plan_tasks (status = 'completed') & tăng completed_minutes
+   │      └─ Kích hoạt mở khóa tuần tự topic tiếp theo trong public.learning_path_items
+   │
+   └─ (5) Bước 4: Màn hình kết quả & Mở khóa Transcript (Result Phase)
+          ├─ Hiển thị điểm số đạt được (0-100%), thời gian làm bài, tỷ lệ chính xác
+          ├─ Phân tích chi tiết từng câu: Đáp án bạn chọn vs Đáp án đúng kèm giải thích sư phạm
+          ├─ 📜 MỞ KHÓA TRANSCRIPT: Hiển thị đầy đủ lời thoại của David & Sarah kèm bản dịch tiếng Việt song ngữ
+          ├─ Audio Replay: Cho phép nghe lại đối chiếu từng câu thoại
+          └─ 🤖 AI Tutor: Người học có thể nhấn "Hỏi AI Tutor phân tích sâu hơn câu này" để nhận giải thích cá nhân hóa
+```
+
+* **Entry point**: [src/app/(app)/daily-plan/practice/[taskId]/page.tsx](file:///d:/AI_Product_Development/src/app/(app)/daily-plan/practice/[taskId]/page.tsx) & [practice-session-view.tsx](file:///d:/AI_Product_Development/src/app/(app)/daily-plan/practice/[taskId]/practice-session-view.tsx).
+* **Dữ liệu đọc/ghi**:
+  * Đọc: `public.content_items` (kỹ năng `listening`), `public.practice_exercises`, `public.practice_exercise_answers` (chỉ qua `service_role`).
+  * Ghi: `public.practice_submissions`, `public.learning_evidence` (kỹ năng `listening`), `public.learning_events`, `public.daily_plan_tasks`, `public.daily_plans`, `public.learning_path_items`.
+* **Ranh giới bảo mật & Quyền truy cập**:
+  * Audio file phát trực tiếp từ static assets `/public/audio/`.
+  * Không gửi đáp án hoặc cờ `is_correct` cho client trước khi nộp bài.
+  * Chỉ hiển thị Transcript sau khi có phản hồi nộp bài thành công từ server.
+  * Người dùng khác không thể đọc hoặc chỉnh sửa bài nộp nhờ Row Level Security.

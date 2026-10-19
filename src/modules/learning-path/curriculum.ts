@@ -25,7 +25,8 @@ export const CURRICULUM_BANK: Record<
         skill: 'vocabulary',
         target_level: 'pre_a1',
         estimated_minutes: 15,
-        content_status: 'planned_curriculum',
+        content_status: 'available',
+        content_item_slug: 'vocab-daily-routine',
       },
       {
         title: 'Chữ số, màu sắc và đồ dùng cơ bản',
@@ -130,7 +131,8 @@ export const CURRICULUM_BANK: Record<
         skill: 'grammar',
         target_level: 'a1',
         estimated_minutes: 25,
-        content_status: 'planned_curriculum',
+        content_status: 'available',
+        content_item_slug: 'grammar-present-simple',
       },
       {
         title: 'Thì Quá khứ đơn (Past Simple Tense)',
@@ -264,7 +266,8 @@ export const CURRICULUM_BANK: Record<
         skill: 'listening',
         target_level: 'a1',
         estimated_minutes: 20,
-        content_status: 'planned_curriculum',
+        content_status: 'available',
+        content_item_slug: 'listening-daily-conversations-introducing-yourself',
       },
     ],
     a2: [
@@ -301,3 +304,72 @@ export const CURRICULUM_BANK: Record<
     c2: [],
   },
 };
+
+/**
+ * Matches a Learning Path topic against published curated content items.
+ * Returns the matching content item or null if no corresponding interactive content exists yet.
+ */
+export function matchTopicToContentItem<T extends { id: string; slug: string; title: string; skill: string }>(
+  topic: { title: string; skill?: string | null; metadata?: Record<string, unknown> },
+  contentItems: T[]
+): T | null {
+  if (!topic || !topic.title || !Array.isArray(contentItems)) {
+    return null;
+  }
+
+  // 1. Check if metadata directly points to a content item slug or id
+  if (topic.metadata) {
+    if (typeof topic.metadata.content_item_slug === 'string') {
+      const bySlug = contentItems.find((c) => c.slug === topic.metadata?.content_item_slug);
+      if (bySlug) return bySlug;
+    }
+    if (typeof topic.metadata.content_item_id === 'string') {
+      const byId = contentItems.find((c) => c.id === topic.metadata?.content_item_id);
+      if (byId) return byId;
+    }
+  }
+
+  const titleLower = topic.title.toLowerCase();
+
+  return (
+    contentItems.find((c) => {
+      // Must match skill if specified
+      if (topic.skill && c.skill !== topic.skill) {
+        return false;
+      }
+
+      // 1. Vocabulary: Daily Routine
+      if (
+        (titleLower.includes('sinh hoạt') || titleLower.includes('routine')) &&
+        c.slug.includes('daily-routine')
+      ) {
+        return true;
+      }
+
+      // 2. Grammar: Present Simple
+      if (
+        (titleLower.includes('hiện tại đơn') || titleLower.includes('present simple')) &&
+        c.slug.includes('present-simple')
+      ) {
+        return true;
+      }
+
+      // 3. Listening: Daily Conversations - Introducing Yourself
+      if (
+        (titleLower.includes('chào hỏi') ||
+          titleLower.includes('thông tin cá nhân') ||
+          titleLower.includes('introducing')) &&
+        (c.slug.includes('introducing-yourself') || c.slug.includes('daily-conversations'))
+      ) {
+        return true;
+      }
+
+      // 4. Exact slug match or title match
+      if (c.title.toLowerCase() === titleLower || titleLower.includes(c.title.toLowerCase())) {
+        return true;
+      }
+
+      return false;
+    }) || null
+  );
+}

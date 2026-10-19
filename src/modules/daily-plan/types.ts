@@ -73,10 +73,21 @@ export interface ContentGrammarRule {
   examples: string[];
 }
 
+export interface ContentDialogueLine {
+  speaker: string;
+  text: string;
+  translation_vi?: string;
+}
+
 export interface ContentItemBody {
   overview?: string;
   words?: ContentVocabularyWord[];
   rules?: ContentGrammarRule[];
+  audio_url?: string;
+  audio_duration_seconds?: number;
+  tips?: string[];
+  transcript?: string;
+  dialogue?: ContentDialogueLine[];
 }
 
 export interface ContentItem {

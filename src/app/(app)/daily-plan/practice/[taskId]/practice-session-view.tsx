@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useTransition, useRef } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import type {
@@ -11,6 +11,94 @@ import type {
 import { submitPracticeAction } from '@/modules/daily-plan/actions';
 import { getAITutorExplanationAction } from '@/modules/ai-tutor/actions';
 import type { AITutorExplanation } from '@/modules/ai-tutor/types';
+
+interface ListeningAudioPlayerProps {
+  audioUrl: string;
+  title?: string;
+  showSpeedControls?: boolean;
+}
+
+function ListeningAudioPlayer({
+  audioUrl,
+  title,
+  showSpeedControls = true,
+}: ListeningAudioPlayerProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playbackRate, setPlaybackRate] = useState<number>(1.0);
+
+  const changeSpeed = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+  };
+
+  return (
+    <div
+      style={{
+        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95))',
+        border: '1px solid rgba(56, 189, 248, 0.35)',
+        borderRadius: '12px',
+        padding: '1.25rem 1.5rem',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0.75rem',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '1.25rem' }}>🎧</span>
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--accent-cyan)' }}>
+            {title || 'Audio luyện nghe (Hội thoại tự nhiên)'}
+          </span>
+        </div>
+
+        {showSpeedControls && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tốc độ:</span>
+            {[0.8, 1.0, 1.2].map((rate) => (
+              <button
+                key={rate}
+                type="button"
+                onClick={() => changeSpeed(rate)}
+                style={{
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: playbackRate === rate ? 'var(--accent-cyan)' : 'var(--border-color)',
+                  background: playbackRate === rate ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  color: playbackRate === rate ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {rate}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <audio
+        ref={audioRef}
+        controls
+        preload="metadata"
+        src={audioUrl}
+        style={{ width: '100%', height: '42px', outline: 'none' }}
+      >
+        Trình duyệt của bạn không hỗ trợ phát thẻ audio HTML5.
+      </audio>
+    </div>
+  );
+}
 
 interface PracticeSessionViewProps {
   task: {
@@ -373,6 +461,79 @@ export function PracticeSessionView({
             </div>
           )}
 
+          {/* Listening Tips & Audio Preview */}
+          {(contentItem.skill === 'listening' || contentItem.body?.audio_url) && (
+            <div style={{ marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1rem' }}>
+                🎧 Luyện nghe trước đoạn hội thoại
+              </h2>
+
+              {contentItem.body?.tips && contentItem.body.tips.length > 0 && (
+                <div
+                  style={{
+                    background: 'var(--card-bg)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    marginBottom: '1.25rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      color: '#fbbf24',
+                      fontSize: '0.95rem',
+                      marginBottom: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    💡 Chiến lược nghe &amp; Bắt từ khóa cốt lõi:
+                  </div>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: '1.25rem',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {contentItem.body.tips.map((tip, idx) => (
+                      <li key={idx} style={{ marginBottom: '0.35rem' }}>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {contentItem.body?.audio_url && (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <ListeningAudioPlayer
+                    audioUrl={contentItem.body.audio_url}
+                    title="Nghe thử hội thoại mẫu (Audio Preview)"
+                  />
+                </div>
+              )}
+
+              <div
+                style={{
+                  padding: '0.85rem 1.15rem',
+                  borderRadius: '8px',
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px dashed rgba(245, 158, 11, 0.3)',
+                  fontSize: '0.85rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.5,
+                }}
+              >
+                🔒 <strong>Lưu ý sư phạm:</strong> Lời thoại chi tiết (Transcript) kèm bản dịch tiếng Việt sẽ được hiển thị đầy đủ sau khi bạn nộp bài, giúp bạn tối đa hóa phản xạ nghe hiểu tự nhiên mà không phụ thuộc vào chữ viết.
+              </div>
+            </div>
+          )}
+
           {/* Action button */}
           <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
             <button
@@ -418,6 +579,16 @@ export function PracticeSessionView({
               </strong>
             </div>
           </div>
+
+          {/* Persistent Audio Player during practice */}
+          {(contentItem.skill === 'listening' || contentItem.body?.audio_url) && contentItem.body?.audio_url && (
+            <div style={{ marginBottom: '2rem' }}>
+              <ListeningAudioPlayer
+                audioUrl={contentItem.body.audio_url}
+                title="🎧 Audio nghe hội thoại (Bạn có thể nghe lại nhiều lần khi làm bài)"
+              />
+            </div>
+          )}
 
           {/* Exercise Questions List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -580,6 +751,103 @@ export function PracticeSessionView({
               </button>
             </div>
           </div>
+
+          {/* Listening Dialogue Transcript & Audio Replay (Revealed after submission) */}
+          {(contentItem.skill === 'listening' || contentItem.body?.dialogue || contentItem.body?.transcript) && (
+            <div
+              style={{
+                background: 'var(--card-bg)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '12px',
+                padding: '1.75rem',
+                marginBottom: '2rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.35rem' }}>📜</span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--accent-cyan)' }}>
+                  Script cuộc hội thoại &amp; Bản dịch chi tiết (Transcript)
+                </h3>
+              </div>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+                Đối chiếu nội dung bạn vừa nghe với phụ đề song ngữ bên dưới để nắm chắc cách dùng từ, nối âm và ngữ cảnh giao tiếp.
+              </p>
+
+              {contentItem.body?.audio_url && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <ListeningAudioPlayer
+                    audioUrl={contentItem.body.audio_url}
+                    title="Nghe lại để kiểm tra đối chiếu (Audio Replay)"
+                  />
+                </div>
+              )}
+
+              {contentItem.body?.dialogue && contentItem.body.dialogue.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {contentItem.body.dialogue.map((line, idx) => {
+                    const isDavid = line.speaker.toLowerCase().includes('david');
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '0.85rem 1.15rem',
+                          borderRadius: '8px',
+                          background: isDavid ? 'rgba(56, 189, 248, 0.05)' : 'rgba(16, 185, 129, 0.05)',
+                          borderLeft: `4px solid ${isDavid ? 'var(--accent-cyan)' : '#34d399'}`,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                          <span
+                            style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              color: isDavid ? 'var(--accent-cyan)' : '#34d399',
+                              padding: '0.1rem 0.4rem',
+                              borderRadius: '4px',
+                              background: isDavid ? 'rgba(56, 189, 248, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                            }}
+                          >
+                            {line.speaker}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '0.95rem',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                            marginBottom: '0.2rem',
+                          }}
+                        >
+                          {line.text}
+                        </div>
+                        {line.translation_vi && (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                            {line.translation_vi}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : contentItem.body?.transcript ? (
+                <pre
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.25)',
+                    padding: '1rem',
+                    borderRadius: '8px',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {contentItem.body.transcript}
+                </pre>
+              ) : null}
+            </div>
+          )}
 
           {/* Detailed Question Review */}
           <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1rem' }}>

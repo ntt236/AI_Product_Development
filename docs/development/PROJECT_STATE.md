@@ -1,8 +1,8 @@
 # Project State — AI English Learning Platform
 
-**Last Updated:** 2026-10-17  
-**Active Branch:** `phase-5`  
-**Current Phase:** Phase 5 — AI Tutor (Provider Abstraction, Prompt Versioning, Level-Adaptive Explanations, Anti-IDOR, Rate Limiting, Usage Telemetry, UI Integration, Migration & Automated Tests Complete)  
+**Last Updated:** 2026-10-19  
+**Active Branch:** `phase-4` (working tree)  
+**Current Phase:** Phase 5 — AI Tutor & Hoàn thiện Learning Path: Triển khai bài Listening mẫu thực tế ("Daily Conversations — Introducing Yourself")  
 **Next Phase:** Phase 6 — Vocabulary Notebook & Spaced Repetition (SRS)  
 
 ---
@@ -10,85 +10,77 @@
 ## 1. Trạng thái mã nguồn & kiến trúc
 - **Framework**: Next.js 15.5.27 (App Router), React 19, TypeScript strict mode.
 - **Kiến trúc**: Modular Monolith (`src/modules/auth`, `src/modules/profile`, `src/modules/onboarding`, `src/modules/assessment`, `src/modules/learning-path`, `src/modules/daily-plan`, `src/modules/ai-tutor`, `src/lib/ai`).
-- **Phase 5 — AI Tutor Implementation**:
-  - **AI Provider Abstraction (`src/lib/ai/`)**:
-    - Chuẩn hóa giao diện `AIProvider` hỗ trợ cả text streaming và structured JSON generation.
-    - Hỗ trợ phân tầng tự động (`getAIProvider()`):
-      1. Google Gemini 1.5 Flash (`src/lib/ai/providers/gemini.ts`) khi có `GEMINI_API_KEY`.
-      2. OpenAI GPT-4o-mini (`src/lib/ai/providers/openai.ts`) khi có `OPENAI_API_KEY`.
-      3. Mock Provider (`src/lib/ai/providers/mock.ts`) sinh phản hồi sư phạm xác định cho môi trường offline và automated tests.
-    - Tích hợp timeout an toàn qua `AbortController` (10s) chống treo server.
-  - **Prompt Versioning & Pedagogical Tone Adaptation (`src/modules/ai-tutor/prompts.ts`)**:
-    - Prompt version xác định: `tutor_exercise_explanation_v1`.
-    - Thích ứng giọng điệu sư phạm theo trình độ CEFR thực tế của người học:
-      - A1/A2: Từ vựng giản dị, dịch nghĩa chi tiết, khích lệ nhẹ nhàng.
-      - B1/B2: Đi sâu vào sắc thái nghĩa, collocations, phân biệt các cấu trúc tương đồng.
-    - Gắn kết với mục tiêu chính của học viên (TOEIC, Giao tiếp công sở, Đời sống hàng ngày).
-    - Cấu trúc đầu ra bắt buộc theo Zod Schema (`AITutorExplanationSchema`): Lời giải thích, Tóm tắt quy tắc ngữ pháp/từ vựng, 2 ví dụ minh họa song ngữ Anh - Việt, Gợi ý ôn tập tiếp theo.
-  - **Anti-IDOR & Zero-Trust Exercise Context (`src/modules/ai-tutor/context.ts`)**:
-    - Xác thực quyền sở hữu bài nộp: Chỉ chủ sở hữu bài nộp mới được phép yêu cầu AI giải thích.
-    - Trích xuất dữ liệu câu hỏi và đáp án trực tiếp từ kết quả chấm thẩm quyền của server trong `practice_submissions`.
-    - Client không thể làm sai lệch ngữ cảnh câu hỏi hoặc tự nhận đáp án đúng/sai.
-  - **Server-Side Rate Limiter (`src/lib/ai/rate-limiter.ts`)**:
-    - Giới hạn 10 yêu cầu / 5 phút trên mỗi `user_id`.
-    - Thực thi qua stored procedure nguyên tử `check_and_increment_ai_rate_limit` trên PostgreSQL, kèm cơ chế tự phục hồi In-Memory Rate Limiter khi database RPC chưa sẵn sàng.
-    - Trả về mã lỗi `RATE_LIMITED` kèm `retryAfterSeconds`.
-  - **Usage Telemetry & Secret Sanitization (`src/lib/ai/usage-logger.ts`)**:
-    - Ghi nhận chi tiết vào `public.ai_generations`: `user_id`, `provider`, `model`, `prompt_version`, `status`, `latency_ms`, `token_count`, `metadata`.
-    - Bảo mật tuyệt đối: Không lưu trữ API keys, Authorization headers hay thông tin nhạy cảm vào database.
-  - **Resilient Degradation & Non-Destructive Invariance**:
-    - Khi AI Provider lỗi/timeout, hệ thống tự động trả về phản hồi sư phạm chuẩn mực dự phòng (fallback) trích xuất từ câu hỏi và lời giải thích của giáo trình.
-    - **Tính bất biến**: AI Tutor hoạt động 100% read-only đối với điểm số, tiến độ lộ trình và hồ sơ người học; không bao giờ xóa hay làm mất bài nộp đã lưu.
-  - **UI Integration (`src/app/(app)/daily-plan/practice/[taskId]/practice-session-view.tsx`)**:
-    - Tích hợp nút "🤖 Hỏi AI Tutor phân tích sâu hơn câu này" vào từng thẻ câu hỏi ở màn hình kết quả luyện tập.
-    - Giao diện phản hồi trực quan: Loading spinner, hiển thị thẻ phân tích chuyên sâu, quy tắc cốt lõi, ví dụ mở rộng song ngữ, gợi ý ôn tập và form đặt câu hỏi thắc mắc thêm.
-    - Hiển thị văn bản đáp án thật của người học và đáp án chuẩn thay vì mã `opt_` thô.
+- **Hạng mục hoàn thiện bổ sung: Triển khai bài Listening mẫu có thể học thực tế**:
+  - **Chủ đề bài học**: `Daily Conversations — Introducing Yourself` (`Luyện nghe Hội thoại chào hỏi và Hỏi thông tin cá nhân`).
+  - **Tài nguyên Audio thực tế**:
+    - File âm thanh chuẩn 16-bit PCM RIFF WAVE 2 giọng người nói tự nhiên (`Microsoft David Desktop` & `Microsoft Zira Desktop`) luân phiên, ngắt nghỉ tự nhiên theo chuẩn đàm thoại.
+    - Lưu trữ tại: `public/audio/daily-conversations-introducing-yourself.wav` (2,253,896 bytes).
+    - Phục vụ tĩnh qua route: `/audio/daily-conversations-introducing-yourself.wav`.
+  - **Cơ sở dữ liệu & Nội dung bài học (`public.content_items`)**:
+    - Slug: `listening-daily-conversations-introducing-yourself`, UUID: `11111111-1111-4111-a111-000000000003`.
+    - Trình độ: `a1`, Kỹ năng: `listening`, Thời lượng ước tính: 20 phút.
+    - Body JSONB: Mục tiêu học tập, mẹo nghe bắt từ khóa, audio URL, danh sách câu thoại (dialogue) kèm bản dịch tiếng Việt song ngữ, transcript đối chiếu.
+  - **Bộ câu hỏi trắc nghiệm & Chấm điểm Server-side**:
+    - 5 câu hỏi trắc nghiệm tương ứng chính xác với nội dung audio:
+      1. Nơi sinh của David (London).
+      2. Quê gốc của Sarah (Chicago).
+      3. Nơi sinh sống hiện tại của cả hai (New York).
+      4. Sở thích của Sarah (Đọc tiểu thuyết & chụp ảnh).
+      5. Sở thích của David (Chơi acoustic guitar & nấu món Ý).
+    - Đáp án đúng và giải thích lưu bảo mật trong `public.practice_exercise_answers` (chỉ cấp quyền SELECT cho `service_role`, client không thể truy cập).
+    - Đánh giá điểm số và phân tích phản hồi 100% phía server, lưu bài nộp vào `public.practice_submissions`, ghi nhận bằng chứng học tập vào `public.learning_evidence`.
+  - **Giao diện người dùng (`PracticeSessionView`)**:
+    - Tích hợp component `ListeningAudioPlayer` với các tùy chọn tốc độ phát (0.8x, 1.0x, 1.2x).
+    - **Bước 1 (Học)**: Hiển thị mục tiêu bài học, mẹo nghe bắt từ khóa, phát audio nghe thử, ẩn transcript để rèn luyện phản xạ nghe tự nhiên.
+    - **Bước 2 (Luyện tập)**: Audio Player ghim trực quan ở đầu trang làm bài để người học vừa nghe vừa chọn đáp án.
+    - **Bước 3 (Kết quả)**: Hiển thị điểm số, phân tích từng câu đúng/sai, mở khóa Script hội thoại chi tiết (Transcript) kèm bản dịch tiếng Việt từng câu thoại của David và Sarah, hỗ trợ nghe lại đối chiếu và tích hợp AI Tutor giải thích chuyên sâu.
+  - **Tích hợp Learning Path & Daily Plan**:
+    - Cập nhật mục `Luyện nghe Hội thoại chào hỏi và Hỏi thông tin cá nhân` trong `CURRICULUM_BANK.listening.a1` thành `content_status: 'available'`.
+    - Hiển thị nhãn `✅ Khả dụng` trên giao diện Learning Path, cho phép bấm vào để học ngay.
+    - Hàm tạo Daily Plan (`generateDailyPlanProposal`) tự động nhận diện và đưa bài Listening vào kế hoạch ngày của người học nếu phù hợp ngân sách thời gian mà không gây trùng lặp nhiệm vụ.
+    - Các mục curriculum khác chưa có bài học tiếp tục giữ nguyên `planned_curriculum` minh bạch.
 
 ---
 
 ## 2. Trạng thái Database Schema & Migration
-- **Phase 1**: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql) — **Đã áp dụng trên Supabase remote**.
-- **Phase 2 (Cơ sở & Hardening)**: [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) & [supabase/migrations/20261014_phase_2_security_hardening.sql](file:///d:/AI_Product_Development/supabase/migrations/20261014_phase_2_security_hardening.sql) — **Đã áp dụng trên Supabase remote**.
-- **Phase 3 (Learning Path)**: [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql) — **Đã hoàn thiện mã nguồn, chờ người dùng áp dụng trên remote qua Supabase SQL Editor**.
-- **Phase 4 (Daily Plan & Practice)**: [supabase/migrations/20261016_phase_4_daily_plan_practice.sql](file:///d:/AI_Product_Development/supabase/migrations/20261016_phase_4_daily_plan_practice.sql) — **Đã hoàn thiện mã nguồn, chờ người dùng áp dụng trên remote qua Supabase SQL Editor**.
-- **Phase 5 (AI Tutor — Migration mới)**: [supabase/migrations/20261017_phase_5_ai_tutor.sql](file:///d:/AI_Product_Development/supabase/migrations/20261017_phase_5_ai_tutor.sql)
-  - **Trạng thái**: **ĐÃ TẠO VÀ HOÀN TẤT AUDIT BẢO MẬT TRONG REPOSITORY. CHƯA CHẠY TRÊN SUPABASE REMOTE.**
-  - **Bảng mới tạo**:
-    - `public.ai_generations`: Lưu lịch sử gọi AI, đo độ trễ, số token, version prompt và telemetry lỗi.
-    - `public.ai_rate_limits`: Lưu số lần gọi trong cửa sổ 5 phút của từng user.
-  - **Stored Procedure**:
-    - `public.check_and_increment_ai_rate_limit(p_user_id, p_window_start, p_max_requests)` với `SECURITY DEFINER SET search_path = ''` và kiểm tra tham số phòng thủ.
-    - `public.cleanup_expired_ai_rate_limits(p_older_than)` quy trình dọn dẹp các cửa sổ hết hạn định kỳ.
-  - **Bảo mật & RLS**:
-    - RLS được bật và bắt buộc (FORCE ROW LEVEL SECURITY).
-    - `authenticated` chỉ được phép SELECT lịch sử của chính mình (`auth.uid() = user_id`).
-    - Thu hồi toàn bộ quyền INSERT/UPDATE/DELETE trực tiếp từ client trên các bảng AI.
-    - **Quyền EXECUTE của các stored procedure AI Tutor được thu hồi hoàn toàn khỏi public/anon/authenticated và chỉ cấp duy nhất cho `service_role`** (triệt tiêu nguy cơ DoS quota từ client).
+- **Phase 1**: [supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql](file:///d:/AI_Product_Development/supabase/migrations/20261012_phase_1_auth_profile_onboarding.sql) — **Đã áp dụng**.
+- **Phase 2 (Cơ sở & Hardening)**: [supabase/migrations/20261013_phase_2_placement_assessment.sql](file:///d:/AI_Product_Development/supabase/migrations/20261013_phase_2_placement_assessment.sql) & [supabase/migrations/20261014_phase_2_security_hardening.sql](file:///d:/AI_Product_Development/supabase/migrations/20261014_phase_2_security_hardening.sql) — **Đã áp dụng**.
+- **Phase 3 (Learning Path)**: [supabase/migrations/20261015_phase_3_learning_path.sql](file:///d:/AI_Product_Development/supabase/migrations/20261015_phase_3_learning_path.sql) — **Đã áp dụng**.
+- **Phase 4 (Daily Plan & Practice)**: [supabase/migrations/20261016_phase_4_daily_plan_practice.sql](file:///d:/AI_Product_Development/supabase/migrations/20261016_phase_4_daily_plan_practice.sql) — **Đã áp dụng**.
+- **Phase 5 (AI Tutor)**: [supabase/migrations/20261017_phase_5_ai_tutor.sql](file:///d:/AI_Product_Development/supabase/migrations/20261017_phase_5_ai_tutor.sql) — **Đã tạo trong repository**.
+- **Migration bổ sung (Listening Sample Lesson)**:
+  - File: [supabase/migrations/20261019_phase_5_listening_sample.sql](file:///d:/AI_Product_Development/supabase/migrations/20261019_phase_5_listening_sample.sql)
+  - Trạng thái: **Đã tạo và đã áp dụng trực tiếp vào database Supabase qua script `scripts/apply_listening_sample_seed.mjs`**.
+  - Dữ liệu đã insert/upsert thành công: 1 content item (`listening-daily-conversations-introducing-yourself`), 5 bài tập trắc nghiệm, 5 đáp án bảo mật server-only, đồng bộ 1 topic trong `learning_path_items` thành `available`.
 
 ---
 
 ## 3. Trạng thái kiểm thử
-- `npm test`: Exit code 0 (**96/96 tests passed** across 7 suites).
+- `npm test`: Exit code 0 (**113/113 tests passed** across 9 suites).
   - Assessment Core & Scoring Engine: 12 tests.
   - Assessment Lifecycle & IDOR: 18 tests.
   - Phase 3 Generator & Weakness Detection: 8 tests.
   - Phase 3 Lifecycle, Security & Concurrency: 18 tests.
   - Phase 4 Daily Plan Generator Suite: 5 tests.
   - Phase 4 Practice Scoring & Lifecycle Engine: 7 subtests.
-  - **Phase 5 AI Tutor & Lifecycle Suite (`tests/ai-tutor/ai_tutor_and_lifecycle.test.mjs`)**: 28 tests (Prompt versioning, CEFR level adaptation, Zod runtime validation, Mock provider, Provider hierarchy fallback, Server-side rate limiter, Anti-IDOR, Secret protection, Resilient fallback, Non-destructive invariance, Concurrency bursts, Deep secret redaction, RPC permission hardening, Retention cleanup).
+  - Learning Path Real Content Linkage Suite: 8 tests.
+  - Phase 5 AI Tutor & Lifecycle Suite: 28 tests.
+  - **Phase 5 Listening Sample & Learning Lifecycle Suite (`tests/daily-plan/listening_practice_lifecycle.test.mjs`)**: 9 tests:
+    1. Kiểm tra audio file tồn tại trên đĩa, dung lượng hợp lệ (> 100KB), đúng header RIFF WAVE.
+    2. Kiểm tra routing audio qua folder `/public`.
+    3. Kiểm tra 5 câu hỏi khớp 100% với lời thoại trong audio.
+    4. Xác thực dữ liệu gửi cho client không làm lộ đáp án hoặc giải thích.
+    5. Kiểm thử chấm điểm server-side cho trường hợp đúng 100% và đúng một phần.
+    6. Kiểm tra Learning Path ánh xạ chủ đề sang `available` và slug chính xác.
+    7. Xác minh các chủ đề chưa có bài học vẫn giữ nguyên `planned_curriculum`.
+    8. Kiểm tra Daily Plan Generator tích hợp bài Listening mà không sinh trùng lặp task.
+    9. Xác minh không ảnh hưởng đến bài Vocabulary, Grammar và AI Tutor hiện có.
 - `npx tsc --noEmit`: Exit code 0 (TypeScript strict mode hoàn toàn sạch lỗi).
-- `npm run lint`: Exit code 0 ("No ESLint warnings or errors").
-- **Phân định rõ ràng các cấp độ kiểm thử**:
-  - *Automated unit & integration tests*: Đã kiểm chứng 100% logic AI Tutor, prompt registry, validation, rate limiting, anti-IDOR và failure handling.
-  - *Kiểm thử trên Supabase Remote*: Migration Phase 3, Phase 4 và Phase 5 **CHƯA ĐƯỢC CHẠY** trên Supabase remote. Cần người dùng chạy tuần tự qua Supabase SQL Editor.
+- `npm run lint`: Exit code 0 (ESLint hoàn toàn sạch lỗi).
+- `npm run build`: Exit code 0 (Compiled & optimized production bundle thành công 12/12 routes).
 
 ---
 
 ## 4. Việc cần làm tiếp theo (Next Action)
-- Người dùng thực hiện chạy 3 migration trên Supabase Dashboard -> SQL Editor theo thứ tự:
-  1. `supabase/migrations/20261015_phase_3_learning_path.sql`
-  2. `supabase/migrations/20261016_phase_4_daily_plan_practice.sql`
-  3. `supabase/migrations/20261017_phase_5_ai_tutor.sql`
-- Cấu hình biến môi trường server nếu dùng AI thật: `GEMINI_API_KEY` (hoặc `OPENAI_API_KEY`). Nếu không cấu hình, hệ thống sẽ tự động dùng MockAIProvider cho trải nghiệm mượt mà không crash.
-- Sẵn sàng chuyển tiếp sang **Phase 6 — Vocabulary Notebook & Spaced Repetition (SRS)**.
-
+- Người dùng có thể kiểm thử trực tiếp trên trình duyệt bằng cách chạy `npm run dev` và truy cập `/learning-path` hoặc `/daily-plan`.
+- Sẵn sàng chuyển tiếp sang **Phase 6 — Vocabulary Notebook & Spaced Repetition (SRS)** theo roadmap chính thức.

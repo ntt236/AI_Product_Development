@@ -118,6 +118,14 @@ export function generateDailyPlanProposal(input: GeneratorInput): DailyPlanPropo
           ) {
             return true;
           }
+          if (
+            (topic.title.toLowerCase().includes('chào hỏi') ||
+              topic.title.toLowerCase().includes('thông tin cá nhân') ||
+              topic.title.toLowerCase().includes('introducing')) &&
+            (c.slug.includes('introducing-yourself') || c.slug.includes('daily-conversations'))
+          ) {
+            return true;
+          }
         }
         return false;
       });

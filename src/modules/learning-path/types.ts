@@ -62,6 +62,8 @@ export interface LearningPathItem {
   content_status: ContentStatus;
   status: PathItemStatus;
   metadata?: Record<string, unknown>;
+  content_item_id?: string | null;
+  content_item_slug?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -73,6 +75,7 @@ export interface TopicItemDraft {
   target_level: CEFRLevel;
   estimated_minutes: number;
   content_status: ContentStatus;
+  content_item_slug?: string;
   rationale?: string;
 }
 
