@@ -2,11 +2,13 @@ import type { CEFRLevel } from '@/modules/profile/types';
 import type { AssessmentSkill } from '@/modules/assessment/types';
 import type { TopicItemDraft } from './types';
 
-export const SKILL_TITLES: Record<AssessmentSkill, string> = {
+export const SKILL_TITLES: Record<AssessmentSkill | 'writing' | 'speaking', string> = {
   vocabulary: 'Từ vựng (Vocabulary)',
   grammar: 'Ngữ pháp (Grammar)',
   reading: 'Đọc hiểu (Reading)',
   listening: 'Nghe hiểu (Listening)',
+  writing: 'Viết (Writing)',
+  speaking: 'Nói (Speaking)',
 };
 
 /**
@@ -14,7 +16,7 @@ export const SKILL_TITLES: Record<AssessmentSkill, string> = {
  * All items in Phase 3 are transparently marked as 'planned_curriculum'.
  */
 export const CURRICULUM_BANK: Record<
-  AssessmentSkill,
+  AssessmentSkill | 'writing' | 'speaking',
   Record<CEFRLevel, TopicItemDraft[]>
 > = {
   vocabulary: {
@@ -44,7 +46,8 @@ export const CURRICULUM_BANK: Record<
         skill: 'vocabulary',
         target_level: 'a1',
         estimated_minutes: 20,
-        content_status: 'planned_curriculum',
+        content_status: 'available',
+        content_item_slug: 'vocab-office-communication',
       },
       {
         title: 'Từ vựng Đồ ăn, Thức uống & Đặt món',
@@ -206,6 +209,15 @@ export const CURRICULUM_BANK: Record<
     ],
     a1: [
       {
+        title: 'Đọc hiểu Thông báo nội bộ và Kế hoạch công việc (Workplace Announcements)',
+        description: 'Kỹ năng đọc quét (Scanning) thông báo đổi giờ làm và tiệc chào đón đồng nghiệp mới.',
+        skill: 'reading',
+        target_level: 'a1',
+        estimated_minutes: 20,
+        content_status: 'available',
+        content_item_slug: 'reading-workplace-announcements-messages',
+      },
+      {
         title: 'Đọc hiểu Tin nhắn ngắn và Đoạn chat (Text Messages)',
         description: 'Kỹ năng tìm ý chính và nắm bắt thời gian/địa điểm trong đoạn hội thoại.',
         skill: 'reading',
@@ -303,6 +315,134 @@ export const CURRICULUM_BANK: Record<
     c1: [],
     c2: [],
   },
+
+  writing: {
+    pre_a1: [
+      {
+        title: 'Luyện viết Câu đơn giới thiệu thông tin cá nhân',
+        description: 'Cấu trúc câu khẳng định cơ bản: I am..., I live in...',
+        skill: 'writing',
+        target_level: 'pre_a1',
+        estimated_minutes: 15,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    a1: [
+      {
+        title: 'Luyện viết Email giới thiệu bản thân (Self-Introduction Email)',
+        description: 'Viết email ngắn làm quen với nhóm học tập hoặc đồng nghiệp mới (60-100 từ).',
+        skill: 'writing',
+        target_level: 'a1',
+        estimated_minutes: 20,
+        content_status: 'available',
+        content_item_slug: 'writing-introductory-email',
+      },
+      {
+        title: 'Luyện viết Nhật ký thói quen hàng ngày (Daily Journal)',
+        description: 'Miêu tả lịch sinh hoạt một ngày sử dụng các từ nối thời gian.',
+        skill: 'writing',
+        target_level: 'a1',
+        estimated_minutes: 20,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    a2: [
+      {
+        title: 'Luyện viết Thư yêu cầu thông tin & Đặt lịch hẹn (Inquiry Email)',
+        description: 'Viết email trang trọng yêu cầu tài liệu dự án và sắp xếp cuộc họp nhóm.',
+        skill: 'writing',
+        target_level: 'a2',
+        estimated_minutes: 25,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    b1: [
+      {
+        title: 'Luyện viết Email giải quyết khiếu nại công việc',
+        description: 'Cách phản hồi khách hàng và xử lý sự cố trong giao tiếp thương mại.',
+        skill: 'writing',
+        target_level: 'b1',
+        estimated_minutes: 30,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    b2: [
+      {
+        title: 'Luyện viết Báo cáo tóm tắt tiến độ dự án (Status Report)',
+        description: 'Tổng kết công việc, phân tích dữ liệu và đề xuất giải pháp cải tiến.',
+        skill: 'writing',
+        target_level: 'b2',
+        estimated_minutes: 35,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    c1: [],
+    c2: [],
+  },
+
+  speaking: {
+    pre_a1: [
+      {
+        title: 'Luyện phát âm Chữ số, Ngày tháng và Đánh vần tên',
+        description: 'Luyện phát âm chuẩn bảng chữ cái tiếng Anh và số đếm cơ bản.',
+        skill: 'speaking',
+        target_level: 'pre_a1',
+        estimated_minutes: 15,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    a1: [
+      {
+        title: 'Luyện nói Phản xạ giới thiệu bản thân (Daily Life Introduction)',
+        description: 'Luyện phản xạ nói theo phương pháp Transcript-First, nhận xét độ tự nhiên từ AI.',
+        skill: 'speaking',
+        target_level: 'a1',
+        estimated_minutes: 15,
+        content_status: 'available',
+        content_item_slug: 'speaking-daily-life-introduction',
+      },
+      {
+        title: 'Luyện nói Miêu tả bức tranh & Hoạt động xung quanh',
+        description: 'Thực hành miêu tả người và sự vật đang diễn ra bằng thì Hiện tại tiếp diễn.',
+        skill: 'speaking',
+        target_level: 'a1',
+        estimated_minutes: 15,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    a2: [
+      {
+        title: 'Luyện nói Trình bày ý kiến và Đóng góp ý tưởng cuộc họp (Meeting Opinions)',
+        description: 'Thực hành các cấu trúc nêu quan điểm: "In my opinion", "I would suggest that".',
+        skill: 'speaking',
+        target_level: 'a2',
+        estimated_minutes: 20,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    b1: [
+      {
+        title: 'Luyện nói Phỏng vấn xin việc & Giới thiệu kinh nghiệm (Job Interview)',
+        description: 'Trả lời các câu hỏi tình huống và thể hiện kỹ năng chuyên môn tự tin.',
+        skill: 'speaking',
+        target_level: 'b1',
+        estimated_minutes: 25,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    b2: [
+      {
+        title: 'Luyện thuyết trình Báo cáo kinh doanh ngắn (Business Presentation)',
+        description: 'Mở đầu, chuyển ý mượt mà và kết luận bài thuyết trình chuyên nghiệp.',
+        skill: 'speaking',
+        target_level: 'b2',
+        estimated_minutes: 30,
+        content_status: 'planned_curriculum',
+      },
+    ],
+    c1: [],
+    c2: [],
+  },
 };
 
 /**
@@ -346,7 +486,15 @@ export function matchTopicToContentItem<T extends { id: string; slug: string; ti
         return true;
       }
 
-      // 2. Grammar: Present Simple
+      // 2. Vocabulary: Office Communication
+      if (
+        (titleLower.includes('nghề nghiệp') || titleLower.includes('công sở') || titleLower.includes('office')) &&
+        c.slug.includes('office-communication')
+      ) {
+        return true;
+      }
+
+      // 3. Grammar: Present Simple
       if (
         (titleLower.includes('hiện tại đơn') || titleLower.includes('present simple')) &&
         c.slug.includes('present-simple')
@@ -354,7 +502,7 @@ export function matchTopicToContentItem<T extends { id: string; slug: string; ti
         return true;
       }
 
-      // 3. Listening: Daily Conversations - Introducing Yourself
+      // 4. Listening: Daily Conversations - Introducing Yourself
       if (
         (titleLower.includes('chào hỏi') ||
           titleLower.includes('thông tin cá nhân') ||
@@ -364,7 +512,39 @@ export function matchTopicToContentItem<T extends { id: string; slug: string; ti
         return true;
       }
 
-      // 4. Exact slug match or title match
+      // 5. Reading: Workplace Announcements & Messages
+      if (
+        (titleLower.includes('thông báo') ||
+          titleLower.includes('kế hoạch công việc') ||
+          titleLower.includes('announcement') ||
+          titleLower.includes('tin nhắn')) &&
+        (c.slug.includes('workplace-announcements') || c.slug.includes('reading-workplace'))
+      ) {
+        return true;
+      }
+
+      // 6. Writing: Introductory Email
+      if (
+        (titleLower.includes('viết email') ||
+          titleLower.includes('email giới thiệu') ||
+          titleLower.includes('introductory email')) &&
+        c.slug.includes('introductory-email')
+      ) {
+        return true;
+      }
+
+      // 7. Speaking: Daily Life Introduction
+      if (
+        (titleLower.includes('luyện nói') ||
+          titleLower.includes('phản xạ nói') ||
+          titleLower.includes('cuộc sống thường ngày') ||
+          titleLower.includes('daily life')) &&
+        c.slug.includes('speaking-daily-life')
+      ) {
+        return true;
+      }
+
+      // 8. Exact slug match or title match
       if (c.title.toLowerCase() === titleLower || titleLower.includes(c.title.toLowerCase())) {
         return true;
       }

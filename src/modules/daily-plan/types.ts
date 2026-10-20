@@ -30,7 +30,7 @@ export interface DailyPlanTask {
   title: string;
   description?: string | null;
   activity_type: ActivityType;
-  skill?: AssessmentSkill | 'toeic' | null;
+  skill?: AssessmentSkill | 'speaking' | 'writing' | 'toeic' | null;
   position: number;
   estimated_minutes: number;
   content_status: 'available' | 'planned_curriculum';
@@ -79,6 +79,27 @@ export interface ContentDialogueLine {
   translation_vi?: string;
 }
 
+export interface ContentVocabularyHighlight {
+  word: string;
+  meaning_vi: string;
+  part_of_speech?: string;
+}
+
+export interface ContentRubricCriterion {
+  key: string;
+  name: string;
+  weight: number;
+  description: string;
+}
+
+export interface ContentPassage {
+  title?: string;
+  type?: string;
+  word_count?: number;
+  paragraphs?: string[];
+  content?: string;
+}
+
 export interface ContentItemBody {
   overview?: string;
   words?: ContentVocabularyWord[];
@@ -88,6 +109,29 @@ export interface ContentItemBody {
   tips?: string[];
   transcript?: string;
   dialogue?: ContentDialogueLine[];
+  // Reading
+  passage?: ContentPassage;
+  passage_title?: string;
+  passage_text?: string;
+  reading_time_minutes?: number;
+  vocabulary_highlights?: ContentVocabularyHighlight[];
+  reading_tips?: string[];
+  // Writing & Speaking
+  task_type?: string;
+  prompt_scenario?: string;
+  prompt_requirements?: string[];
+  min_words?: number;
+  max_words?: number;
+  target_words?: string;
+  email_template_guide?: {
+    greeting?: string;
+    body_paragraphs?: string;
+    sign_off?: string;
+  };
+  useful_expressions?: string[];
+  suggested_cue_points?: string[];
+  conversational_tips?: string[];
+  rubric_criteria?: ContentRubricCriterion[];
 }
 
 export interface ContentItem {
@@ -95,8 +139,8 @@ export interface ContentItem {
   slug: string;
   title: string;
   description?: string | null;
-  content_type: 'lesson' | 'grammar' | 'vocabulary_set' | 'reading' | 'listening' | 'practice';
-  skill: AssessmentSkill | 'toeic';
+  content_type: 'lesson' | 'grammar' | 'vocabulary_set' | 'reading' | 'listening' | 'writing' | 'speaking' | 'practice';
+  skill: AssessmentSkill | 'speaking' | 'writing' | 'toeic';
   level: CEFRLevel;
   estimated_minutes: number;
   body: ContentItemBody;

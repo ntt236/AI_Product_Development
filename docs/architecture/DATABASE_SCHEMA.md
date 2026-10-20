@@ -386,3 +386,28 @@ create index if not exists idx_learning_events_user_time on public.learning_even
    - Chuyển mốc ôn tập tiếp theo sang ranh giới đầu ngày (Calendar-day boundary):
      `v_next_review_at := ((v_now at time zone 'Asia/Ho_Chi_Minh')::date + v_new_interval)::timestamp at time zone 'Asia/Ho_Chi_Minh';`
    - Tự động cộng dồn và cập nhật `current_streak`, `longest_streak`, `last_study_date` trên bảng `public.profiles` nguyên tử trong cùng transaction khi phiên ôn tập thành công.
+
+### Phase 7 — Four Skills Schema & Content Integration (Migration: `20261021_phase_7_four_skills.sql`)
+
+1. **`content_items` (Tích hợp 4 kỹ năng Listening, Reading, Writing, Speaking)**:
+   - Hỗ trợ các giá trị `skill`: `'listening'`, `'reading'`, `'writing'`, `'speaking'`, `'grammar'`, `'vocabulary'`, `'toeic'`.
+   - Cột `body` (JSONB) lưu trữ linh hoạt theo từng kỹ năng:
+     - **Listening**: `audio_url` (đường dẫn file audio chuẩn), `audio_duration_seconds`, `dialogue` (mảng hội thoại kèm `speaker`, `text`, `translation_vi`), `transcript`, `tips`.
+     - **Reading**: `passage` (`title`, `type` e.g. memo/email, `word_count`, `paragraphs`), `reading_tips`, `vocabulary_highlights`.
+     - **Writing**: `task_type`, `prompt_scenario`, `prompt_requirements` (mảng tiêu chí checklist), `min_words`, `max_words`, `email_template_guide`, `rubric_criteria`.
+     - **Speaking**: `prompt_scenario`, `prompt_requirements` (cue points), `target_duration_seconds`, `recommended_word_count`, `conversational_tips`, `rubric_criteria`.
+
+2. **`practice_exercises` & `practice_exercise_answers`**:
+   - `practice_exercises`: Câu hỏi đọc hiểu và nghe hiểu trắc nghiệm khách quan (`exercise_type = 'multiple_choice'`), `options` JSONB (`id`, `text`). **Không chứa đáp án đúng hay giải thích**.
+   - `practice_exercise_answers`: Bảng bí mật độc quyền phía server (`correct_option_id`, `explanation`). RLS không cho phép `anon` hay `authenticated` đọc trực tiếp. Chỉ chấm điểm qua domain service backend.
+
+3. **`practice_submissions` (Mở rộng cho Writing & Speaking)**:
+   - `answers`: Lưu mảng câu trả lời trắc nghiệm (với Reading/Listening) hoặc đối tượng văn bản nộp (`text`, `word_count` với Writing/Speaking).
+   - `score`: Điểm số đạt được (0-100 với rubric Writing/Speaking hoặc số câu đúng với Reading/Listening).
+   - `feedback`: JSONB chứa chi tiết kết quả từng câu trắc nghiệm (breakdown) hoặc đối tượng `WritingEvaluationResult` / `SpeakingEvaluationResult` từ AI evaluator.
+
+4. **`learning_evidence`**:
+   - Ghi nhận bằng chứng học tập với `skill` tương ứng (`listening`, `reading`, `writing`, `speaking`).
+   - `source_type`: `'practice_exercise'`.
+   - Lưu trữ `word_count`, `rubric_scores`, `evaluation_source` trong cột `evidence` (JSONB) phục vụ adaptive learning và dashboard tiến độ.
+

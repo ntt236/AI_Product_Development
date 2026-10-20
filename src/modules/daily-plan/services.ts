@@ -390,7 +390,30 @@ export async function submitPracticeAnswers(
 
   const adminClient = createAdminClient();
 
-  // 1. Fetch content item
+  // 1. Anti-IDOR: Validate taskId ownership if provided
+  let validatedTask: {
+    id: string;
+    daily_plan_id: string;
+    estimated_minutes: number;
+    learning_path_item_id: string | null;
+    status: string;
+  } | null = null;
+
+  if (taskId) {
+    const { data: task } = await adminClient
+      .from('daily_plan_tasks')
+      .select('id, daily_plan_id, estimated_minutes, learning_path_item_id, status')
+      .eq('id', taskId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!task) {
+      return { success: false, error: 'Nhiệm vụ không tồn tại hoặc bạn không có quyền truy cập.' };
+    }
+    validatedTask = task;
+  }
+
+  // 2. Fetch content item
   const { data: contentItem } = await adminClient
     .from('content_items')
     .select('id, title, skill, estimated_minutes')
@@ -401,7 +424,7 @@ export async function submitPracticeAnswers(
     return { success: false, error: 'Nội dung bài tập không tồn tại.' };
   }
 
-  // 2. Fetch all questions for this content item
+  // 3. Fetch all questions for this content item
   const { data: exercises } = await adminClient
     .from('practice_exercises')
     .select('id, prompt, weight, position, options')
@@ -412,7 +435,7 @@ export async function submitPracticeAnswers(
     return { success: false, error: 'Không tìm thấy câu hỏi cho bài tập này.' };
   }
 
-  // 3. Fetch confidential answer keys (SERVER-ONLY)
+  // 4. Fetch confidential answer keys (SERVER-ONLY)
   const exerciseIds = exercises.map((e) => e.id);
   const { data: answerKeys } = await adminClient
     .from('practice_exercise_answers')
@@ -435,7 +458,7 @@ export async function submitPracticeAnswers(
     }
   }
 
-  // 4. Server-Side Evaluation Engine
+  // 5. Server-Side Evaluation Engine
   let totalScore = 0;
   let maxScore = 0;
   const breakdown: QuestionFeedbackItem[] = [];
@@ -485,12 +508,12 @@ export async function submitPracticeAnswers(
   const percentage = Math.round(accuracy * 100);
   const now = new Date().toISOString();
 
-  // 5. Persist submission
+  // 6. Persist submission
   const { data: submission, error: subError } = await adminClient
     .from('practice_submissions')
     .insert({
       user_id: userId,
-      daily_plan_task_id: taskId,
+      daily_plan_task_id: validatedTask ? validatedTask.id : null,
       content_item_id: contentItemId,
       answers,
       score: totalScore,
@@ -506,7 +529,7 @@ export async function submitPracticeAnswers(
     return { success: false, error: 'Không thể lưu kết quả nộp bài.' };
   }
 
-  // 6. Record learning evidence
+  // 7. Record learning evidence
   await adminClient.from('learning_evidence').insert({
     user_id: userId,
     skill: contentItem.skill,
@@ -524,7 +547,7 @@ export async function submitPracticeAnswers(
     },
   });
 
-  // 7. Emit practice_submitted event
+  // 8. Emit practice_submitted event
   await adminClient.from('learning_events').insert({
     user_id: userId,
     event_type: 'practice_submitted',
@@ -538,7 +561,7 @@ export async function submitPracticeAnswers(
     },
   });
 
-  // 8. If linked to a Daily Task, update task status & progress
+  // 9. If linked to a Daily Task, update task status & progress
   let planProgress = {
     completed_tasks: 0,
     total_tasks: 0,
@@ -547,87 +570,88 @@ export async function submitPracticeAnswers(
     plan_status: 'planned' as DailyPlanStatus,
   };
 
-  if (taskId) {
-    const { data: task } = await adminClient
+  if (validatedTask) {
+    const wasAlreadyCompleted = validatedTask.status === 'completed';
+
+    // Update task
+    await adminClient
       .from('daily_plan_tasks')
-      .select('id, daily_plan_id, estimated_minutes, learning_path_item_id')
-      .eq('id', taskId)
+      .update({
+        status: 'completed',
+        score: totalScore,
+        accuracy,
+        completed_at: now,
+        updated_at: now,
+      })
+      .eq('id', validatedTask.id)
+      .eq('user_id', userId);
+
+    // Add to completed_minutes in daily_plans only if not already completed
+    const { data: plan } = await adminClient
+      .from('daily_plans')
+      .select('id, target_minutes, completed_minutes')
+      .eq('id', validatedTask.daily_plan_id)
       .maybeSingle();
 
-    if (task) {
-      // Update task
+    if (plan && !wasAlreadyCompleted) {
+      const newCompletedMins = (plan.completed_minutes || 0) + (validatedTask.estimated_minutes || 0);
       await adminClient
-        .from('daily_plan_tasks')
+        .from('daily_plans')
         .update({
-          status: 'completed',
-          score: totalScore,
-          accuracy,
-          completed_at: now,
+          completed_minutes: newCompletedMins,
           updated_at: now,
         })
-        .eq('id', taskId);
+        .eq('id', validatedTask.daily_plan_id);
+    }
 
-      // Add to completed_minutes in daily_plans
-      const { data: plan } = await adminClient
-        .from('daily_plans')
-        .select('id, target_minutes, completed_minutes')
-        .eq('id', task.daily_plan_id)
-        .maybeSingle();
+    // Recalculate overall plan status
+    const updatedStatus = await recalculatePlanStatus(adminClient, validatedTask.daily_plan_id);
 
-      if (plan) {
-        const newCompletedMins = (plan.completed_minutes || 0) + (task.estimated_minutes || 0);
-        await adminClient
-          .from('daily_plans')
-          .update({
-            completed_minutes: newCompletedMins,
-            updated_at: now,
-          })
-          .eq('id', task.daily_plan_id);
-      }
+    // Log task_completed event
+    await adminClient.from('learning_events').insert({
+      user_id: userId,
+      event_type: 'task_completed',
+      entity_type: 'daily_plan_task',
+      entity_id: validatedTask.id,
+      payload: {
+        score: totalScore,
+        accuracy,
+      },
+    });
 
-      // Recalculate overall plan status
-      const updatedStatus = await recalculatePlanStatus(adminClient, task.daily_plan_id);
+    // Update user learning streak
+    try {
+      await recordStudyActivity(userId, 'practice');
+    } catch {
+      // Non-blocking streak update
+    }
 
-      // Log task_completed event
-      await adminClient.from('learning_events').insert({
-        user_id: userId,
-        event_type: 'task_completed',
-        entity_type: 'daily_plan_task',
-        entity_id: taskId,
-        payload: {
-          score: totalScore,
-          accuracy,
-        },
-      });
+    // Fetch updated plan tasks to return clean progress
+    const { data: allPlanTasks } = await adminClient
+      .from('daily_plan_tasks')
+      .select('status')
+      .eq('daily_plan_id', validatedTask.daily_plan_id);
 
-      // Update user learning streak
-      try {
-        await recordStudyActivity(userId, 'practice');
-      } catch {
-        // Non-blocking streak update
-      }
+    const { data: updatedPlan } = await adminClient
+      .from('daily_plans')
+      .select('target_minutes, completed_minutes')
+      .eq('id', validatedTask.daily_plan_id)
+      .maybeSingle();
 
-      // Fetch updated plan tasks to return clean progress
-      const { data: allPlanTasks } = await adminClient
-        .from('daily_plan_tasks')
-        .select('status')
-        .eq('daily_plan_id', task.daily_plan_id);
+    const completedCount = allPlanTasks?.filter((t) => t.status === 'completed').length || 0;
+    const totalCount = allPlanTasks?.length || 1;
 
-      const completedCount = allPlanTasks?.filter((t) => t.status === 'completed').length || 0;
-      const totalCount = allPlanTasks?.length || 1;
+    planProgress = {
+      completed_tasks: completedCount,
+      total_tasks: totalCount,
+      completed_minutes: updatedPlan?.completed_minutes || 0,
+      target_minutes: updatedPlan?.target_minutes || 30,
+      plan_status: updatedStatus,
+    };
 
-      planProgress = {
-        completed_tasks: completedCount,
-        total_tasks: totalCount,
-        completed_minutes: (plan?.completed_minutes || 0) + (task.estimated_minutes || 0),
-        target_minutes: plan?.target_minutes || 30,
-        plan_status: updatedStatus,
-      };
-
-      // Progressive unlocking in Learning Path if linked to a topic
-      if (task.learning_path_item_id) {
-        await unlockNextTopicInLearningPath(adminClient, task.learning_path_item_id);
-      }
+    // Progressive unlocking in Learning Path if linked to a topic
+    if (validatedTask.learning_path_item_id) {
+      await unlockNextTopicInLearningPath(adminClient, validatedTask.learning_path_item_id);
     }
   }
 
@@ -652,7 +676,7 @@ export async function submitPracticeAnswers(
  */
 type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
 
-async function recalculatePlanStatus(adminClient: AdminSupabaseClient, planId: string): Promise<DailyPlanStatus> {
+export async function recalculatePlanStatus(adminClient: AdminSupabaseClient, planId: string): Promise<DailyPlanStatus> {
   const { data: tasks } = await adminClient
     .from('daily_plan_tasks')
     .select('status')
@@ -698,7 +722,7 @@ async function recalculatePlanStatus(adminClient: AdminSupabaseClient, planId: s
 /**
  * Progressively unlocks the next topic in the learning path when the current one is completed.
  */
-async function unlockNextTopicInLearningPath(adminClient: AdminSupabaseClient, completedTopicId: string) {
+export async function unlockNextTopicInLearningPath(adminClient: AdminSupabaseClient, completedTopicId: string) {
   // Find current topic
   const { data: currentTopic } = await adminClient
     .from('learning_path_items')

@@ -86,3 +86,103 @@ Không cho AI tự viết SQL, thay đổi quyền, hoặc sửa learner profile
 - Không trả answer key trước khi submit.
 - Kiểm tra MIME type, dung lượng và quyền khi upload.
 - Không log prompt chứa dữ liệu cá nhân mặc định.
+
+## 7. Four Skills Operations & Server Actions (Phase 7)
+
+### `getSkillsCatalogAction()`
+- **Path/Type**: Server Action (`src/modules/skills/actions.ts`).
+- **Input**: None (xác thực qua session cookie `auth.getUser()`).
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "catalog": [
+      {
+        "slug": "string",
+        "title": "string",
+        "description": "string",
+        "skill": "listening | reading | writing | speaking",
+        "level": "string",
+        "estimatedMinutes": 20,
+        "status": "ready | planned",
+        "badgeLabel": "string",
+        "highlights": ["string"],
+        "audioUrl": "string"
+      }
+    ]
+  }
+  ```
+
+### `startSkillPracticeAction(slug: string)`
+- **Path/Type**: Server Action (`src/modules/skills/actions.ts`).
+- **Input**: `{ slug: string }`.
+- **Mục đích**: Tìm bài học, kiểm tra Daily Plan của ngày hôm nay, thêm task vào plan nếu chưa có (chống trùng lặp), và trả về `taskId` để client router điều hướng sang `/daily-plan/practice/[taskId]`.
+- **Response**: `{ success: true, taskId: "uuid" }` hoặc `{ success: false, error: "string" }`.
+
+### `submitWritingPracticeAction(taskId, contentItemId, essayText, durationSeconds)`
+- **Path/Type**: Server Action (`src/modules/skills/actions.ts`).
+- **Validation**: `submitWritingInputSchema` (tối thiểu 10 từ, tối đa 3000 ký tự).
+- **Mục đích**: Chấm điểm bài viết qua AI Provider (hoặc quy chuẩn heuristic fallback), tính Rubric 4 tiêu chí (100 điểm), lưu `practice_submissions`, ghi `learning_evidence`, cập nhật Daily Plan task, Streak và mở khóa topic Learning Path.
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "result": {
+      "submission_id": "uuid",
+      "score": 82,
+      "max_score": 100,
+      "percentage": 82,
+      "duration_seconds": 95,
+      "evaluation": {
+        "overall_feedback": "string",
+        "rubric_scores": {
+          "task_achievement": 22,
+          "grammar_accuracy": 24,
+          "lexical_resource": 20,
+          "coherence_organization": 16,
+          "total_score": 82
+        },
+        "grammar_corrections": [{ "error_quote": "string", "correction": "string", "explanation": "string" }],
+        "vocabulary_enhancements": [{ "original": "string", "suggestion": "string", "reason": "string" }],
+        "improved_version": { "text": "string", "rationale": "string" },
+        "next_steps": ["string"],
+        "evaluation_source": "ai_provider | fallback_heuristic"
+      }
+    }
+  }
+  ```
+
+### `submitSpeakingPracticeAction(taskId, contentItemId, transcriptText, durationSeconds)`
+- **Path/Type**: Server Action (`src/modules/skills/actions.ts`).
+- **Validation**: `submitSpeakingInputSchema` (tối thiểu 10 từ, tối đa 2500 ký tự).
+- **Mục đích**: Nhận xét phản xạ nói theo phương pháp Transcript-First, chấm Rubric 4 tiêu chí văn nói, cung cấp bài mẫu bản xứ kèm cụm từ đắt giá, lưu submission & evidence, cập nhật Streak.
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "result": {
+      "submission_id": "uuid",
+      "score": 84,
+      "max_score": 100,
+      "percentage": 84,
+      "duration_seconds": 60,
+      "evaluation": {
+        "overall_feedback": "string",
+        "relevance_and_fluency": "string",
+        "rubric_scores": {
+          "relevance_fluency": 22,
+          "spoken_grammar": 24,
+          "conversational_vocab": 22,
+          "naturalness_sample": 16,
+          "total_score": 84
+        },
+        "grammar_corrections": [{ "error_quote": "string", "correction": "string", "explanation": "string" }],
+        "vocabulary_enhancements": [{ "original": "string", "suggestion": "string", "reason": "string" }],
+        "sample_spoken_response": { "text": "string", "key_phrases": ["string"], "rationale": "string" },
+        "next_steps": ["string"],
+        "evaluation_source": "ai_provider | fallback_heuristic"
+      }
+    }
+  }
+  ```
+

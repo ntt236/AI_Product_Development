@@ -49,7 +49,12 @@ export default async function PracticeSessionPage({ params }: PracticePageProps)
   // Fetch content item and exercises (without answer keys!)
   const { contentItem, exercises } = await getContentItemWithExercises(task.content_item_id);
 
-  if (!contentItem || exercises.length === 0) {
+  if (
+    !contentItem ||
+    (exercises.length === 0 &&
+      contentItem.skill !== 'writing' &&
+      contentItem.skill !== 'speaking')
+  ) {
     notFound();
   }
 

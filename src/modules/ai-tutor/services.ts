@@ -89,7 +89,7 @@ export async function explainPracticeExercise(
       schemaDescription: promptPackage.schemaDescription,
       temperature: 0.2,
       maxTokens: 1200,
-      timeoutMs: 10000,
+      timeoutMs: 25000,
       validator: (data): data is AITutorExplanation => {
         return AITutorExplanationSchema.safeParse(data).success;
       },

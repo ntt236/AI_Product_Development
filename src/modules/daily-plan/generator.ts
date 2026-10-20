@@ -12,7 +12,7 @@ export interface TaskCandidateDraft {
   title: string;
   description?: string | null;
   activity_type: ActivityType;
-  skill?: AssessmentSkill | 'toeic' | null;
+  skill?: AssessmentSkill | 'speaking' | 'writing' | 'toeic' | null;
   position: number;
   estimated_minutes: number;
   content_status: 'available' | 'planned_curriculum';
@@ -30,7 +30,7 @@ export interface GeneratorPathItem {
   id: string;
   title: string;
   description?: string | null;
-  skill?: AssessmentSkill | 'toeic' | null;
+  skill?: AssessmentSkill | 'speaking' | 'writing' | 'toeic' | null;
   item_type: string;
   position: number;
   estimated_minutes: number;
@@ -105,24 +105,63 @@ export function generateDailyPlanProposal(input: GeneratorInput): DailyPlanPropo
       // Check if this topic maps to a curated content item
       const matchingCurated = input.curatedContentItems.find((c) => {
         if (topic.skill && c.skill === topic.skill) {
-          // Match by title keywords or skill
+          const tLower = topic.title.toLowerCase();
+          // 1. Vocabulary: Daily Routine
           if (
-            (topic.title.toLowerCase().includes('sinh hoạt') || topic.title.toLowerCase().includes('routine')) &&
+            (tLower.includes('sinh hoạt') || tLower.includes('routine')) &&
             c.slug.includes('daily-routine')
           ) {
             return true;
           }
+          // 2. Vocabulary: Office Communication
           if (
-            (topic.title.toLowerCase().includes('hiện tại') || topic.title.toLowerCase().includes('present simple')) &&
+            (tLower.includes('công sở') || tLower.includes('nghề nghiệp') || tLower.includes('office')) &&
+            c.slug.includes('office-communication')
+          ) {
+            return true;
+          }
+          // 3. Grammar: Present Simple
+          if (
+            (tLower.includes('hiện tại') || tLower.includes('present simple')) &&
             c.slug.includes('present-simple')
           ) {
             return true;
           }
+          // 4. Listening: Daily Conversations
           if (
-            (topic.title.toLowerCase().includes('chào hỏi') ||
-              topic.title.toLowerCase().includes('thông tin cá nhân') ||
-              topic.title.toLowerCase().includes('introducing')) &&
+            (tLower.includes('chào hỏi') ||
+              tLower.includes('thông tin cá nhân') ||
+              tLower.includes('introducing')) &&
             (c.slug.includes('introducing-yourself') || c.slug.includes('daily-conversations'))
+          ) {
+            return true;
+          }
+          // 5. Reading: Workplace Announcements & Messages
+          if (
+            (tLower.includes('thông báo') ||
+              tLower.includes('kế hoạch công việc') ||
+              tLower.includes('workplace') ||
+              tLower.includes('announcement')) &&
+            (c.slug.includes('workplace-announcements') || c.slug.includes('reading-workplace'))
+          ) {
+            return true;
+          }
+          // 6. Writing: Introductory Email
+          if (
+            (tLower.includes('viết email') ||
+              tLower.includes('email giới thiệu') ||
+              tLower.includes('introductory email')) &&
+            c.slug.includes('introductory-email')
+          ) {
+            return true;
+          }
+          // 7. Speaking: Daily Life Introduction
+          if (
+            (tLower.includes('luyện nói') ||
+              tLower.includes('phản xạ nói') ||
+              tLower.includes('cuộc sống thường ngày') ||
+              tLower.includes('daily life')) &&
+            c.slug.includes('speaking-daily-life')
           ) {
             return true;
           }
