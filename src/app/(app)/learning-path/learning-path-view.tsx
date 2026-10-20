@@ -3,7 +3,32 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/ui/state-feedback';
+import {
+  Compass,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  Clock,
+  Play,
+  Pause,
+  Sliders,
+  BookOpen,
+  Lock,
+  ArrowUp,
+  ArrowDown,
+  Shield,
+  History,
+  BarChart3,
+  X,
+  AlertCircle,
+  Info,
+} from 'lucide-react';
 import type {
   LearningPath,
   LearningPathItem,
@@ -229,17 +254,17 @@ export function LearningPathView({
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success">● Đang hoạt động (Active)</Badge>;
+        return <Badge variant="success">● Đang hoạt động</Badge>;
       case 'proposed':
-        return <Badge variant="info">● Đề xuất chờ duyệt (Proposed)</Badge>;
+        return <Badge variant="info">● Đề xuất chờ duyệt</Badge>;
       case 'paused':
-        return <Badge variant="warning">● Đang tạm dừng (Paused)</Badge>;
+        return <Badge variant="warning">● Đang tạm dừng</Badge>;
       case 'completed':
-        return <Badge variant="success">● Đã hoàn thành (Completed)</Badge>;
+        return <Badge variant="success">● Đã hoàn thành</Badge>;
       case 'rejected':
-        return <Badge variant="default">● Đã từ chối (Rejected)</Badge>;
+        return <Badge variant="destructive">● Đã từ chối</Badge>;
       case 'archived':
-        return <Badge variant="default">● Đã lưu trữ (Archived)</Badge>;
+        return <Badge variant="default">● Đã lưu trữ</Badge>;
       default:
         return <Badge variant="default">{status}</Badge>;
     }
@@ -248,476 +273,384 @@ export function LearningPathView({
   // If no learning path exists yet, show creation prompt
   if (!initialPath) {
     return (
-      <div className="card" style={{ textAlign: 'center', padding: '3.5rem 2rem' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗺️</div>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-          Chưa có Lộ trình học nào được tạo
-        </h2>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 2rem' }}>
-          {profile?.hasCompletedAssessment
+      <EmptyState
+        icon={Compass}
+        title="Chưa có Lộ trình học nào được tạo"
+        description={
+          profile?.hasCompletedAssessment
             ? 'Bạn đã hoàn thành bài kiểm tra đầu vào. Hệ thống sẽ phân tích điểm mạnh/yếu và sinh lộ trình 3 Milestones cá nhân hóa phù hợp với mục tiêu của bạn.'
-            : 'Bạn chưa hoàn thành Placement Test. Bạn có thể làm bài kiểm tra để có lộ trình chính xác nhất, hoặc tạo ngay Lộ trình học tiêu chuẩn (Starter Path) theo mục tiêu hiện tại.'}
-        </p>
-
-        {feedback && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem',
-              maxWidth: '500px',
-              margin: '0 auto 1.5rem',
-              backgroundColor: feedback.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-              color: feedback.type === 'error' ? '#ef4444' : '#10b981',
-              border: `1px solid ${feedback.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-            }}
-          >
-            {feedback.message}
+            : 'Bạn chưa hoàn thành Placement Test. Bạn có thể làm bài kiểm tra để có lộ trình chính xác nhất, hoặc tạo ngay Lộ trình học tiêu chuẩn (Starter Path) theo mục tiêu hiện tại.'
+        }
+        action={
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              onClick={handleGeneratePath}
+              isLoading={isPending}
+              size="lg"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Tạo Lộ trình học cá nhân hóa
+            </Button>
+            {!profile?.hasCompletedAssessment && (
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/assessment">
+                  Làm bài kiểm tra đầu vào trước
+                </Link>
+              </Button>
+            )}
           </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button
-            onClick={handleGeneratePath}
-            disabled={isPending}
-            className="btn btn-primary"
-            style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}
-          >
-            {isPending ? 'Đang tạo lộ trình...' : '✨ Tạo Lộ trình học cá nhân hóa'}
-          </button>
-          {!profile?.hasCompletedAssessment && (
-            <Link href="/assessment" className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
-              🎯 Làm bài kiểm tra đầu vào trước
-            </Link>
-          )}
-        </div>
-      </div>
+        }
+      />
     );
   }
 
   return (
-    <div>
+    <div className="space-y-6 pb-12">
       {/* Feedback Banner */}
       {feedback && (
         <div
-          style={{
-            padding: '1rem 1.25rem',
-            borderRadius: '10px',
-            marginBottom: '1.5rem',
-            backgroundColor:
-              feedback.type === 'error'
-                ? 'rgba(239, 68, 68, 0.15)'
-                : feedback.type === 'success'
-                ? 'rgba(16, 185, 129, 0.15)'
-                : 'rgba(56, 189, 248, 0.15)',
-            color:
-              feedback.type === 'error'
-                ? '#f87171'
-                : feedback.type === 'success'
-                ? '#34d399'
-                : '#38bdf8',
-            border: `1px solid ${
-              feedback.type === 'error'
-                ? 'rgba(239, 68, 68, 0.3)'
-                : feedback.type === 'success'
-                ? 'rgba(16, 185, 129, 0.3)'
-                : 'rgba(56, 189, 248, 0.3)'
-            }`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          className={`p-4 rounded-xl flex items-center justify-between gap-3 text-sm font-medium border animate-in fade-in duration-200 ${
+            feedback.type === 'error'
+              ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+              : feedback.type === 'success'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+          }`}
         >
-          <span>{feedback.message}</span>
+          <div className="flex items-center gap-2.5">
+            {feedback.type === 'error' ? (
+              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+            ) : feedback.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            ) : (
+              <Info className="w-5 h-5 text-cyan-400 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
           <button
             onClick={() => setFeedback(null)}
-            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1.2rem' }}
+            className="text-muted-foreground hover:text-foreground text-xs p-1"
           >
-            ×
+            ✕
           </button>
         </div>
       )}
 
       {/* Main Path Header Card */}
-      <div
-        className="card"
-        style={{
-          marginBottom: '2rem',
-          border: '1px solid rgba(56, 189, 248, 0.25)',
-          background: 'linear-gradient(135deg, rgba(26, 34, 52, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0 }}>
-                {initialPath.title}
-              </h1>
-              {renderStatusBadge(initialPath.status)}
+      <Card className="relative overflow-hidden border-cyan-500/25 bg-gradient-to-br from-card via-card to-cyan-950/20">
+        <CardContent className="p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                  {initialPath.title}
+                </h1>
+                {renderStatusBadge(initialPath.status)}
+              </div>
+              <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+                {initialPath.description}
+              </p>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '800px', margin: 0 }}>
-              {initialPath.description}
-            </p>
+
+            <div className="shrink-0">
+              <Badge variant="info" className="px-3 py-1 font-mono text-xs">
+                Phiên bản v{initialPath.current_version} {initialPath.is_user_modified ? '(Đã tùy chỉnh)' : ''}
+              </Badge>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span
-              style={{
-                fontSize: '0.8rem',
-                padding: '0.35rem 0.65rem',
-                borderRadius: '6px',
-                background: 'rgba(99, 102, 241, 0.15)',
-                color: 'var(--accent-indigo)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                fontWeight: 600,
-              }}
-            >
-              Phiên bản v{initialPath.current_version} {initialPath.is_user_modified ? '(Đã tùy chỉnh)' : ''}
-            </span>
-          </div>
-        </div>
-
-        {/* Workload & CEFR Metrics */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1rem',
-            padding: '1.25rem',
-            backgroundColor: 'rgba(0, 0, 0, 0.25)',
-            borderRadius: '10px',
-            border: '1px solid var(--border-color)',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>MỤC TIÊU CEFR</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-              {initialPath.target_level.toUpperCase()}
+          {/* Workload & CEFR Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 rounded-xl bg-black/30 border">
+            <div>
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Mục tiêu CEFR
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-cyan-400">
+                {initialPath.target_level.toUpperCase()}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Thời lượng ước tính
+              </div>
+              <div className="text-xl sm:text-2xl font-bold">
+                ~{initialPath.estimated_weeks} tuần
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Tổng khối lượng
+              </div>
+              <div className="text-xl sm:text-2xl font-bold">
+                {Math.round(initialPath.total_estimated_minutes / 60)} giờ
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Lịch học hàng tuần
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-400">
+                {profile?.dailyMinutes || 30}p / {profile?.studyDays?.length || 5} ngày
+              </div>
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>THỜI LƯỢNG ƯỚC TÍNH</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              ~{initialPath.estimated_weeks} tuần
+
+          {/* User Sovereignty Action Bar */}
+          <div className="pt-4 border-t border-border/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            {initialPath.status === 'proposed' && (
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Button
+                  onClick={handleAccept}
+                  isLoading={isPending}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Chấp nhận &amp; Bắt đầu học
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReject}
+                  disabled={isPending}
+                  className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                >
+                  <X className="w-4 h-4 mr-1.5" />
+                  Từ chối
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsCustomizing(!isCustomizing)}
+                >
+                  <Sliders className="w-4 h-4 mr-1.5" />
+                  {isCustomizing ? 'Đóng tùy chỉnh' : 'Tùy chỉnh thứ tự'}
+                </Button>
+              </div>
+            )}
+
+            {initialPath.status === 'active' && (
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Button
+                  variant="secondary"
+                  onClick={handlePause}
+                  disabled={isPending}
+                >
+                  <Pause className="w-4 h-4 mr-2" />
+                  Tạm dừng học (Pause)
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsCustomizing(!isCustomizing)}
+                >
+                  <Sliders className="w-4 h-4 mr-1.5" />
+                  {isCustomizing ? 'Đóng tùy chỉnh' : 'Tùy chỉnh thứ tự'}
+                </Button>
+              </div>
+            )}
+
+            {initialPath.status === 'paused' && (
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Button
+                  onClick={handleResume}
+                  isLoading={isPending}
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Tiếp tục lộ trình (Resume)
+                </Button>
+              </div>
+            )}
+
+            {(initialPath.status === 'rejected' || initialPath.status === 'completed' || initialPath.status === 'archived') && (
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Info className="w-4 h-4" />
+                <span>Lộ trình này đang ở trạng thái kết thúc ({initialPath.status}). Bạn có thể tạo lộ trình mới từ Dashboard.</span>
+              </div>
+            )}
+
+            {/* AI Anti-Overwrite Notice */}
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Quyền kiểm soát thuộc về bạn: AI không thể tự ý ghi đè lộ trình.</span>
             </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TỔNG KHỐI LƯỢNG HỌC</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {Math.round(initialPath.total_estimated_minutes / 60)} giờ ({initialPath.total_estimated_minutes} phút)
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>LỊCH HỌC HÀNG TUẦN</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-emerald)' }}>
-              {profile?.dailyMinutes || 30} phút / {profile?.studyDays?.length || 5} ngày
-            </div>
-          </div>
-        </div>
-
-        {/* User Sovereignty Action Bar */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            paddingTop: '1.25rem',
-          }}
-        >
-          {initialPath.status === 'proposed' && (
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                onClick={handleAccept}
-                disabled={isPending}
-                className="btn btn-primary"
-                style={{ padding: '0.65rem 1.25rem' }}
-              >
-                {isPending ? 'Đang xử lý...' : '✅ Chấp nhận & Bắt đầu học (Accept)'}
-              </button>
-              <button
-                onClick={handleReject}
-                disabled={isPending}
-                className="btn btn-secondary"
-                style={{ padding: '0.65rem 1.25rem', color: '#f87171' }}
-              >
-                ❌ Từ chối (Reject)
-              </button>
-              <button
-                onClick={() => setIsCustomizing(!isCustomizing)}
-                className="btn btn-secondary"
-                style={{ padding: '0.65rem 1.25rem' }}
-              >
-                ✏️ {isCustomizing ? 'Đóng chế độ tùy chỉnh' : 'Tùy chỉnh thứ tự'}
-              </button>
-            </div>
-          )}
-
-          {initialPath.status === 'active' && (
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                onClick={handlePause}
-                disabled={isPending}
-                className="btn btn-secondary"
-                style={{ padding: '0.65rem 1.25rem' }}
-              >
-                ⏸️ Tạm dừng học (Pause)
-              </button>
-              <button
-                onClick={() => setIsCustomizing(!isCustomizing)}
-                className="btn btn-secondary"
-                style={{ padding: '0.65rem 1.25rem' }}
-              >
-                ✏️ {isCustomizing ? 'Đóng chế độ tùy chỉnh' : 'Tùy chỉnh thứ tự'}
-              </button>
-            </div>
-          )}
-
-          {initialPath.status === 'paused' && (
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button
-                onClick={handleResume}
-                disabled={isPending}
-                className="btn btn-primary"
-                style={{ padding: '0.65rem 1.25rem' }}
-              >
-                ▶️ Tiếp tục lộ trình (Resume)
-              </button>
-            </div>
-          )}
-
-          {(initialPath.status === 'rejected' || initialPath.status === 'completed' || initialPath.status === 'archived') && (
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              ℹ️ Lộ trình này đang ở trạng thái kết thúc ({initialPath.status}). Bạn có thể tạo lộ trình mới từ Dashboard.
-            </div>
-          )}
-
-          {/* AI Anti-Overwrite Notice */}
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            🔒 <em>Quyền kiểm soát thuộc về bạn: AI không thể tự ý ghi đè hoặc thay đổi lộ trình của bạn.</em>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Customization Form Banner */}
       {isCustomizing && (
-        <div
-          className="card"
-          style={{
-            marginBottom: '2rem',
-            border: '1px solid var(--accent-indigo)',
-            background: 'rgba(99, 102, 241, 0.08)',
-          }}
-        >
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--accent-indigo)' }}>
-            🛠️ Chế độ tùy chỉnh cấu trúc lộ trình
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            Mỗi lần lưu chỉnh sửa sẽ tạo ra một phiên bản bất biến mới (version snapshot) và tăng số version hiện hành.
-            Hệ thống áp dụng kiểm soát đồng thời lạc quan (optimistic locking) để bảo vệ dữ liệu khi làm việc trên nhiều tab.
-          </p>
+        <Card className="border-indigo-500/40 bg-gradient-to-br from-indigo-950/20 via-card to-card">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center gap-2 text-indigo-400">
+              <Sliders className="w-5 h-5" />
+              <h3 className="text-base font-bold tracking-tight">
+                Chế độ tùy chỉnh cấu trúc lộ trình
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Mỗi lần lưu chỉnh sửa sẽ tạo ra một phiên bản bất biến mới (version snapshot) và tăng số version hiện hành.
+              Hệ thống áp dụng kiểm soát đồng thời lạc quan (optimistic locking) để bảo vệ dữ liệu khi làm việc trên nhiều tab.
+            </p>
 
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-              1. Chọn Mô-đun để tùy chỉnh thứ tự các Chủ đề (Topics):
-            </label>
-            <select
-              value={effectiveModuleId}
-              onChange={(e) => {
-                setSelectedModuleId(e.target.value);
-                setReorderedTopicIds([]);
-              }}
-              className="form-input"
-              style={{
-                width: '100%',
-                padding: '0.65rem',
-                borderRadius: '6px',
-                background: 'rgba(0, 0, 0, 0.4)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {allModules.map((mod) => {
-                const parentMilestone = initialItems.find((it) => it.id === mod.parent_id);
-                return (
-                  <option key={mod.id} value={mod.id} style={{ background: '#1e293b', color: '#fff' }}>
-                    [{parentMilestone?.title || 'Milestone'}] {mod.title}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                1. Chọn Mô-đun để tùy chỉnh thứ tự các Chủ đề:
+              </label>
+              <select
+                value={effectiveModuleId}
+                onChange={(e) => {
+                  setSelectedModuleId(e.target.value);
+                  setReorderedTopicIds([]);
+                }}
+                className="w-full px-3 py-2 text-sm rounded-lg bg-background border text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              >
+                {allModules.map((mod) => {
+                  const parentMilestone = initialItems.find((it) => it.id === mod.parent_id);
+                  return (
+                    <option key={mod.id} value={mod.id} className="bg-card text-foreground">
+                      [{parentMilestone?.title || 'Milestone'}] {mod.title}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
 
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-              2. Sắp xếp thứ tự các chủ đề trong mô-đun này:
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {displayedTopicIds.map((topicId, idx) => {
-                const topic = initialItems.find((it) => it.id === topicId);
-                if (!topic) return null;
-                return (
-                  <div
-                    key={topicId}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.6rem 0.85rem',
-                      borderRadius: '6px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                      border: '1px solid var(--border-color)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--accent-cyan)', fontSize: '0.85rem' }}>
-                        #{idx + 1}
-                      </span>
-                      <div>
-                        <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{topic.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {topic.skill?.toUpperCase()} • {topic.estimated_minutes} phút
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground">
+                2. Sắp xếp thứ tự các chủ đề trong mô-đun này:
+              </label>
+              <div className="space-y-2">
+                {displayedTopicIds.map((topicId, idx) => {
+                  const topic = initialItems.find((it) => it.id === topicId);
+                  if (!topic) return null;
+                  return (
+                    <div
+                      key={topicId}
+                      className="flex items-center justify-between p-3 rounded-lg bg-black/25 border text-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-cyan-400 text-xs w-6">
+                          #{idx + 1}
+                        </span>
+                        <div>
+                          <div className="font-semibold text-sm">{topic.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {topic.skill?.toUpperCase()} • {topic.estimated_minutes} phút
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => moveTopic(idx, 'up')}
+                          disabled={idx === 0 || isPending}
+                          className="h-8 px-2 text-xs"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => moveTopic(idx, 'down')}
+                          disabled={idx === displayedTopicIds.length - 1 || isPending}
+                          className="h-8 px-2 text-xs"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
-                      <button
-                        type="button"
-                        onClick={() => moveTopic(idx, 'up')}
-                        disabled={idx === 0 || isPending}
-                        className="btn btn-secondary btn-sm"
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                        title="Di chuyển lên"
-                      >
-                        ↑ Lên
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveTopic(idx, 'down')}
-                        disabled={idx === displayedTopicIds.length - 1 || isPending}
-                        className="btn btn-secondary btn-sm"
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                        title="Di chuyển xuống"
-                      >
-                        ↓ Xuống
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-              3. Lý do thay đổi (Change Reason):
-            </label>
-            <input
-              type="text"
-              value={customReason}
-              onChange={(e) => setCustomReason(e.target.value)}
-              className="form-input"
-              style={{
-                width: '100%',
-                padding: '0.65rem',
-                borderRadius: '6px',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-primary)',
-              }}
-              placeholder="VD: Muốn đẩy kỹ năng Từ vựng lên học trước..."
-            />
-          </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground">
+                3. Lý do thay đổi (Change Reason):
+              </label>
+              <Input
+                type="text"
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+                placeholder="VD: Muốn đẩy kỹ năng Từ vựng lên học trước..."
+              />
+            </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              onClick={handleSaveCustomization}
-              disabled={isPending || displayedTopicIds.length === 0}
-              className="btn btn-primary btn-sm"
-            >
-              {isPending ? 'Đang lưu snapshot...' : '💾 Lưu phiên bản mới (Save New Version)'}
-            </button>
-            <button
-              onClick={() => setIsCustomizing(false)}
-              className="btn btn-secondary btn-sm"
-            >
-              Hủy bỏ
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                onClick={handleSaveCustomization}
+                isLoading={isPending}
+                disabled={displayedTopicIds.length === 0}
+              >
+                Lưu phiên bản mới (Save New Version)
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setIsCustomizing(false)}
+              >
+                Hủy bỏ
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+      <div className="flex items-center gap-1.5 p-1 bg-card/60 backdrop-blur border rounded-xl overflow-x-auto">
         <button
           onClick={() => setActiveTab('timeline')}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            border: 'none',
-            background: activeTab === 'timeline' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-            color: activeTab === 'timeline' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-            fontWeight: activeTab === 'timeline' ? 600 : 400,
-            cursor: 'pointer',
-          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'timeline'
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+          }`}
         >
-          🗺️ Tiến trình 3 Milestones ({milestones.length})
+          <Compass className="w-4 h-4" />
+          <span>Tiến trình 3 Milestones</span>
+          <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4">
+            {milestones.length}
+          </Badge>
         </button>
+
         <button
           onClick={() => setActiveTab('profile')}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            border: 'none',
-            background: activeTab === 'profile' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-            color: activeTab === 'profile' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-            fontWeight: activeTab === 'profile' ? 600 : 400,
-            cursor: 'pointer',
-          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'profile'
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+          }`}
         >
-          📊 Phân tích hồ sơ &amp; Điểm yếu
+          <BarChart3 className="w-4 h-4" />
+          <span>Phân tích năng lực &amp; Điểm yếu</span>
         </button>
+
         <button
           onClick={() => setActiveTab('history')}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            border: 'none',
-            background: activeTab === 'history' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-            color: activeTab === 'history' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-            fontWeight: activeTab === 'history' ? 600 : 400,
-            cursor: 'pointer',
-          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'history'
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+          }`}
         >
-          📜 Lịch sử phiên bản ({initialVersions.length})
+          <History className="w-4 h-4" />
+          <span>Lịch sử phiên bản</span>
+          <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4">
+            {initialVersions.length}
+          </Badge>
         </button>
       </div>
 
       {/* TAB 1: 3 MILESTONES TIMELINE */}
       {activeTab === 'timeline' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="space-y-4">
           {/* Informative Advisory Banner if there are planned curriculum topics */}
           {hasPlannedCurriculum && (
-            <div
-              style={{
-                padding: '1rem 1.25rem',
-                borderRadius: '10px',
-                backgroundColor: 'rgba(56, 189, 248, 0.06)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.75rem',
-              }}
-            >
-              <span style={{ fontSize: '1.35rem' }}>💡</span>
+            <div className="p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 flex items-start gap-3">
+              <span className="p-1 rounded-md bg-cyan-500/10 text-cyan-400 mt-0.5">
+                <Info className="w-4 h-4" />
+              </span>
               <div>
-                <div style={{ color: 'var(--accent-cyan)', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                <div className="text-sm font-semibold text-cyan-400 mb-0.5">
                   Nội dung đang được hoàn thiện
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Một số chủ đề trong lộ trình chưa có bài học tương tác. Bạn vẫn có thể học những nội dung đã sẵn sàng trong Kế hoạch ngày.
                 </p>
               </div>
@@ -729,185 +662,112 @@ export function LearningPathView({
             const modules = getModulesForMilestone(m.id);
 
             return (
-              <div
-                key={m.id}
-                className="card"
-                style={{
-                  border: '1px solid var(--border-color)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
+              <Card key={m.id} className="overflow-hidden">
                 {/* Milestone Header */}
                 <div
                   onClick={() => toggleMilestone(m.id)}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                  }}
+                  className="p-5 sm:p-6 flex items-center justify-between cursor-pointer hover:bg-muted/30 transition-colors select-none"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        backgroundColor: index === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                        color: index === 0 ? 'var(--accent-cyan)' : 'var(--text-muted)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {index + 1}
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 flex items-center justify-center font-black text-sm shrink-0">
+                      M{index + 1}
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>
+                      <h3 className="text-base sm:text-lg font-bold tracking-tight">
                         {m.title}
                       </h3>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                      <p className="text-xs text-muted-foreground">
                         {m.description}
                       </p>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="flex items-center gap-3">
                     <Badge variant={m.status === 'available' ? 'success' : 'default'}>
                       {m.status === 'available' ? 'Sẵn sàng' : 'Khóa'}
                     </Badge>
-                    <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>
-                      {isExpanded ? '▲' : '▼'}
+                    <span className="text-muted-foreground p-1">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                   </div>
                 </div>
 
                 {/* Modules & Topics */}
                 {isExpanded && (
-                  <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    {modules.map((mod) => {
-                      const topics = getTopicsForModule(mod.id);
+                  <CardContent className="px-5 pb-6 pt-0 space-y-4">
+                    <div className="border-t border-border/50 pt-4 space-y-4">
+                      {modules.map((mod) => {
+                        const topics = getTopicsForModule(mod.id);
 
-                      return (
-                        <div
-                          key={mod.id}
-                          style={{
-                            padding: '1rem',
-                            backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                            <div>
-                              <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                                {mod.title}
-                              </strong>
-                              {mod.description && (
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                                  {mod.description}
-                                </p>
+                        return (
+                          <div
+                            key={mod.id}
+                            className="p-4 rounded-xl bg-black/20 border space-y-3"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div>
+                                <strong className="text-sm font-bold text-foreground">
+                                  {mod.title}
+                                </strong>
+                                {mod.description && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {mod.description}
+                                  </p>
+                                )}
+                              </div>
+                              {mod.skill && (
+                                <Badge variant="info">
+                                  {mod.skill.toUpperCase()}
+                                </Badge>
                               )}
                             </div>
-                            {mod.skill && (
-                              <Badge variant="info">
-                                {mod.skill.toUpperCase()}
-                              </Badge>
-                            )}
-                          </div>
 
-                          {/* Topics List */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {topics.map((t) => (
-                              <div
-                                key={t.id}
-                                onClick={() => setSelectedTopicInfo(t)}
-                                style={{
-                                  padding: '0.75rem 1rem',
-                                  borderRadius: '6px',
-                                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                                  border: '1px solid var(--border-color)',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  cursor: 'pointer',
-                                  transition: 'background-color 0.2s',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.08)')}
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)')}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                  <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    #{t.position}
-                                  </span>
-                                  <div>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                                      {t.title}
-                                    </div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                                      {t.description}
+                            {/* Topics List */}
+                            <div className="space-y-2">
+                              {topics.map((t) => (
+                                <div
+                                  key={t.id}
+                                  onClick={() => setSelectedTopicInfo(t)}
+                                  className="p-3 rounded-lg bg-card/60 border hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-bold text-muted-foreground group-hover:text-cyan-400 transition-colors w-6">
+                                      #{t.position}
+                                    </span>
+                                    <div>
+                                      <div className="text-sm font-medium group-hover:text-cyan-300 transition-colors">
+                                        {t.title}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground line-clamp-1">
+                                        {t.description}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                    ⏱️ {t.estimated_minutes}p
-                                  </span>
-                                  {/* Status Badges */}
-                                  {t.status === 'completed' ? (
-                                    <span
-                                      style={{
-                                        fontSize: '0.75rem',
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                                        color: '#34d399',
-                                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                                      }}
-                                    >
-                                      🎉 Đã xong
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Clock className="w-3.5 h-3.5" />
+                                      {t.estimated_minutes}p
                                     </span>
-                                  ) : t.content_status === 'available' ? (
-                                    <span
-                                      style={{
-                                        fontSize: '0.75rem',
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                                        color: 'var(--accent-cyan)',
-                                        border: '1px solid rgba(56, 189, 248, 0.3)',
-                                      }}
-                                    >
-                                      ✅ Khả dụng
-                                    </span>
-                                  ) : (
-                                    <span
-                                      style={{
-                                        fontSize: '0.75rem',
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                                        color: 'var(--accent-amber)',
-                                        border: '1px solid rgba(245, 158, 11, 0.25)',
-                                      }}
-                                    >
-                                      📋 Đang chuẩn bị
-                                    </span>
-                                  )}
+
+                                    {t.status === 'completed' ? (
+                                      <Badge variant="success">🎉 Đã xong</Badge>
+                                    ) : t.content_status === 'available' ? (
+                                      <Badge variant="info">✅ Khả dụng</Badge>
+                                    ) : (
+                                      <Badge variant="warning">📋 Đang chuẩn bị</Badge>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -915,275 +775,217 @@ export function LearningPathView({
 
       {/* TAB 2: PROFILE & WEAKNESS ANALYSIS */}
       {activeTab === 'profile' && (
-        <div className="card">
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Phân tích năng lực người học (Learner Profile)
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Dữ liệu kỹ năng được tổng hợp từ bài kiểm tra đầu vào và thiết lập mục tiêu trong Onboarding.
-          </p>
+        <Card>
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">
+                Phân tích năng lực người học (Learner Profile)
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Dữ liệu kỹ năng được tổng hợp từ bài kiểm tra đầu vào và thiết lập mục tiêu trong Onboarding.
+              </p>
+            </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '1rem',
-              marginBottom: '2rem',
-            }}
-          >
-            {profile?.skillProfiles &&
-              Object.entries(profile.skillProfiles).map(([skill, data]) => {
-                const priorityScore = (1 - data.abilityScore) * 1.5; // illustrative heuristic
-                return (
-                  <div
-                    key={skill}
-                    style={{
-                      padding: '1rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                      border: '1px solid var(--border-color)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <strong style={{ textTransform: 'capitalize' }}>{skill}</strong>
-                      <Badge variant={data.abilityScore >= 0.75 ? 'success' : data.abilityScore >= 0.5 ? 'info' : 'warning'}>
-                        {data.level.toUpperCase()}
-                      </Badge>
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                      Điểm năng lực: {Math.round(data.abilityScore * 100)}%
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Độ tin cậy: {Math.round(data.confidence * 100)}% ({data.evidenceCount} bài làm)
-                    </div>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-cyan)' }}>
-                      Priority Score: {priorityScore.toFixed(2)}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {profile?.skillProfiles &&
+                Object.entries(profile.skillProfiles).map(([skill, data]) => {
+                  const priorityScore = (1 - data.abilityScore) * 1.5;
+                  return (
+                    <div
+                      key={skill}
+                      className="p-4 rounded-xl bg-black/25 border space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="text-sm capitalize font-bold text-foreground">
+                          {skill}
+                        </strong>
+                        <Badge
+                          variant={
+                            data.abilityScore >= 0.75
+                              ? 'success'
+                              : data.abilityScore >= 0.5
+                              ? 'info'
+                              : 'warning'
+                          }
+                        >
+                          {data.level.toUpperCase()}
+                        </Badge>
+                      </div>
 
-          <div
-            style={{
-              padding: '1rem',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid var(--border-color)',
-              fontSize: '0.85rem',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <strong>Ghi nhận giới hạn đo lường:</strong> Placement Test hiện tại bao gồm 16 câu hỏi (4 câu mỗi kỹ năng). Hệ thống kết luận điểm mạnh/yếu ở cấp độ kỹ năng tổng quát, không suy diễn vi mô ở cấp độ từng chủ đề ngữ pháp chuyên sâu khi chưa có đủ bằng chứng thực tế.
-          </div>
-        </div>
+                      <div className="text-xs text-muted-foreground">
+                        Điểm năng lực: <strong className="text-foreground">{Math.round(data.abilityScore * 100)}%</strong>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Độ tin cậy: <strong className="text-foreground">{Math.round(data.confidence * 100)}%</strong> ({data.evidenceCount} bài làm)
+                      </div>
+                      <div className="text-xs text-cyan-400 font-semibold pt-1">
+                        Priority Score: {priorityScore.toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="p-4 rounded-xl bg-muted/40 border text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">Ghi nhận giới hạn đo lường:</strong> Placement Test hiện tại bao gồm 16 câu hỏi (4 câu mỗi kỹ năng). Hệ thống kết luận điểm mạnh/yếu ở cấp độ kỹ năng tổng quát, không suy diễn vi mô ở cấp độ từng chủ đề ngữ pháp chuyên sâu khi chưa có đủ bằng chứng thực tế.
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* TAB 3: VERSION HISTORY */}
       {activeTab === 'history' && (
-        <div className="card">
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Lịch sử phiên bản (Version History &amp; Snapshots)
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Mỗi phiên bản là một snapshot bất biến (immutable snapshot), ghi nhận đầy đủ người thực hiện, lý do và cấu trúc tại thời điểm lưu.
-          </p>
+        <Card>
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">
+                Lịch sử phiên bản (Version History &amp; Snapshots)
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Mỗi phiên bản là một snapshot bất biến (immutable snapshot), ghi nhận đầy đủ người thực hiện, lý do và cấu trúc tại thời điểm lưu.
+              </p>
+            </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {initialVersions.map((v) => (
-              <div
-                key={v.id}
-                style={{
-                  padding: '1rem 1.25rem',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                  border: '1px solid var(--border-color)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                    <strong style={{ color: 'var(--accent-indigo)' }}>v{v.version_number}</strong>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                      {v.change_reason}
-                    </span>
-                    <Badge variant={v.created_by === 'user' ? 'success' : 'default'}>
-                      Tạo bởi: {v.created_by}
-                    </Badge>
+            <div className="space-y-3">
+              {initialVersions.map((v) => (
+                <div
+                  key={v.id}
+                  className="p-4 rounded-xl bg-black/25 border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <strong className="text-sm text-indigo-400 font-mono">
+                        v{v.version_number}
+                      </strong>
+                      <span className="text-sm font-medium text-foreground">
+                        {v.change_reason}
+                      </span>
+                      <Badge variant={v.created_by === 'user' ? 'success' : 'default'}>
+                        Tạo bởi: {v.created_by}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Thời gian lưu: {new Date(v.created_at).toLocaleString('vi-VN')}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Thời gian lưu: {new Date(v.created_at).toLocaleString('vi-VN')}
-                  </div>
+
+                  <Badge variant="default" className="self-start sm:self-auto">
+                    Snapshot OK
+                  </Badge>
                 </div>
-
-                <Badge variant="default">Snapshot OK</Badge>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Planned Curriculum Modal / Popup */}
       {selectedTopicInfo && (
         <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1rem',
-          }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
           onClick={() => setSelectedTopicInfo(null)}
         >
-          <div
-            className="card"
-            style={{
-              maxWidth: '520px',
-              width: '100%',
-              backgroundColor: 'var(--bg-secondary)',
-              border: '1px solid var(--border-glow)',
-            }}
+          <Card
+            className="w-full max-w-lg shadow-2xl border-cyan-500/30"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.25rem' }}>📖</span>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0 }}>
-                  {selectedTopicInfo.title}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedTopicInfo(null)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.25rem', cursor: 'pointer' }}
-              >
-                ×
-              </button>
-            </div>
-
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-              {selectedTopicInfo.description}
-            </p>
-
-            {practiceError && (
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: '#f87171',
-                  fontSize: '0.85rem',
-                  marginBottom: '1rem',
-                }}
-              >
-                ⚠️ {practiceError}
-              </div>
-            )}
-
-            {selectedTopicInfo.content_status === 'available' ? (
-              <>
-                <div
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid rgba(16, 185, 129, 0.25)',
-                    marginBottom: '1.25rem',
-                  }}
-                >
-                  <div style={{ color: '#34d399', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                    ✅ Nội dung học tập &amp; Bài tập đã sẵn sàng
-                  </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
-                    Chủ đề này đã có đầy đủ bài học và bài tập trắc nghiệm tương tác với hệ thống chấm điểm tự động.
-                  </p>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">
+                    <BookOpen className="w-5 h-5" />
+                  </span>
+                  <h3 className="text-base font-bold tracking-tight">
+                    {selectedTopicInfo.title}
+                  </h3>
                 </div>
+                <button
+                  onClick={() => setSelectedTopicInfo(null)}
+                  className="text-muted-foreground hover:text-foreground p-1 rounded-md"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                {selectedTopicInfo.status === 'locked' && (
-                  <div
-                    style={{
-                      padding: '0.75rem 1rem',
-                      borderRadius: '6px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-color)',
-                      marginBottom: '1.25rem',
-                      fontSize: '0.85rem',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    🔒 <strong>Đang tạm khóa:</strong> Hãy hoàn thành các chủ đề trước trong lộ trình để mở khóa bài học này.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {selectedTopicInfo.description}
+              </p>
+
+              {practiceError && (
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{practiceError}</span>
+                </div>
+              )}
+
+              {selectedTopicInfo.content_status === 'available' ? (
+                <>
+                  <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 space-y-1">
+                    <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Nội dung học tập &amp; Bài tập đã sẵn sàng</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Chủ đề này đã có đầy đủ bài học và bài tập trắc nghiệm tương tác với hệ thống chấm điểm tự động.
+                    </p>
                   </div>
-                )}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <button
-                    onClick={() => {
-                      setSelectedTopicInfo(null);
-                      setPracticeError(null);
-                    }}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Đóng
-                  </button>
-                  {selectedTopicInfo.status !== 'locked' && (
-                    <button
-                      onClick={() => handleStartTopicPractice(selectedTopicInfo.id)}
-                      disabled={isStartingPractice}
-                      className="btn btn-primary btn-sm"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                    >
-                      {isStartingPractice ? (
-                        <span>⏳ Đang chuẩn bị...</span>
-                      ) : selectedTopicInfo.status === 'completed' ? (
-                        <span>🔄 Luyện tập lại bài học</span>
-                      ) : (
-                        <span>✍️ Bắt đầu học &amp; Luyện tập</span>
-                      )}
-                    </button>
+                  {selectedTopicInfo.status === 'locked' && (
+                    <div className="p-3 rounded-lg bg-muted/40 border text-xs text-muted-foreground flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>Đang tạm khóa: Hãy hoàn thành các chủ đề trước trong lộ trình để mở khóa bài học này.</span>
+                    </div>
                   )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    border: '1px solid rgba(245, 158, 11, 0.25)',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  <div style={{ color: 'var(--accent-amber)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                    📋 Nội dung giáo trình đang được chuẩn bị
-                  </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
-                    Chủ đề này nằm trong khung kế hoạch chuẩn đầu ra của lộ trình. Bài học tương tác và bài tập trắc nghiệm đang được đội ngũ sư phạm hoàn thiện và sẽ sớm khả dụng.
-                  </p>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    onClick={() => {
-                      setSelectedTopicInfo(null);
-                      setPracticeError(null);
-                    }}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Đã hiểu &amp; Đóng
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedTopicInfo(null);
+                        setPracticeError(null);
+                      }}
+                    >
+                      Đóng
+                    </Button>
+                    {selectedTopicInfo.status !== 'locked' && (
+                      <Button
+                        onClick={() => handleStartTopicPractice(selectedTopicInfo.id)}
+                        isLoading={isStartingPractice}
+                      >
+                        {selectedTopicInfo.status === 'completed'
+                          ? 'Luyện tập lại bài học'
+                          : 'Bắt đầu học & Luyện tập'}
+                      </Button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1">
+                    <div className="text-xs font-semibold text-amber-400 flex items-center gap-1.5">
+                      <Info className="w-4 h-4" />
+                      <span>Nội dung giáo trình đang được chuẩn bị</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Chủ đề này nằm trong khung kế hoạch chuẩn đầu ra của lộ trình. Bài học tương tác và bài tập trắc nghiệm đang được đội ngũ sư phạm hoàn thiện và sẽ sớm khả dụng.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end pt-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setSelectedTopicInfo(null);
+                        setPracticeError(null);
+                      }}
+                    >
+                      Đã hiểu &amp; Đóng
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

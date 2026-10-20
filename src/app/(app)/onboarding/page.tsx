@@ -10,8 +10,10 @@ export default async function OnboardingPage() {
   const initialState = await getOnboardingState();
 
   return (
-    <main className="container">
-      <OnboardingForm initialState={initialState} />
-    </main>
+    <div className="min-h-screen bg-background text-foreground py-8 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="w-full max-w-2xl">
+        <OnboardingForm initialState={initialState} />
+      </div>
+    </div>
   );
 }

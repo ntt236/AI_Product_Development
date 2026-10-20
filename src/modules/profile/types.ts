@@ -15,6 +15,9 @@ export interface Profile {
   timezone: string;
   estimated_level: CEFRLevel | null;
   onboarding_completed_at: string | null;
+  current_streak?: number;
+  longest_streak?: number;
+  last_study_date?: string | null;
   created_at: string;
   updated_at: string;
 }

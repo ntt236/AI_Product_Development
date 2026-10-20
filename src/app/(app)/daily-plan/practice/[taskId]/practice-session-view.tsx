@@ -11,6 +11,7 @@ import type {
 import { submitPracticeAction } from '@/modules/daily-plan/actions';
 import { getAITutorExplanationAction } from '@/modules/ai-tutor/actions';
 import type { AITutorExplanation } from '@/modules/ai-tutor/types';
+import { saveWordAction } from '@/modules/vocabulary/actions';
 
 interface ListeningAudioPlayerProps {
   audioUrl: string;
@@ -125,6 +126,32 @@ export function PracticeSessionView({
   const [secondsSpent, setSecondsSpent] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [savedWords, setSavedWords] = useState<Record<string, boolean>>({});
+
+  const handleSaveWordToNotebook = async (wordObj: {
+    word: string;
+    meaning_vi: string;
+    part_of_speech?: string;
+    ipa?: string;
+    example?: string;
+    note?: string;
+  }) => {
+    try {
+      const res = await saveWordAction({
+        word: wordObj.word,
+        meaning_vi: wordObj.meaning_vi,
+        part_of_speech: wordObj.part_of_speech,
+        ipa: wordObj.ipa,
+        example: wordObj.example,
+        custom_notes: wordObj.note,
+      });
+      if (res.success) {
+        setSavedWords((prev) => ({ ...prev, [wordObj.word]: true }));
+      }
+    } catch {
+      // Non-blocking
+    }
+  };
 
   // Timer while practicing
   useEffect(() => {
@@ -395,6 +422,39 @@ export function PracticeSessionView({
                         📌 Lưu ý: {w.note}
                       </div>
                     )}
+
+                    <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveWordToNotebook(w)}
+                        disabled={savedWords[w.word]}
+                        style={{
+                          background: savedWords[w.word] ? 'rgba(16, 185, 129, 0.15)' : 'rgba(56, 189, 248, 0.1)',
+                          border: savedWords[w.word] ? '1px solid #10b981' : '1px solid rgba(56, 189, 248, 0.3)',
+                          color: savedWords[w.word] ? '#34d399' : 'var(--accent-cyan)',
+                          padding: '0.35rem 0.65rem',
+                          borderRadius: '6px',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          cursor: savedWords[w.word] ? 'default' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                        }}
+                      >
+                        {savedWords[w.word] ? (
+                          <>
+                            <span>✓</span>
+                            <span>Đã lưu vào sổ từ</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>⭐</span>
+                            <span>Lưu vào sổ từ</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

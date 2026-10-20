@@ -1,18 +1,36 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Flame,
+  CalendarCheck,
+  BookMarked,
+  Compass,
+  ArrowRight,
+  Clock,
+  Sparkles,
+  ChevronRight,
+  Brain,
+  Play,
+  RotateCw,
+  Target,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentUserProfile } from '@/modules/profile/services';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Navbar } from '@/components/layout/navbar';
 import { GOAL_OPTIONS } from '@/modules/onboarding/constants';
 import { getUserLatestAssessmentResult } from '@/modules/assessment/services';
 import { getUserLearningPath } from '@/modules/learning-path/services';
 import { getDailyPlan } from '@/modules/daily-plan/services';
+import { getVocabularyStats } from '@/modules/vocabulary/services';
+import { getUserStreak } from '@/modules/streak/services';
 
 export const metadata = {
   title: 'Dashboard — AI English Learning Platform',
-  description: 'Trung tâm học tập và tiến độ cá nhân',
+  description: 'Trung tâm học tập và tiến độ cá nhân hóa',
 };
 
 export default async function DashboardPage() {
@@ -27,7 +45,6 @@ export default async function DashboardPage() {
 
   const profile = await getCurrentUserProfile();
 
-  // If user has not completed onboarding, guide them to onboarding
   if (!profile?.onboarding_completed_at) {
     redirect('/onboarding');
   }
@@ -46,15 +63,13 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  // Fetch latest assessment result
+  // Fetch assessment, learning path, daily plan, vocabulary stats, and streak
   const latestAssessment = await getUserLatestAssessmentResult(user.id);
-
-  // Fetch learning path (Phase 3)
   const learningPathData = await getUserLearningPath(user.id);
   const currentPath = learningPathData.path;
-
-  // Fetch today's daily plan (Phase 4)
   const todayPlan = await getDailyPlan(user.id);
+  const vocabStats = await getVocabularyStats(user.id);
+  const streak = await getUserStreak(user.id);
 
   const primaryGoal = goals?.find((g) => g.priority === 'primary');
   const secondaryGoals = goals?.filter((g) => g.priority === 'secondary') || [];
@@ -62,6 +77,19 @@ export default async function DashboardPage() {
   const getGoalDetails = (type?: string) => {
     return GOAL_OPTIONS.find((g) => g.type === type);
   };
+
+  // Determine current day time greeting
+  const currentHour = new Date().getHours();
+  const timeGreeting =
+    currentHour < 12 ? 'Chào buổi sáng' : currentHour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+
+  // Calculate daily plan progress
+  const completedTasksCount = todayPlan?.tasks?.filter((t) => t.status === 'completed').length || 0;
+  const totalTasksCount = todayPlan?.tasks?.length || 0;
+  const dailyProgressPercent =
+    todayPlan && todayPlan.target_minutes > 0
+      ? Math.min(100, Math.round((todayPlan.completed_minutes / todayPlan.target_minutes) * 100))
+      : 0;
 
   const renderPathStatusBadge = (status: string) => {
     switch (status) {
@@ -81,374 +109,587 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="container">
-      {/* Navigation Header */}
+    <div className="min-h-screen bg-background pb-16">
+      {/* Navbar with responsive mobile menu */}
       <Navbar
         displayName={profile?.display_name || undefined}
         email={user.email}
         activePath="dashboard"
+        streak={{
+          currentStreak: streak.currentStreak,
+          hasStudiedToday: streak.hasStudiedToday,
+        }}
       />
 
-      {/* Main Dashboard Hero */}
-      <div className="header" style={{ textAlign: 'left', marginBottom: '2rem' }}>
-        <div className="hero-badge">
-          <span>●</span>
-          <span>Learner Workspace</span>
-        </div>
-        <h1 className="title" style={{ fontSize: '2.25rem' }}>
-          Hồ sơ học tập của bạn
-        </h1>
-        <p className="subtitle" style={{ margin: '0' }}>
-          Thông tin mục tiêu và thiết lập cá nhân hóa cho hành trình chinh phục tiếng Anh.
-        </p>
-      </div>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8 max-w-7xl">
+        {/* =========================================================================
+            1. HERO GREETING & OVERVIEW BANNER
+            ========================================================================= */}
+        <div className="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-gradient-to-r from-sky-950/40 via-card to-card p-6 sm:p-8 backdrop-blur-xl shadow-xl shadow-sky-950/20">
+          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
 
-      {/* Phase 4: Today's Learning Plan Card */}
-      <div
-        className="card"
-        style={{
-          marginBottom: '2rem',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%)',
-          boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.35)',
-          borderRadius: '16px',
-          padding: '1.75rem',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-              <span style={{ fontSize: '1.4rem' }}>📅</span>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
-                Kế hoạch học tập hôm nay (Daily Plan)
-              </h3>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-              {todayPlan
-                ? `Mục tiêu hôm nay: ${todayPlan.target_minutes} phút • Đã hoàn thành ${todayPlan.completed_minutes} phút`
-                : 'Khởi tạo bài học và bài tập hôm nay theo lộ trình học của bạn.'}
-            </p>
-          </div>
-
-          <Link href="/daily-plan" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span>🚀 {todayPlan ? 'Vào Kế hoạch ngày' : 'Bắt đầu học ngay'}</span>
-          </Link>
-        </div>
-
-        {todayPlan && (
-          <div>
-            {/* Progress mini bar */}
-            <div style={{ margin: '1rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                <span>
-                  Tiến độ nhiệm vụ: {todayPlan.tasks?.filter((t) => t.status === 'completed').length || 0} /{' '}
-                  {todayPlan.tasks?.length || 0} hoàn thành
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-xs font-semibold text-sky-400">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Không gian học tập thích ứng AI</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
+                {timeGreeting},{' '}
+                <span className="bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
+                  {profile?.display_name || user.email?.split('@')[0] || 'Học viên'}
                 </span>
-                <span>
-                  {todayPlan.target_minutes > 0
-                    ? Math.min(100, Math.round((todayPlan.completed_minutes / todayPlan.target_minutes) * 100))
-                    : 0}
-                  %
-                </span>
-              </div>
-              <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '3px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    width: `${todayPlan.target_minutes > 0 ? Math.min(100, Math.round((todayPlan.completed_minutes / todayPlan.target_minutes) * 100)) : 0}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg, var(--accent-cyan), #10b981)',
-                  }}
-                />
-              </div>
+                !
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Hệ thống đã sẵn sàng lộ trình học thích ứng hôm nay. Hoàn thành bài học để giữ vững chuỗi
+                học tập và củng cố phản xạ từ vựng!
+              </p>
             </div>
 
-            {/* Tasks preview pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
-              {todayPlan.tasks?.map((t) => (
-                <span
-                  key={t.id}
-                  style={{
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '8px',
-                    background: t.status === 'completed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                    border: t.status === 'completed' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--border-color)',
-                    fontSize: '0.85rem',
-                    color: t.status === 'completed' ? '#34d399' : 'var(--text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                  }}
-                >
-                  <span>{t.status === 'completed' ? '✓' : '○'}</span>
-                  <span>{t.title}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({t.estimated_minutes}p)</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Phase 3: Learning Path Spotlight Banner */}
-      <div
-        className="card"
-        style={{
-          marginBottom: '2rem',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          background: 'linear-gradient(135deg, rgba(26, 34, 52, 0.85) 0%, rgba(18, 24, 38, 0.95) 100%)',
-          boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.35)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-              <span style={{ fontSize: '1.4rem' }}>🗺️</span>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
-                Lộ trình học cá nhân hóa (Learning Path)
-              </h3>
-            </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-              Khung 3 Milestones thích ứng theo trình độ ước lượng và thời gian học hàng tuần.
-            </p>
-          </div>
-          {currentPath && renderPathStatusBadge(currentPath.status)}
-        </div>
-
-        {currentPath ? (
-          <div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1rem',
-                margin: '1.25rem 0',
-                padding: '1rem',
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TÊN LỘ TRÌNH</div>
-                <strong style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>
-                  {currentPath.title}
-                </strong>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>MỤC TIÊU CEFR</div>
-                <strong style={{ color: 'var(--accent-cyan)', fontSize: '1.1rem' }}>
-                  {currentPath.target_level.toUpperCase()}
-                </strong>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>THỜI LƯỢNG ƯỚC TÍNH</div>
-                <strong style={{ color: 'var(--text-primary)' }}>
-                  ~{currentPath.estimated_weeks} tuần ({Math.round(currentPath.total_estimated_minutes / 60)} giờ)
-                </strong>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>PHIÊN BẢN (VERSION)</div>
-                <strong style={{ color: 'var(--accent-indigo)' }}>
-                  v{currentPath.current_version} {currentPath.is_user_modified ? '(Đã tùy chỉnh)' : ''}
-                </strong>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link href="/learning-path" className="btn btn-primary">
-                {currentPath.status === 'proposed'
-                  ? '🔍 Xem & Duyệt lộ trình đề xuất →'
-                  : currentPath.status === 'paused'
-                  ? '▶️ Tiếp tục lộ trình đang tạm dừng →'
-                  : '🚀 Xem chi tiết lộ trình học →'}
-              </Link>
-              {currentPath.status === 'proposed' && (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  ⚠️ Lộ trình đang chờ bạn phê duyệt trước khi bắt đầu bài học.
-                </span>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-              {latestAssessment
-                ? 'Bạn đã hoàn tất bài đánh giá đầu vào! Hệ thống đã sẵn sàng tạo Lộ trình học 3 Milestones thích ứng riêng cho bạn.'
-                : 'Bạn có thể làm bài đánh giá đầu vào để hệ thống đo lường điểm mạnh/yếu, hoặc tạo ngay Lộ trình học tiêu chuẩn (Starter Path) theo mục tiêu hiện tại.'}
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <Link href="/learning-path" className="btn btn-primary">
-                ✨ Khởi tạo lộ trình học cá nhân hóa →
-              </Link>
-              {!latestAssessment && (
-                <Link href="/assessment" className="btn btn-secondary">
-                  🎯 Làm Placement Test trước (Khuyên dùng)
+            {/* Quick Actions */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
+              <Button asChild size="lg" className="w-full sm:w-auto shadow-lg shadow-sky-500/25">
+                <Link href="/daily-plan">
+                  <Play className="h-4 w-4 fill-current" />
+                  <span>Vào bài học hôm nay</span>
                 </Link>
+              </Button>
+              {vocabStats.dueWords > 0 && (
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto border-amber-500/40 hover:bg-amber-500/10 text-amber-300">
+                  <Link href="/vocabulary">
+                    <RotateCw className="h-4 w-4 text-amber-400" />
+                    <span>Ôn từ vựng ({vocabStats.dueWords})</span>
+                  </Link>
+                </Button>
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Profile & Goals Grid */}
-      <div className="grid">
-        {/* Profile Info Card */}
-        <Card title="Thông tin người học">
-          <ul className="status-list">
-            <li className="status-item">
-              <div>
-                <div className="status-label">Tên hiển thị</div>
-                <div className="status-desc">{profile?.display_name || 'Chưa đặt'}</div>
-              </div>
-              <Badge variant="default">Tài khoản</Badge>
-            </li>
-            <li className="status-item">
-              <div>
-                <div className="status-label">Email tài khoản</div>
-                <div className="status-desc">{user.email}</div>
-              </div>
-              <Badge variant="success">Đã xác thực</Badge>
-            </li>
-            <li className="status-item">
-              <div>
-                <div className="status-label">Trình độ ước lượng (CEFR)</div>
-                <div className="status-desc">
-                  {profile?.estimated_level
-                    ? profile.estimated_level.toUpperCase()
-                    : 'Chưa đánh giá (Chờ Placement Test)'}
+        {/* =========================================================================
+            2. KEY METRIC SUMMARY GRID (4 CARDS)
+            ========================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* Metric 1: Streak */}
+          <Card hoverGlow className="border-border/80">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Chuỗi học tập
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-foreground">
+                    {streak.currentStreak}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">ngày liên tiếp</span>
+                </div>
+                <div className="pt-1">
+                  <Badge
+                    variant={streak.hasStudiedToday ? 'success' : streak.streakStatus === 'at_risk' ? 'warning' : 'secondary'}
+                    className="text-[11px]"
+                  >
+                    {streak.hasStudiedToday
+                      ? '✓ Đã học hôm nay'
+                      : streak.streakStatus === 'at_risk'
+                      ? '⚠️ Cần học giữ chuỗi'
+                      : 'Kỷ lục: ' + streak.longestStreak + ' ngày'}
+                  </Badge>
                 </div>
               </div>
-              <Badge variant="info">
-                {profile?.estimated_level ? profile.estimated_level.toUpperCase() : 'Chờ test'}
-              </Badge>
-            </li>
-            <li className="status-item">
-              <div>
-                <div className="status-label">Trạng thái Onboarding</div>
-                <div className="status-desc">
-                  Hoàn tất: {profile?.onboarding_completed_at ? new Date(profile.onboarding_completed_at).toLocaleDateString('vi-VN') : 'N/A'}
-                </div>
-              </div>
-              <Badge variant="success">Hoàn thành</Badge>
-            </li>
-          </ul>
-        </Card>
-
-        {/* Learning Goals Card */}
-        <Card title="Mục tiêu & Lịch học">
-          <div style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-              MỤC TIÊU CHÍNH (PRIMARY)
-            </div>
-            {primaryGoal ? (
               <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  borderRadius: '8px',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  border: '1px solid rgba(16, 185, 129, 0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+                  streak.hasStudiedToday
+                    ? 'border-amber-500/40 bg-amber-500/15 text-amber-400 shadow-md shadow-amber-500/20'
+                    : 'border-border bg-secondary/80 text-muted-foreground'
+                }`}
               >
+                <Flame className={`h-6 w-6 ${streak.hasStudiedToday ? 'fill-amber-400 animate-pulse' : ''}`} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Metric 2: Daily Target */}
+          <Card hoverGlow className="border-border/80">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Mục tiêu hôm nay
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-foreground">
+                    {todayPlan ? todayPlan.completed_minutes : 0}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    / {todayPlan ? todayPlan.target_minutes : preferences?.daily_minutes || 30} phút
+                  </span>
+                </div>
+                <div className="pt-1 flex items-center gap-2">
+                  <span className="text-xs text-emerald-400 font-semibold">
+                    {completedTasksCount}/{totalTasksCount} bài xong
+                  </span>
+                </div>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-emerald-400 shadow-md shadow-emerald-500/10">
+                <CalendarCheck className="h-6 w-6" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Metric 3: Vocabulary */}
+          <Card hoverGlow className="border-border/80">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Sổ từ vựng
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-foreground">
+                    {vocabStats.totalWords}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">từ đã lưu</span>
+                </div>
+                <div className="pt-1">
+                  {vocabStats.dueWords > 0 ? (
+                    <Badge variant="warning" className="text-[11px] animate-pulse">
+                      ⏰ {vocabStats.dueWords} từ cần ôn
+                    </Badge>
+                  ) : (
+                    <Badge variant="success" className="text-[11px]">
+                      🏆 {vocabStats.masteredWords} từ thuộc sâu
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-500/30 bg-sky-500/15 text-sky-400 shadow-md shadow-sky-500/10">
+                <BookMarked className="h-6 w-6" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Metric 4: CEFR / Learning Path Level */}
+          <Card hoverGlow className="border-border/80">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Trình độ CEFR
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-sky-400">
+                    {profile?.estimated_level ? profile.estimated_level.toUpperCase() : 'A1'}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {latestAssessment ? `Đúng ${Math.round(latestAssessment.accuracy * 100)}%` : 'Ước tính'}
+                  </span>
+                </div>
+                <div className="pt-1">
+                  {currentPath ? (
+                    renderPathStatusBadge(currentPath.status)
+                  ) : (
+                    <Badge variant="default" className="text-[11px]">Chưa tạo lộ trình</Badge>
+                  )}
+                </div>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-500/30 bg-indigo-500/15 text-indigo-400 shadow-md shadow-indigo-500/10">
+                <Compass className="h-6 w-6" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* =========================================================================
+            3. MAIN CONTENT: 2-COLUMN ADAPTIVE LAYOUT
+            ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* -----------------------------------------------------------------------
+              LEFT COLUMN (8 COLS): Daily Plan & Learning Path Roadmap
+              ----------------------------------------------------------------------- */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Today's Learning Plan Card */}
+            <Card className="border-emerald-500/25 bg-gradient-to-br from-card via-card to-emerald-950/15 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                      <CalendarCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Kế hoạch học hôm nay</CardTitle>
+                      <CardDescription>
+                        {todayPlan
+                          ? `Hoàn thành bài tập để đạt mục tiêu ${todayPlan.target_minutes} phút mỗi ngày`
+                          : 'Tự động tạo bài học theo Lộ trình học 3 Milestones của bạn'}
+                      </CardDescription>
+                    </div>
+                  </div>
+
+                  <Button asChild size="sm" variant="default" className="self-start sm:self-auto">
+                    <Link href="/daily-plan">
+                      <span>Vào Kế hoạch ngày</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                {todayPlan ? (
+                  <>
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+                        <span>
+                          Thời gian: {todayPlan.completed_minutes} / {todayPlan.target_minutes} phút
+                        </span>
+                        <span className="font-bold text-foreground">{dailyProgressPercent}%</span>
+                      </div>
+                      <Progress
+                        value={todayPlan.completed_minutes}
+                        max={todayPlan.target_minutes || 30}
+                        indicatorClassName="bg-gradient-to-r from-emerald-500 to-sky-400"
+                      />
+                    </div>
+
+                    {/* Task List */}
+                    <div className="space-y-2.5 pt-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Nhiệm vụ trong ngày ({totalTasksCount} bài)
+                      </p>
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {todayPlan.tasks?.map((task) => {
+                          const isDone = task.status === 'completed';
+                          return (
+                            <div
+                              key={task.id}
+                              className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                                isDone
+                                  ? 'border-emerald-500/30 bg-emerald-950/20 text-emerald-300'
+                                  : 'border-border/80 bg-secondary/40 hover:bg-secondary/70 text-foreground'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
+                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                    isDone
+                                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                      : 'bg-muted text-muted-foreground border border-white/5'
+                                  }`}
+                                >
+                                  {isDone ? '✓' : '○'}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold truncate leading-tight">
+                                    {task.title}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {task.estimated_minutes} phút
+                                    </span>
+                                    <span className="text-[11px] text-muted-foreground capitalize">
+                                      • {task.skill}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                {isDone ? (
+                                  <Badge variant="success" className="text-xs">Đã hoàn thành</Badge>
+                                ) : (
+                                  <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1">
+                                    <Link href="/daily-plan">
+                                      <span>Bắt đầu</span>
+                                      <ChevronRight className="h-3.5 w-3.5" />
+                                    </Link>
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Bạn chưa tạo kế hoạch học tập cho ngày hôm nay.
+                    </p>
+                    <Button asChild variant="default">
+                      <Link href="/daily-plan">Khởi tạo kế hoạch ngay</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Learning Path Roadmap Spotlight Card */}
+            <Card className="border-sky-500/25 bg-gradient-to-br from-card via-card to-sky-950/15 shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400">
+                      <Compass className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Lộ trình học cá nhân hóa</CardTitle>
+                      <CardDescription>
+                        Khung 3 Milestones thích ứng theo trình độ và mục tiêu người học
+                      </CardDescription>
+                    </div>
+                  </div>
+
+                  {currentPath && renderPathStatusBadge(currentPath.status)}
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                {currentPath ? (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl border border-border/80 bg-secondary/30">
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-medium text-muted-foreground uppercase">Tên lộ trình</span>
+                        <p className="text-sm font-bold text-foreground truncate">{currentPath.title}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-medium text-muted-foreground uppercase">Mục tiêu CEFR</span>
+                        <p className="text-sm font-bold text-sky-400">{currentPath.target_level.toUpperCase()}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-medium text-muted-foreground uppercase">Thời lượng</span>
+                        <p className="text-sm font-bold text-foreground">~{currentPath.estimated_weeks} tuần</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-medium text-muted-foreground uppercase">Phiên bản</span>
+                        <p className="text-sm font-bold text-indigo-400">
+                          v{currentPath.current_version} {currentPath.is_user_modified ? '(Tùy chỉnh)' : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                      <Button asChild variant="default">
+                        <Link href="/learning-path" className="gap-2">
+                          <span>
+                            {currentPath.status === 'proposed'
+                              ? 'Duyệt lộ trình đề xuất'
+                              : currentPath.status === 'paused'
+                              ? 'Tiếp tục lộ trình'
+                              : 'Xem toàn bộ lộ trình 3 Milestones'}
+                          </span>
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      {currentPath.status === 'proposed' && (
+                        <p className="text-xs text-amber-300 flex items-center gap-1.5">
+                          ⚠️ Đang chờ bạn xem và phê duyệt trước khi học.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-6 text-center space-y-4">
+                    <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+                      {latestAssessment
+                        ? 'Bạn đã hoàn tất bài đánh giá! Hệ thống sẵn sàng tạo Lộ trình học 3 Milestones cá nhân hóa riêng cho bạn.'
+                        : 'Làm bài kiểm tra đánh giá năng lực để tạo Lộ trình học thích ứng chính xác nhất với trình độ hiện tại.'}
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Button asChild variant="default">
+                        <Link href="/learning-path">Khởi tạo Lộ trình học ngay</Link>
+                      </Button>
+                      {!latestAssessment && (
+                        <Button asChild variant="outline">
+                          <Link href="/assessment">Làm Placement Test trước</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* -----------------------------------------------------------------------
+              RIGHT COLUMN (4 COLS): Vocabulary Widget, Assessment & Goals
+              ----------------------------------------------------------------------- */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* Spaced Repetition Vocabulary Review Widget */}
+            <Card className="border-amber-500/25 bg-gradient-to-br from-card via-card to-amber-950/15 shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                      <BookMarked className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">Ôn tập ngắt quãng</CardTitle>
+                      <CardDescription className="text-xs">Spaced Review Flashcards</CardDescription>
+                    </div>
+                  </div>
+                  <Badge variant={vocabStats.dueWords > 0 ? 'warning' : 'success'}>
+                    {vocabStats.dueWords > 0 ? `${vocabStats.dueWords} từ đến hạn` : 'Đã xong'}
+                  </Badge>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-white/5">
+                    <p className="text-[11px] text-muted-foreground">Đang học</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">{vocabStats.learningWords}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-white/5">
+                    <p className="text-[11px] text-muted-foreground">Đang ôn</p>
+                    <p className="text-lg font-bold text-sky-400 mt-0.5">{vocabStats.reviewingWords}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-white/5">
+                    <p className="text-[11px] text-muted-foreground">Thuộc sâu</p>
+                    <p className="text-lg font-bold text-emerald-400 mt-0.5">{vocabStats.masteredWords}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-white/5">
+                    <p className="text-[11px] text-muted-foreground">Tổng lưu</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5">{vocabStats.totalWords}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    asChild
+                    variant={vocabStats.dueWords > 0 ? 'default' : 'outline'}
+                    className="w-full gap-2"
+                  >
+                    <Link href="/vocabulary">
+                      <span>{vocabStats.dueWords > 0 ? `Ôn tập ngay (${vocabStats.dueWords} từ)` : 'Mở sổ từ vựng'}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Placement Assessment Card */}
+            <Card className="border-border/80">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400">
+                    <Brain className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Đánh giá năng lực</CardTitle>
+                    <CardDescription className="text-xs">Placement Benchmark</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {latestAssessment ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-white/5">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Trình độ xác thực</p>
+                        <p className="text-lg font-bold text-sky-400">
+                          {latestAssessment.overall_level.toUpperCase()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Điểm số</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {latestAssessment.correct_answers}/{latestAssessment.total_questions} ({Math.round(latestAssessment.accuracy * 100)}%)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm" className="w-full text-xs">
+                        <Link href={`/assessment/results/${latestAssessment.attempt_id}`}>
+                          Xem phân tích
+                        </Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm" className="w-full text-xs">
+                        <Link href="/assessment">Test lại</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Làm bài kiểm tra 16 câu hỏi (~20 phút) để phân tích 4 kỹ năng và phát hiện điểm yếu.
+                    </p>
+                    <Button asChild variant="outline" size="sm" className="w-full">
+                      <Link href="/assessment">Bắt đầu đánh giá</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Profile Goals & Schedule Card */}
+            <Card className="border-border/80">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400">
+                    <Target className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Mục tiêu & Lịch học</CardTitle>
+                    <CardDescription className="text-xs">Thiết lập cá nhân</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-3.5 text-xs">
                 <div>
-                  <strong>{getGoalDetails(primaryGoal.goal_type)?.title || primaryGoal.title}</strong>
-                  {primaryGoal.target_toeic_score && (
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <span className="text-muted-foreground uppercase font-semibold text-[10px]">Mục tiêu chính</span>
+                  <p className="text-sm font-bold text-foreground mt-0.5">
+                    {primaryGoal
+                      ? getGoalDetails(primaryGoal.goal_type)?.title || primaryGoal.title
+                      : 'Chưa chọn'}
+                  </p>
+                  {primaryGoal?.target_toeic_score && (
+                    <p className="text-xs text-sky-400 mt-0.5">
                       Mục tiêu TOEIC: {primaryGoal.target_toeic_score} điểm
+                    </p>
+                  )}
+                  {secondaryGoals.length > 0 && (
+                    <div className="mt-1.5">
+                      <span className="text-muted-foreground uppercase font-semibold text-[10px]">Mục tiêu bổ trợ</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {secondaryGoals
+                          .map((g) => getGoalDetails(g.goal_type)?.title || g.title)
+                          .join(', ')}
+                      </p>
                     </div>
                   )}
                 </div>
-                <Badge variant="success">Ưu tiên 1</Badge>
-              </div>
-            ) : (
-              <div style={{ color: 'var(--text-secondary)' }}>Chưa chọn mục tiêu chính</div>
-            )}
-          </div>
 
-          {secondaryGoals.length > 0 && (
-            <div style={{ marginBottom: '1.25rem' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                MỤC TIÊU BỔ TRỢ ({secondaryGoals.length})
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {secondaryGoals.map((sg) => (
-                  <span
-                    key={sg.id}
-                    style={{
-                      padding: '0.35rem 0.75rem',
-                      borderRadius: '6px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    {getGoalDetails(sg.goal_type)?.title || sg.title}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60">
+                  <div>
+                    <span className="text-muted-foreground text-[10px] uppercase font-semibold">Thời lượng</span>
+                    <p className="text-xs font-bold text-foreground mt-0.5">
+                      {preferences?.daily_minutes || 30} phút / ngày
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-[10px] uppercase font-semibold">Tần suất</span>
+                    <p className="text-xs font-bold text-foreground mt-0.5">
+                      {preferences?.preferred_study_days?.length || 5} ngày / tuần
+                    </p>
+                  </div>
+                </div>
 
-          <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>THỜI LƯỢNG MỖI NGÀY</div>
-              <strong style={{ color: 'var(--accent-cyan)' }}>{preferences?.daily_minutes || 30} phút / ngày</strong>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>TẦN SUẤT HỌC</div>
-              <strong>{preferences?.preferred_study_days?.length || 5} ngày / tuần</strong>
-            </div>
+                <div className="pt-2 text-right">
+                  <Button asChild variant="link" size="sm" className="text-xs text-sky-400 hover:text-sky-300">
+                    <Link href="/onboarding">Chỉnh sửa mục tiêu & thời gian →</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-
-          <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-            <Link href="/onboarding" className="btn btn-secondary btn-sm">
-              ✏️ Chỉnh sửa mục tiêu &amp; thời gian
-            </Link>
-          </div>
-        </Card>
-      </div>
-
-      {/* Placement Assessment Card */}
-      <div className="loop-banner" style={{ marginTop: '1rem' }}>
-        <h3 className="loop-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>🎯</span>
-          <span>Đánh giá năng lực đầu vào (Placement Assessment)</span>
-        </h3>
-
-        {latestAssessment ? (
-          <div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-              Bạn đã hoàn thành bài kiểm tra đầu vào. Trình độ ước tính hiện tại:{' '}
-              <strong style={{ color: 'var(--accent-cyan)', fontSize: '1.1rem' }}>
-                {latestAssessment.overall_level.toUpperCase()}
-              </strong>{' '}
-              ({latestAssessment.correct_answers}/{latestAssessment.total_questions} câu đúng —{' '}
-              {Math.round(latestAssessment.accuracy * 100)}%).
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <Link href={`/assessment/results/${latestAssessment.attempt_id}`} className="btn btn-primary">
-                📊 Xem chi tiết kết quả &amp; giải thích đáp án
-              </Link>
-              <Link href="/assessment" className="btn btn-secondary">
-                🔄 Làm bài kiểm tra lại
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem', maxWidth: '720px' }}>
-              Bạn đã hoàn thành thiết lập mục tiêu! Hãy làm bài kiểm tra đánh giá năng lực ban đầu (16 câu hỏi, ~20 phút) để hệ thống đo lường 4 kỹ năng cốt lõi (Từ vựng, Ngữ pháp, Nghe, Đọc) và chuẩn bị dữ liệu cho Lộ trình học thích ứng (Adaptive Learning Path).
-            </p>
-            <div>
-              <Link href="/assessment" className="btn btn-primary">
-                📝 Bắt đầu làm bài kiểm tra đầu vào ngay
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

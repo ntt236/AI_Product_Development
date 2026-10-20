@@ -10,6 +10,7 @@ import type {
   UserPracticeAnswerInput,
 } from './types';
 import { generateDailyPlanProposal, type GeneratorPathItem } from './generator';
+import { recordStudyActivity } from '@/modules/streak/services';
 
 export function getTodayDateString(): string {
   return new Date().toISOString().split('T')[0];
@@ -598,6 +599,13 @@ export async function submitPracticeAnswers(
           accuracy,
         },
       });
+
+      // Update user learning streak
+      try {
+        await recordStudyActivity(userId, 'practice');
+      } catch {
+        // Non-blocking streak update
+      }
 
       // Fetch updated plan tasks to return clean progress
       const { data: allPlanTasks } = await adminClient

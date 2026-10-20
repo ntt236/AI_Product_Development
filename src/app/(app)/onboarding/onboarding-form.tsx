@@ -3,12 +3,25 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   GOAL_OPTIONS,
   DAILY_TIME_OPTIONS,
   STUDY_DAYS_OPTIONS,
 } from '@/modules/onboarding/constants';
 import { saveOnboardingAction, type OnboardingState } from '@/modules/onboarding/actions';
+import {
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Clock,
+  Calendar,
+  AlertCircle,
+  Check,
+} from 'lucide-react';
 
 interface OnboardingFormProps {
   initialState: OnboardingState | null;
@@ -46,7 +59,6 @@ export function OnboardingForm({ initialState }: OnboardingFormProps) {
 
   const handleSelectPrimary = (goalId: string) => {
     setPrimaryGoal(goalId);
-    // Remove from secondary if was selected
     setSecondaryGoals((prev) => prev.filter((id) => id !== goalId));
   };
 
@@ -71,239 +83,279 @@ export function OnboardingForm({ initialState }: OnboardingFormProps) {
   };
 
   return (
-    <div className="onboarding-container">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="header" style={{ marginBottom: '2rem' }}>
-        <h1 className="title" style={{ fontSize: '2.25rem' }}>
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Cá nhân hóa trải nghiệm</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
           Thiết lập lộ trình học tập
         </h1>
-        <p className="subtitle">
-          Hãy cho chúng tôi biết mục tiêu và thời gian học của bạn để tối ưu hóa kế hoạch học tập.
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Hãy chia sẻ mục tiêu và quỹ thời gian để hệ thống kiến tạo kế hoạch học tập tối ưu nhất cho bạn.
         </p>
       </div>
 
       {initialState?.isCompleted && (
-        <div className="alert alert-success" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center justify-between gap-3">
           <span>Bạn đang ở chế độ chỉnh sửa thiết lập Onboarding.</span>
-          <Link href="/dashboard" className="btn btn-secondary btn-sm">
-            Quay lại Dashboard
-          </Link>
+          <Button asChild variant="secondary" size="sm" className="h-7 text-xs">
+            <Link href="/dashboard">Về Dashboard</Link>
+          </Button>
         </div>
       )}
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && (
+        <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Step Indicators */}
-      <div className="onboarding-step-indicator">
-        <div className={`step-dot ${step === 1 ? 'active' : step > 1 ? 'completed' : ''}`}>
-          1
-        </div>
-        <div className="step-line" />
-        <div className={`step-dot ${step === 2 ? 'active' : step > 2 ? 'completed' : ''}`}>
-          2
-        </div>
-        <div className="step-line" />
-        <div className={`step-dot ${step === 3 ? 'active' : ''}`}>
-          3
-        </div>
+      <div className="flex items-center justify-center gap-2 py-2">
+        {[1, 2, 3].map((s) => (
+          <React.Fragment key={s}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                step === s
+                  ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30 ring-2 ring-cyan-500/40 ring-offset-2 ring-offset-background'
+                  : step > s
+                  ? 'bg-emerald-500 text-slate-950 font-black'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {step > s ? <Check className="w-4 h-4" /> : s}
+            </div>
+            {s < 3 && (
+              <div
+                className={`w-12 h-1 rounded-full transition-all ${
+                  step > s ? 'bg-emerald-500' : 'bg-muted'
+                }`}
+              />
+            )}
+          </React.Fragment>
+        ))}
       </div>
 
       {/* Step 1: Primary Goal */}
       {step === 1 && (
-        <div className="card">
-          <div className="card-title">
-            <span>Bước 1: Chọn mục tiêu quan trọng nhất (Primary Goal)</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Bắt buộc</span>
-          </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Hệ thống sẽ ưu tiên các bài học và kế hoạch mỗi ngày xoay quanh mục tiêu này.
-          </p>
-
-          <div className="selectable-grid">
-            {GOAL_OPTIONS.map((g) => {
-              const isSelected = primaryGoal === g.type;
-              return (
-                <div
-                  key={g.id}
-                  className={`selectable-card ${isSelected ? 'is-primary' : ''}`}
-                  onClick={() => handleSelectPrimary(g.type)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="card-icon">{g.icon}</div>
-                  <div className="card-heading">
-                    <span>{g.title}</span>
-                    {isSelected && <span style={{ color: 'var(--accent-emerald)', fontSize: '0.9rem' }}>✓ Chính</span>}
-                  </div>
-                  <div className="card-desc">{g.description}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {primaryGoal === 'toeic' && (
-            <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px' }}>
-              <label className="form-label" htmlFor="toeicTarget">
-                Mục tiêu điểm số TOEIC (10 - 990):
-              </label>
-              <input
-                id="toeicTarget"
-                type="number"
-                min={10}
-                max={990}
-                step={5}
-                className="form-input"
-                style={{ maxWidth: '200px', marginTop: '0.5rem' }}
-                value={targetToeicScore || 650}
-                onChange={(e) => setTargetToeicScore(Number(e.target.value))}
-              />
+        <Card className="shadow-2xl border-cyan-500/20">
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight">
+                  Bước 1: Chọn mục tiêu quan trọng nhất
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Hệ thống sẽ ưu tiên các bài học và kế hoạch mỗi ngày xoay quanh mục tiêu này.
+                </p>
+              </div>
+              <Badge variant="warning">Bắt buộc</Badge>
             </div>
-          )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => setStep(2)}
-            >
-              Tiếp tục (Bước 2: Mục tiêu phụ) →
-            </button>
-          </div>
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {GOAL_OPTIONS.map((g) => {
+                const isSelected = primaryGoal === g.type;
+                return (
+                  <div
+                    key={g.id}
+                    onClick={() => handleSelectPrimary(g.type)}
+                    className={`p-4 rounded-xl border cursor-pointer select-none transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-cyan-500 bg-cyan-500/10 shadow-md shadow-cyan-500/10'
+                        : 'border-border/80 bg-card hover:border-cyan-500/40 hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-2xl mb-2">{g.icon}</div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <strong className="text-sm font-bold text-foreground">{g.title}</strong>
+                        {isSelected && (
+                          <Badge variant="success" className="text-[10px] px-1.5 py-0 h-4">
+                            Chính
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground leading-relaxed">{g.description}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {primaryGoal === 'toeic' && (
+              <div className="p-4 rounded-xl bg-black/25 border space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground block" htmlFor="toeicTarget">
+                  Mục tiêu điểm số TOEIC (10 - 990):
+                </label>
+                <Input
+                  id="toeicTarget"
+                  type="number"
+                  min={10}
+                  max={990}
+                  step={5}
+                  className="max-w-[180px]"
+                  value={targetToeicScore || 650}
+                  onChange={(e) => setTargetToeicScore(Number(e.target.value))}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setStep(2)}>
+                <span>Tiếp tục (Bước 2)</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Step 2: Secondary Goals */}
       {step === 2 && (
-        <div className="card">
-          <div className="card-title">
-            <span>Bước 2: Chọn mục tiêu bổ trợ (Secondary Goals)</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Tùy chọn</span>
-          </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Chọn thêm các kỹ năng khác bạn muốn cải thiện đồng thời (có thể bỏ qua).
-          </p>
+        <Card className="shadow-2xl border-cyan-500/20">
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight">
+                  Bước 2: Chọn mục tiêu bổ trợ (Secondary Goals)
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Chọn thêm các kỹ năng khác bạn muốn cải thiện đồng thời (có thể bỏ qua).
+                </p>
+              </div>
+              <Badge variant="default">Tùy chọn</Badge>
+            </div>
 
-          <div className="selectable-grid">
-            {GOAL_OPTIONS.filter((g) => g.type !== primaryGoal).map((g) => {
-              const isSelected = secondaryGoals.includes(g.type);
-              return (
-                <div
-                  key={g.id}
-                  className={`selectable-card ${isSelected ? 'is-selected' : ''}`}
-                  onClick={() => toggleSecondaryGoal(g.type)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="card-icon">{g.icon}</div>
-                  <div className="card-heading">
-                    <span>{g.title}</span>
-                    {isSelected && <span style={{ color: 'var(--accent-cyan)', fontSize: '0.9rem' }}>✓ Bổ trợ</span>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {GOAL_OPTIONS.filter((g) => g.type !== primaryGoal).map((g) => {
+                const isSelected = secondaryGoals.includes(g.type);
+                return (
+                  <div
+                    key={g.id}
+                    onClick={() => toggleSecondaryGoal(g.type)}
+                    className={`p-4 rounded-xl border cursor-pointer select-none transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-cyan-500 bg-cyan-500/10 shadow-md shadow-cyan-500/10'
+                        : 'border-border/80 bg-card hover:border-cyan-500/40 hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-2xl mb-2">{g.icon}</div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <strong className="text-sm font-bold text-foreground">{g.title}</strong>
+                        {isSelected && (
+                          <Badge variant="info" className="text-[10px] px-1.5 py-0 h-4">
+                            Bổ trợ
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground leading-relaxed">{g.description}</div>
+                    </div>
                   </div>
-                  <div className="card-desc">{g.description}</div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setStep(1)}
-            >
-              ← Quay lại
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => setStep(3)}
-            >
-              Tiếp tục (Bước 3: Thời gian học) →
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center justify-between pt-2">
+              <Button variant="ghost" onClick={() => setStep(1)}>
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                <span>Quay lại</span>
+              </Button>
+              <Button onClick={() => setStep(3)}>
+                <span>Tiếp tục (Bước 3)</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Step 3: Available Study Time & Preferences */}
       {step === 3 && (
-        <div className="card">
-          <div className="card-title">
-            <span>Bước 3: Thời gian &amp; Lịch học mỗi ngày</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Bắt buộc</span>
-          </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Hệ thống Daily Plan sẽ tự động phân bổ lượng bài học phù hợp với quỹ thời gian của bạn.
-          </p>
+        <Card className="shadow-2xl border-cyan-500/20">
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight">
+                  Bước 3: Thời gian &amp; Lịch học mỗi ngày
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Hệ thống Daily Plan sẽ tự động phân bổ lượng bài học phù hợp với quỹ thời gian của bạn.
+                </p>
+              </div>
+              <Badge variant="warning">Bắt buộc</Badge>
+            </div>
 
-          {/* Daily Time */}
-          <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-            Thời lượng học mỗi ngày:
-          </h4>
-          <div className="selectable-grid" style={{ marginBottom: '2rem' }}>
-            {DAILY_TIME_OPTIONS.map((t) => {
-              const isSelected = dailyMinutes === t.value;
-              return (
-                <div
-                  key={t.value}
-                  className={`selectable-card ${isSelected ? 'is-primary' : ''}`}
-                  onClick={() => setDailyMinutes(t.value)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="card-heading">
-                    <span>{t.label}</span>
-                    {isSelected && <span style={{ color: 'var(--accent-emerald)' }}>✓</span>}
-                  </div>
-                  <div className="card-desc">{t.sub}</div>
-                </div>
-              );
-            })}
-          </div>
+            {/* Daily Time */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Thời lượng học mỗi ngày:</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {DAILY_TIME_OPTIONS.map((t) => {
+                  const isSelected = dailyMinutes === t.value;
+                  return (
+                    <div
+                      key={t.value}
+                      onClick={() => setDailyMinutes(t.value)}
+                      className={`p-3.5 rounded-xl border cursor-pointer select-none transition-all text-center ${
+                        isSelected
+                          ? 'border-cyan-500 bg-cyan-500/10 shadow-md shadow-cyan-500/10'
+                          : 'border-border/80 bg-card hover:border-cyan-500/40 hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <div className="font-bold text-sm text-foreground">{t.label}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{t.sub}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          {/* Study Frequency */}
-          <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-            Tần suất học trong tuần:
-          </h4>
-          <div className="selectable-grid">
-            {STUDY_DAYS_OPTIONS.map((f) => {
-              const isSelected = studyDays.length === f.days.length;
-              return (
-                <div
-                  key={f.value}
-                  className={`selectable-card ${isSelected ? 'is-selected' : ''}`}
-                  onClick={() => setStudyDays(f.days)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="card-heading">
-                    <span>{f.label}</span>
-                    {isSelected && <span style={{ color: 'var(--accent-cyan)' }}>✓</span>}
-                  </div>
-                  <div className="card-desc">Cam kết duy trì thói quen học tập</div>
-                </div>
-              );
-            })}
-          </div>
+            {/* Study Frequency */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                <span>Tần suất học trong tuần:</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {STUDY_DAYS_OPTIONS.map((f) => {
+                  const isSelected = studyDays.length === f.days.length;
+                  return (
+                    <div
+                      key={f.value}
+                      onClick={() => setStudyDays(f.days)}
+                      className={`p-3.5 rounded-xl border cursor-pointer select-none transition-all text-center ${
+                        isSelected
+                          ? 'border-cyan-500 bg-cyan-500/10 shadow-md shadow-cyan-500/10'
+                          : 'border-border/80 bg-card hover:border-cyan-500/40 hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      <div className="font-bold text-sm text-foreground">{f.label}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">Duy trì thói quen bền vững</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2.5rem' }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setStep(2)}
-              disabled={isPending}
-            >
-              ← Quay lại
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleSubmit}
-              disabled={isPending}
-            >
-              {isPending ? 'Đang lưu thiết lập...' : 'Hoàn tất & Tới Dashboard ✓'}
-            </button>
-          </div>
-        </div>
+            <div className="flex items-center justify-between pt-4 border-t">
+              <Button variant="ghost" onClick={() => setStep(2)} disabled={isPending}>
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                <span>Quay lại</span>
+              </Button>
+              <Button onClick={handleSubmit} isLoading={isPending} className="font-bold shadow-lg shadow-cyan-500/20">
+                <span>Hoàn tất &amp; Tới Dashboard</span>
+                <Check className="w-4 h-4 ml-1.5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -325,3 +325,64 @@ create index if not exists idx_learning_events_user_time on public.learning_even
    - Ràng buộc: `unique(user_id, window_start)`.
    - Atomic Stored Procedure: `public.check_and_increment_ai_rate_limit(p_user_id, p_window_start, p_max_requests)` chạy dưới quyền `SECURITY DEFINER SET search_path = ''` với kiểm tra tham số phòng thủ. **Quyền EXECUTE được thu hồi hoàn toàn khỏi public/anon/authenticated và chỉ cấp cho `service_role`** để triệt tiêu nguy cơ DoS quota từ client.
    - Operational Maintenance Function: `public.cleanup_expired_ai_rate_limits(p_older_than interval default interval '1 day')` cho phép dọn dẹp an toàn các cửa sổ rate limit đã hết hạn mà không ảnh hưởng tới cửa sổ đang hoạt động. Quyền EXECUTE chỉ cấp cho `service_role`.
+
+### Phase 6 — Personal Vocabulary Notebook & Review Schedule Tables (Migration: `20261019_phase_6_vocabulary_review.sql`)
+
+1. **`vocabulary_items`** (Curated Vocabulary Bank):
+   - `id uuid primary key default gen_random_uuid()`
+   - `content_item_id uuid references public.content_items(id) on delete set null`
+   - `word text not null`, `word_normalized text not null` (chuẩn hóa `lower(trim(word))` để chống trùng lặp)
+   - `part_of_speech text not null`, `ipa text not null`, `meaning_vi text not null`, `example text not null`, `note text`
+   - `level text not null default 'a1'` check (`level in ('pre_a1', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2')`)
+   - `topic text not null default 'general'`
+   - `is_published boolean not null default true`
+   - Timestamps: `created_at`, `updated_at`
+   - Ràng buộc: `unique(word_normalized)`
+   - Indexes: `idx_vocabulary_items_topic`, `idx_vocabulary_items_level`
+   - RLS: Role `authenticated` và `anon` chỉ có quyền SELECT các mục `is_published = true`. Quyền ghi thu hồi hoàn toàn khỏi client, chỉ `service_role` quản trị.
+
+2. **`user_vocabulary`** (Personal Vocabulary Notebook):
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `vocabulary_item_id uuid references public.vocabulary_items(id) on delete set null` (tham chiếu ID từ điển curated)
+   - `word text not null`, `word_normalized text not null`
+   - `part_of_speech text`, `ipa text`, `meaning_vi text not null`, `example text`, `custom_notes text`
+   - `status text not null default 'learning'` check (`status in ('learning', 'reviewing', 'mastered')`)
+   - `interval_days integer not null default 1 check (interval_days >= 1)`
+   - `consecutive_correct integer not null default 0 check (consecutive_correct >= 0)`
+   - `review_count integer not null default 0 check (review_count >= 0)`
+   - `last_reviewed_at timestamptz`
+   - `next_review_at timestamptz not null default now()`
+   - Timestamps: `created_at`, `updated_at`
+   - Ràng buộc chống trùng lặp: `unique(user_id, word_normalized)`
+   - Indexes:
+     - `idx_user_vocabulary_user_due on public.user_vocabulary(user_id, next_review_at asc)`
+     - `idx_user_vocabulary_user_status on public.user_vocabulary(user_id, status)`
+   - RLS: `authenticated` chỉ có quyền SELECT, INSERT, UPDATE, DELETE các dòng thuộc quyền sở hữu của chính mình (`auth.uid() = user_id`).
+
+3. **`vocabulary_review_logs`** (Review Audit Trail & Idempotency Guard):
+   - `id uuid primary key default gen_random_uuid()`
+   - `user_id uuid not null references auth.users(id) on delete cascade`
+   - `user_vocab_id uuid not null references public.user_vocabulary(id) on delete cascade`
+   - `review_session_id uuid not null`
+   - `result text not null check (result in ('remembered', 'forgot'))`
+   - `interval_before integer not null default 1`, `interval_after integer not null default 1`
+   - `reviewed_at timestamptz not null default now()`
+   - Ràng buộc chống trùng lặp review trong cùng phiên: `unique(review_session_id, user_vocab_id)`
+   - Indexes:
+     - `idx_vocab_review_logs_user_reviewed on public.vocabulary_review_logs(user_id, reviewed_at desc)`
+     - `idx_vocab_review_logs_session on public.vocabulary_review_logs(review_session_id)`
+   - RLS: `authenticated` chỉ có quyền SELECT và INSERT dòng của chính mình (`auth.uid() = user_id`). Quyền UPDATE và DELETE bị thu hồi hoàn toàn khỏi client nhằm đảm bảo tính bất biến của nhật ký học tập.
+
+### Learning Streak & Calendar Schedule (Migration: `20261020_streak_and_calendar_schedule.sql`)
+
+1. **`public.profiles` (Cột bổ sung)**:
+   - `current_streak integer not null default 0 check (current_streak >= 0)`: Chuỗi số ngày học liên tiếp hiện tại.
+   - `longest_streak integer not null default 0 check (longest_streak >= 0)`: Kỷ lục chuỗi ngày học cao nhất.
+   - `last_study_date date`: Ngày học gần nhất theo định dạng ngày dương lịch (`YYYY-MM-DD`, theo múi giờ `timezone` của người dùng).
+   - Index: `idx_profiles_last_study_date on public.profiles(last_study_date)`.
+
+2. **Cập nhật RPC `submit_vocabulary_review_session`**:
+   - Chuyển mốc ôn tập tiếp theo sang ranh giới đầu ngày (Calendar-day boundary):
+     `v_next_review_at := ((v_now at time zone 'Asia/Ho_Chi_Minh')::date + v_new_interval)::timestamp at time zone 'Asia/Ho_Chi_Minh';`
+   - Tự động cộng dồn và cập nhật `current_streak`, `longest_streak`, `last_study_date` trên bảng `public.profiles` nguyên tử trong cùng transaction khi phiên ôn tập thành công.
