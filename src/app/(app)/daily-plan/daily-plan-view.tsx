@@ -2,8 +2,24 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
+import {
+  Clock,
+  ArrowUp,
+  ArrowDown,
+  CheckCircle2,
+  Play,
+  RotateCcw,
+  Info,
+  Calendar,
+  Sparkles,
+  HelpCircle,
+  X,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { EmptyState, ErrorState } from '@/components/ui/state-feedback';
 import type { DailyPlan, DailyPlanTask } from '@/modules/daily-plan/types';
 import { reorderDailyTasksAction, skipDailyTaskAction } from '@/modules/daily-plan/actions';
 
@@ -22,16 +38,14 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
 
   if (!plan) {
     return (
-      <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📅</div>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Chưa có kế hoạch học hôm nay</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
-          {errorMessage || 'Không thể tải hoặc tạo kế hoạch học tập hàng ngày.'}
-        </p>
-        <Link href="/dashboard" className="btn btn-primary">
-          Quay lại Dashboard
-        </Link>
-      </div>
+      <EmptyState
+        icon={<Calendar className="h-8 w-8 text-sky-400" />}
+        title="Chưa có kế hoạch học hôm nay"
+        description={errorMessage || 'Hệ thống chưa tạo bài học cho ngày hôm nay. Hãy bắt đầu ngay để kích hoạt chuỗi học tập!'}
+        actionLabel="Quay lại Dashboard"
+        actionHref="/dashboard"
+        className="my-12"
+      />
     );
   }
 
@@ -61,10 +75,10 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
       case 'in_progress':
         return <Badge variant="info">Đang thực hiện</Badge>;
       case 'skipped':
-        return <Badge variant="default">Đã bỏ qua</Badge>;
+        return <Badge variant="secondary">Đã bỏ qua</Badge>;
       case 'planned':
       default:
-        return <Badge variant="default">Sẵn sàng học</Badge>;
+        return <Badge variant="outline">Sẵn sàng học</Badge>;
     }
   };
 
@@ -75,11 +89,11 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
       case 'grammar':
         return <Badge variant="warning">Ngữ pháp</Badge>;
       case 'reading':
-        return <Badge variant="default">Đọc hiểu</Badge>;
+        return <Badge variant="secondary">Đọc hiểu</Badge>;
       case 'listening':
         return <Badge variant="success">Nghe hiểu</Badge>;
       default:
-        return <Badge variant="default">{skill || 'Tổng hợp'}</Badge>;
+        return <Badge variant="outline">{skill || 'Tổng hợp'}</Badge>;
     }
   };
 
@@ -92,7 +106,6 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
     const [movedTask] = newTasks.splice(currentIndex, 1);
     newTasks.splice(targetIndex, 0, movedTask);
 
-    // Update positions
     const reorderedIds = newTasks.map((t) => t.id);
 
     // Optimistic UI update
@@ -111,10 +124,10 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
       const res = await reorderDailyTasksAction(plan.id, reorderedIds);
       if (!res.success) {
         setErrorMessage(res.error || 'Lỗi khi sắp xếp lại nhiệm vụ.');
-        // Revert on failure
         setPlan(initialPlan);
       } else {
         setSuccessMessage('Đã cập nhật thứ tự nhiệm vụ học tập thành công.');
+        setTimeout(() => setSuccessMessage(null), 3500);
       }
     });
   };
@@ -133,7 +146,7 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
         setErrorMessage(res.error || 'Lỗi khi bỏ qua nhiệm vụ.');
       } else {
         setSuccessMessage(`Đã bỏ qua nhiệm vụ "${taskTitle}".`);
-        // Update local status
+        setTimeout(() => setSuccessMessage(null), 3500);
         setPlan((prev) =>
           prev
             ? {
@@ -149,148 +162,137 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
   };
 
   return (
-    <div style={{ paddingBottom: '4rem' }}>
-      {/* Header Banner */}
-      <div className="header" style={{ textAlign: 'left', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          <div className="hero-badge">
-            <span>●</span>
-            <span>Daily Practice Hub</span>
+    <div className="space-y-8">
+      {/* =========================================================================
+          HEADER BANNER
+          ========================================================================= */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/60">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+              <Sparkles className="h-3 w-3" />
+              <span>Daily Practice Hub</span>
+            </span>
+            {plan.generation_reason?.isScheduledDay ? (
+              <Badge variant="success">Lịch rảnh của bạn</Badge>
+            ) : (
+              <Badge variant="info">Học linh hoạt</Badge>
+            )}
+            {renderPlanStatusBadge(plan.status)}
           </div>
-          {plan.generation_reason?.isScheduledDay ? (
-            <Badge variant="success">Đúng lịch rảnh của bạn</Badge>
-          ) : (
-            <Badge variant="info">Học linh hoạt</Badge>
-          )}
-          {renderPlanStatusBadge(plan.status)}
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Kế hoạch học tập hôm nay
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {formatDateVi(plan.plan_date)} • Mục tiêu: <strong className="text-foreground">{plan.target_minutes} phút</strong> • Chúc{' '}
+            <strong className="text-sky-400">{userName}</strong> có một buổi học hứng khởi!
+          </p>
         </div>
 
-        <h1 className="title" style={{ fontSize: '2.25rem', marginBottom: '0.5rem' }}>
-          Kế hoạch học tập hôm nay
-        </h1>
-        <p className="subtitle" style={{ margin: '0' }}>
-          {formatDateVi(plan.plan_date)} • Mục tiêu: <strong>{plan.target_minutes} phút</strong> • Chúc{' '}
-          <strong>{userName}</strong> có một buổi học hiệu quả!
-        </p>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard">
+              <span>← Dashboard</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Notification alerts */}
+      {/* Notifications */}
       {errorMessage && (
-        <div
-          style={{
-            padding: '1rem',
-            borderRadius: '8px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#f87171',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span>⚠️ {errorMessage}</span>
-          <button
-            onClick={() => setErrorMessage(null)}
-            style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}
-          >
-            ✕
-          </button>
-        </div>
+        <ErrorState
+          title="Thông báo lỗi"
+          message={errorMessage}
+          onRetry={() => setErrorMessage(null)}
+          retryLabel="Đóng"
+        />
       )}
 
       {successMessage && (
-        <div
-          style={{
-            padding: '1rem',
-            borderRadius: '8px',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            color: '#34d399',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span>✓ {successMessage}</span>
+        <div className="flex items-center justify-between p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 text-emerald-300 text-sm">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
           <button
             onClick={() => setSuccessMessage(null)}
-            style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer' }}
+            className="text-emerald-400 hover:text-emerald-200 text-xs px-2 py-1"
           >
             ✕
           </button>
         </div>
       )}
 
-      {/* Progress Card */}
-      <Card title="Tiến độ học tập trong ngày">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.25rem' }}>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-              THỜI LƯỢNG ĐÃ HỌC
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-              {plan.completed_minutes}{' '}
-              <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
-                / {plan.target_minutes} phút
+      {/* =========================================================================
+          PROGRESS DASHBOARD CARD
+          ========================================================================= */}
+      <Card className="border-border/80 bg-card/75 shadow-lg backdrop-blur-md">
+        <CardContent className="p-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Thời lượng đã học
               </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl sm:text-3xl font-extrabold text-sky-400">
+                  {plan.completed_minutes}
+                </span>
+                <span className="text-sm text-muted-foreground">/ {plan.target_minutes} phút</span>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-              NHIỆM VỤ HOÀN TẤT
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#34d399' }}>
-              {completedTasksCount}{' '}
-              <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-secondary)' }}>
-                / {tasks.length} nhiệm vụ
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Nhiệm vụ hoàn tất
               </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
+                  {completedTasksCount}
+                </span>
+                <span className="text-sm text-muted-foreground">/ {tasks.length} bài</span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Nguồn kế hoạch
+              </span>
+              <p className="text-sm font-semibold text-foreground truncate mt-1">
+                {plan.generation_reason?.activePathTitle || 'Lộ trình nền tảng khởi đầu'}
+              </p>
             </div>
           </div>
 
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-              NGUỒN KẾ HOẠCH
+          <div className="space-y-2 pt-2 border-t border-border/60">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Tiến độ hoàn thành kế hoạch</span>
+              <span className="font-bold text-foreground">{progressPercent}%</span>
             </div>
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              {plan.generation_reason?.activePathTitle || 'Lộ trình nền tảng khởi đầu'}
-            </div>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-            <span>Tiến độ hoàn thành kế hoạch</span>
-            <span>{progressPercent}%</span>
-          </div>
-          <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div
-              style={{
-                width: `${progressPercent}%`,
-                height: '100%',
-                background: 'linear-gradient(90deg, var(--accent-cyan), #10b981)',
-                transition: 'width 0.3s ease',
-              }}
+            <Progress
+              value={progressPercent}
+              max={100}
+              indicatorClassName="bg-gradient-to-r from-sky-400 via-emerald-400 to-emerald-500"
             />
           </div>
-        </div>
+        </CardContent>
       </Card>
 
-      {/* Task List Section */}
-      <div style={{ marginTop: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0 }}>
-            Danh sách nhiệm vụ hôm nay ({tasks.length})
-          </h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Bạn có thể dùng nút mũi tên để tùy chỉnh thứ tự bài học
-          </span>
+      {/* =========================================================================
+          TASK LIST SECTION
+          ========================================================================= */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+              Danh sách nhiệm vụ hôm nay ({tasks.length})
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Bạn có thể dùng nút mũi tên để linh hoạt đổi thứ tự bài học theo sở thích
+            </p>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="space-y-3">
           {tasks.map((task, index) => {
             const isCompleted = task.status === 'completed';
             const isSkipped = task.status === 'skipped';
@@ -300,152 +302,138 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
             return (
               <div
                 key={task.id}
-                style={{
-                  background: isCompleted
-                    ? 'rgba(16, 185, 129, 0.05)'
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl border transition-all ${
+                  isCompleted
+                    ? 'border-emerald-500/30 bg-emerald-950/15 text-emerald-200'
                     : isSkipped
-                    ? 'rgba(255, 255, 255, 0.02)'
-                    : 'var(--card-bg)',
-                  border: isCompleted
-                    ? '1px solid rgba(16, 185, 129, 0.25)'
-                    : isSkipped
-                    ? '1px solid rgba(255, 255, 255, 0.08)'
-                    : '1px solid var(--border-color)',
-                  borderRadius: '12px',
-                  padding: '1.25rem 1.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
-                  transition: 'all 0.2s ease',
-                }}
+                    ? 'border-border/40 bg-secondary/20 opacity-60'
+                    : 'border-border/80 bg-card/80 hover:border-sky-500/40 hover:shadow-md hover:shadow-sky-500/5'
+                }`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        background: isCompleted
-                          ? '#10b981'
-                          : isSkipped
-                          ? 'rgba(255, 255, 255, 0.1)'
-                          : 'rgba(56, 189, 248, 0.15)',
-                        color: isCompleted ? '#ffffff' : isSkipped ? 'var(--text-muted)' : 'var(--accent-cyan)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {isCompleted ? '✓' : isSkipped ? '✕' : task.position}
-                    </span>
+                {/* Task info */}
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
+                      isCompleted
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        : isSkipped
+                        ? 'bg-secondary text-muted-foreground border border-white/5'
+                        : 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                    }`}
+                  >
+                    {isCompleted ? '✓' : isSkipped ? '✕' : task.position}
+                  </div>
 
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 0.25rem', color: isSkipped ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3
+                        className={`text-sm sm:text-base font-semibold leading-tight ${
+                          isSkipped ? 'text-muted-foreground line-through' : 'text-foreground'
+                        }`}
+                      >
                         {task.title}
                       </h3>
-                      {task.description && (
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                          {task.description}
-                        </p>
+                      {renderSkillBadge(task.skill)}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {task.estimated_minutes}p
+                      </span>
+                    </div>
+
+                    {task.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      {isRunnable ? (
+                        <Badge variant="success" className="text-[10px]">
+                          ✓ Có bài tập tương tác
+                        </Badge>
+                      ) : (
+                        <Badge variant="warning" className="text-[10px]">
+                          📋 Giáo trình dự kiến
+                        </Badge>
+                      )}
+
+                      {isCompleted && task.accuracy !== null && task.accuracy !== undefined && (
+                        <span className="text-xs font-semibold text-emerald-400">
+                          Chính xác: {Math.round(task.accuracy * 100)}%
+                        </span>
                       )}
                     </div>
                   </div>
-
-                  {/* Badges */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    {renderSkillBadge(task.skill)}
-                    <Badge variant="default">⏱️ {task.estimated_minutes} phút</Badge>
-
-                    {isRunnable ? (
-                      <Badge variant="success">✅ Có bài tập tương tác</Badge>
-                    ) : (
-                      <Badge variant="warning">📋 Giáo trình dự kiến</Badge>
-                    )}
-
-                    {isCompleted && (
-                      <Badge variant="success">
-                        Đã xong {task.accuracy !== null && task.accuracy !== undefined ? `(${Math.round(task.accuracy * 100)}%)` : ''}
-                      </Badge>
-                    )}
-
-                    {isSkipped && <Badge variant="default">Đã bỏ qua</Badge>}
-                  </div>
                 </div>
 
-                {/* Actions bottom bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
-                  {/* Reordering controls for pending tasks */}
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {isPendingTask && (
-                      <>
-                        <button
-                          onClick={() => handleMoveTask(index, 'up')}
-                          disabled={index === 0 || isPending}
-                          className="btn btn-secondary btn-sm"
-                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', opacity: index === 0 ? 0.4 : 1 }}
-                          title="Di chuyển lên trên"
-                        >
-                          ▲ Lên
-                        </button>
-                        <button
-                          onClick={() => handleMoveTask(index, 'down')}
-                          disabled={index === tasks.length - 1 || isPending}
-                          className="btn btn-secondary btn-sm"
-                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', opacity: index === tasks.length - 1 ? 0.4 : 1 }}
-                          title="Di chuyển xuống dưới"
-                        >
-                          ▼ Xuống
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Primary Action Button */}
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {isPendingTask && (
+                {/* Actions */}
+                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+                  {/* Reordering arrows for pending tasks */}
+                  {isPendingTask && (
+                    <div className="flex items-center gap-1 pr-2 border-r border-border/60">
                       <button
-                        onClick={() => handleSkipTask(task.id, task.title)}
-                        disabled={isPending}
-                        className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.85rem' }}
+                        type="button"
+                        onClick={() => handleMoveTask(index, 'up')}
+                        disabled={index === 0 || isPending}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                        title="Di chuyển lên trên"
                       >
-                        Bỏ qua
+                        <ArrowUp className="h-3.5 w-3.5" />
                       </button>
-                    )}
-
-                    {isRunnable && isPendingTask && (
-                      <Link
-                        href={`/daily-plan/practice/${task.id}`}
-                        className="btn btn-primary btn-sm"
-                        style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                      >
-                        <span>✍️ Bắt đầu học &amp; Luyện tập</span>
-                      </Link>
-                    )}
-
-                    {isRunnable && isCompleted && (
-                      <Link
-                        href={`/daily-plan/practice/${task.id}`}
-                        className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.85rem' }}
-                      >
-                        🔄 Làm lại bài tập
-                      </Link>
-                    )}
-
-                    {!isRunnable && (
                       <button
-                        onClick={() => setSelectedPlannedTask(task)}
-                        className="btn btn-secondary btn-sm"
-                        style={{ fontSize: '0.85rem' }}
+                        type="button"
+                        onClick={() => handleMoveTask(index, 'down')}
+                        disabled={index === tasks.length - 1 || isPending}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                        title="Di chuyển xuống dưới"
                       >
-                        ℹ️ Chi tiết giáo trình dự kiến
+                        <ArrowDown className="h-3.5 w-3.5" />
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  {isPendingTask && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSkipTask(task.id, task.title)}
+                      disabled={isPending}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Bỏ qua
+                    </Button>
+                  )}
+
+                  {isRunnable && isPendingTask && (
+                    <Button asChild size="sm" variant="default" className="gap-1.5 shadow-md shadow-sky-500/20">
+                      <Link href={`/daily-plan/practice/${task.id}`}>
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                        <span>Học &amp; Luyện tập</span>
+                      </Link>
+                    </Button>
+                  )}
+
+                  {isRunnable && isCompleted && (
+                    <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs">
+                      <Link href={`/daily-plan/practice/${task.id}`}>
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Làm lại bài</span>
+                      </Link>
+                    </Button>
+                  )}
+
+                  {!isRunnable && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedPlannedTask(task)}
+                      className="text-xs gap-1 text-muted-foreground"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                      <span>Chi tiết dự kiến</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             );
@@ -453,64 +441,47 @@ export function DailyPlanView({ initialPlan, error: initialError, userName }: Da
         </div>
       </div>
 
-      {/* Planned Curriculum Modal */}
+      {/* =========================================================================
+          PLANNED CURRICULUM MODAL
+          ========================================================================= */}
       {selectedPlannedTask && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1.5rem',
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              maxWidth: '540px',
-              width: '100%',
-              background: '#0f172a',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '16px',
-              padding: '2rem',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>📋</span>
-              <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-primary)' }}>
-                Nội dung giáo trình dự kiến (Planned Curriculum)
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl border border-amber-500/30 bg-card p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border/60">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+                  <HelpCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Giáo trình dự kiến</h3>
+                  <p className="text-xs text-muted-foreground">Planned Curriculum Notice</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPlannedTask(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
-              Chủ đề <strong>{selectedPlannedTask.title}</strong> thuộc khung lộ trình của bạn, nhưng bài tập tương tác chuyên sâu đang được đội ngũ sư phạm hoàn thiện và sẽ sớm khả dụng.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Chủ đề <strong className="text-foreground">{selectedPlannedTask.title}</strong> nằm trong
+              khung lộ trình cá nhân hóa của bạn. Bài tập tương tác chuyên sâu đang được chuẩn hóa sư phạm
+              và sẽ sớm được cập nhật.
             </p>
 
-            <div
-              style={{
-                padding: '1rem',
-                borderRadius: '8px',
-                background: 'rgba(245, 158, 11, 0.1)',
-                border: '1px solid rgba(245, 158, 11, 0.25)',
-                fontSize: '0.9rem',
-                color: '#fbbf24',
-                marginBottom: '1.5rem',
-              }}
-            >
-              💡 <strong>Cam kết chất lượng:</strong> Nền tảng không tạo bài học giả hay điểm số ảo. Bạn hãy ưu tiên hoàn thành các chủ đề có nhãn <strong>&quot;✅ Có bài tập tương tác&quot;</strong> để được chấm điểm và cập nhật tiến độ thực tế!
+            <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-200 leading-relaxed">
+              💡 <strong>Cam kết chất lượng:</strong> Nền tảng không tạo câu hỏi giả lập hoặc điểm số ảo. Hãy
+              ưu tiên hoàn thành các bài có nhãn <strong>&quot;✓ Có bài tập tương tác&quot;</strong> để được
+              hệ thống chấm điểm và ghi nhận tiến độ thực tế!
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                onClick={() => setSelectedPlannedTask(null)}
-                className="btn btn-primary"
-              >
+            <div className="pt-2 flex justify-end">
+              <Button onClick={() => setSelectedPlannedTask(null)} variant="default" size="sm">
                 Đã hiểu
-              </button>
+              </Button>
             </div>
           </div>
         </div>

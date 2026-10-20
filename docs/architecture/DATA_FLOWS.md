@@ -473,3 +473,103 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * Không gửi đáp án hoặc cờ `is_correct` cho client trước khi nộp bài.
   * Chỉ hiển thị Transcript sau khi có phản hồi nộp bài thành công từ server.
   * Người dùng khác không thể đọc hoặc chỉnh sửa bài nộp nhờ Row Level Security.
+
+---
+
+## 7. Personal Vocabulary Notebook & Review Schedule Flow (Phase 6)
+
+```text
+[User Browser]
+   │
+   ├─ (1) Lưu từ vựng vào Sổ cá nhân (Từ bài học hoặc Nhập trực tiếp)
+   │      ↓
+   │   Server Action: saveWordAction() [src/modules/vocabulary/actions.ts]
+   │      ├─ Zod validation: SaveWordInputSchema (word, meaning_vi, part_of_speech, ipa, example, custom_notes)
+   │      ├─ Xác thực người dùng qua supabase.auth.getUser()
+   │      ├─ Chuẩn hóa từ vựng: normalizeWord(word) = lower(trim(word))
+   │      ├─ Chống trùng lặp (Deduplication): Kiểm tra unique(user_id, word_normalized)
+   │      │    ├─ Nếu đã tồn tại ➔ Cập nhật custom_notes (nếu có), không reset chu kỳ ôn
+   │      │    └─ Nếu chưa có ➔ INSERT INTO public.user_vocabulary (status: 'learning', interval_days: 1, next_review_at: now())
+   │      └─ Phản hồi kết quả về UI và cập nhật thống kê (Stats)
+   │
+   ├─ (2) Truy xuất danh sách từ cần ôn (Due Vocabulary Review)
+   │      ↓
+   │   getDueVocabularyList(userId)
+   │      ├─ Lọc theo điều kiện xác định: next_review_at <= now()
+   │      └─ Sắp xếp theo next_review_at ASC
+   │
+   ├─ (3) Phiên Flashcard tương tác (Interactive Recall Session)
+   │      ├─ Sinh mã phiên duy nhất: reviewSessionId = "session-[timestamp]-[random]"
+   │      ├─ Lật thẻ (Flip Card): Thử nhớ nghĩa trước khi xem mặt sau
+   │      ├─ Mặt trước: Từ vựng, IPA, từ loại, câu ví dụ ẩn từ
+   │      ├─ Mặt sau: Nghĩa tiếng Việt, ví dụ đầy đủ, lưu ý ngữ pháp
+   │      └─ Ghi nhận kết quả từng thẻ:
+   │           ├─ "Chưa nhớ" (forgot) ➔ Chuỗi đúng về 0, chu kỳ = 1 ngày, trạng thái = 'learning'
+   │           └─ "Đã nhớ" (remembered) ➔ Chuỗi đúng + 1:
+   │                - Lần 1: +1 ngày ('learning')
+   │                - Lần 2: +3 ngày ('learning')
+   │                - Lần 3: +7 ngày ('reviewing')
+   │                - Lần 4: +14 ngày ('reviewing')
+   │                - Lần 5+: +30 ngày ('mastered')
+   │
+   └─ (4) Hoàn thành và Ghi nhận phiên ôn (Session Completion & Idempotency)
+          ↓
+       Server Action: submitReviewSessionAction() [src/modules/vocabulary/actions.ts]
+          ├─ Zod validation: SubmitReviewSessionSchema
+          ├─ Kiểm tra Idempotency: Kiểm tra public.vocabulary_review_logs theo (review_session_id, user_id)
+          │    └─ Nếu đã xử lý ➔ Trả về trạng thái hiện tại, không cộng dồn chu kỳ lần thứ 2
+          ├─ Xác minh quyền sở hữu (Anti-IDOR): Bỏ qua hoặc từ chối ID từ vựng không thuộc user_id
+          ├─ Cập nhật public.user_vocabulary (interval_days, consecutive_correct, status, next_review_at, review_count)
+          ├─ Ghi nhật ký vào public.vocabulary_review_logs
+          ├─ Ghi nhận bằng chứng học tập vào public.learning_evidence (skill: 'vocabulary', knowledge_type: 'spaced_repetition_review')
+          └─ Trả về danh sách đã cập nhật, làm mới sổ từ và widget Dashboard
+```
+
+* **Entry point**: [src/app/(app)/vocabulary/page.tsx](file:///d:/AI_Product_Development/src/app/(app)/vocabulary/page.tsx) & [vocabulary-view.tsx](file:///d:/AI_Product_Development/src/app/(app)/vocabulary/vocabulary-view.tsx).
+* **Dữ liệu đọc/ghi**:
+  * Đọc: `public.user_vocabulary`, `public.vocabulary_items`, `public.vocabulary_review_logs`.
+  * Ghi: `public.user_vocabulary`, `public.vocabulary_review_logs`, `public.learning_evidence`.
+* **Ranh giới bảo mật & Quyền riêng tư**:
+  * Quyền sở hữu người dùng được đảm bảo 100% qua Supabase Server Session (`auth.uid() = user_id`) và RLS đa lớp.
+  * Người dùng A tuyệt đối không thể đọc, sửa, xóa hoặc nộp kết quả ôn tập cho từ vựng của người dùng B (Anti-IDOR).
+  * Mã phiên `reviewSessionId` đảm bảo tính lũy thoái (Idempotency) tuyệt đối khi người dùng tải lại trang hoặc bấm gửi lặp.
+
+---
+
+## 8. Learning Streak & Calendar-Day Boundary Flow (Chuỗi ngày học & Mốc ôn tập theo ngày lịch)
+
+```text
+[Bất kỳ hoạt động học tập nào: Practice / Vocab Review / Listening]
+   │
+   ├─ (1) Khi hoàn thành bài tập hoặc phiên ôn:
+   │      ├─ Practice: submitPractice() [src/modules/daily-plan/services.ts]
+   │      └─ Vocab Review: submitVocabularyReview() [src/modules/vocabulary/services.ts]
+   │
+   ├─ (2) Kích hoạt cập nhật Chuỗi ngày học: recordStudyActivity(userId, activityType, asOfDate)
+   │      ├─ Xác định ngày địa phương hôm nay: todayStr = getLocalDateString(now, timezone)
+   │      │    └─ Mặc định theo múi giờ Việt Nam: 'Asia/Ho_Chi_Minh' (UTC+7)
+   │      ├─ Đọc (current_streak, longest_streak, last_study_date) từ public.profiles
+   │      ├─ Thuật toán xác định chuỗi (computeStreakUpdate):
+   │      │    ├─ Chưa từng học (lastStudyDate = null) ➔ streak = 1, longest = 1
+   │      │    ├─ Đã học hôm nay (lastStudyDate = todayStr) ➔ Giữ nguyên streak (chống cộng dồn lặp)
+   │      │    ├─ Đã học hôm qua (lastStudyDate = yesterdayStr) ➔ streak + 1, longest = max(longest, streak)
+   │      │    └─ Bỏ lỡ >= 1 ngày (lastStudyDate < yesterdayStr) ➔ streak = 1, longest giữ nguyên
+   │      ├─ Cập nhật public.profiles (current_streak, longest_streak, last_study_date)
+   │      └─ Ghi sự kiện telemetric public.learning_events (event_type: 'streak_extended')
+   │
+   ├─ (3) Tính mốc ôn tập tiếp theo theo ngày lịch (Calendar-Day Boundary):
+   │      ├─ Lượt ôn mới được chuyển về 00:00:00 ngày hôm sau theo giờ Việt Nam
+   │      ├─ Công thức: next_review_at = ((now at time zone 'Asia/Ho_Chi_Minh')::date + interval_days)::timestamp at time zone 'Asia/Ho_Chi_Minh'
+   │      └─ Giúp người học ôn lúc nửa đêm hoặc đêm muộn hôm nay thì sáng mai thức dậy là có từ cần ôn ngay
+   │
+   └─ (4) Hiển thị trực quan trên giao diện:
+          ├─ Navbar: Badge ngọn lửa 🔥 {streak} ngày (rực sáng nếu đã học hôm nay, mờ/viền vàng nếu chưa học)
+          └─ Dashboard: Thẻ chi tiết chuỗi ngày học kèm trạng thái "✓ Đã học hôm nay" hoặc "⚠️ Cần học giữ chuỗi"
+```
+
+* **Entry points**: [src/modules/streak/services.ts](file:///d:/AI_Product_Development/src/modules/streak/services.ts), [src/components/layout/navbar.tsx](file:///d:/AI_Product_Development/src/components/layout/navbar.tsx), [src/app/(app)/dashboard/page.tsx](file:///d:/AI_Product_Development/src/app/(app)/dashboard/page.tsx).
+* **Dữ liệu đọc/ghi**:
+  * Đọc: `public.profiles` (`current_streak`, `longest_streak`, `last_study_date`, `timezone`).
+  * Ghi: `public.profiles`, `public.learning_events`.
+* **Quy tắc bảo mật**:
+  * Streak chỉ được ghi nhận từ server-side sau khi hoàn thành các hoạt động học tập hợp lệ; người dùng không thể tự gửi payload sửa đổi số ngày chuỗi.

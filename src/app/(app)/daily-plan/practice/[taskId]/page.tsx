@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentUserProfile } from '@/modules/profile/services';
 import { Navbar } from '@/components/layout/navbar';
 import { getContentItemWithExercises } from '@/modules/daily-plan/services';
+import { getUserStreak } from '@/modules/streak/services';
 import { PracticeSessionView } from './practice-session-view';
 
 export const metadata = {
@@ -52,19 +53,27 @@ export default async function PracticeSessionPage({ params }: PracticePageProps)
     notFound();
   }
 
+  const streak = await getUserStreak(user.id);
+
   return (
-    <div className="container">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar
         displayName={profile?.display_name || undefined}
         email={user.email}
         activePath="daily-plan"
+        streak={{
+          currentStreak: streak.currentStreak,
+          hasStudiedToday: streak.hasStudiedToday,
+        }}
       />
 
-      <PracticeSessionView
-        task={task}
-        contentItem={contentItem}
-        exercises={exercises}
-      />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <PracticeSessionView
+          task={task}
+          contentItem={contentItem}
+          exercises={exercises}
+        />
+      </main>
     </div>
   );
 }
