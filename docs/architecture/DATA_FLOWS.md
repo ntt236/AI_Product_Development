@@ -573,3 +573,82 @@ Tài liệu mô tả chi tiết các luồng dữ liệu (Data Flows), ranh gi�
   * Ghi: `public.profiles`, `public.learning_events`.
 * **Quy tắc bảo mật**:
   * Streak chỉ được ghi nhận từ server-side sau khi hoàn thành các hoạt động học tập hợp lệ; người dùng không thể tự gửi payload sửa đổi số ngày chuỗi.
+
+---
+
+## 9. Four Skills Learning & Evaluation Data Flow (Listening, Reading, Writing, Speaking)
+
+```text
+[User Browser - /skills hoặc /daily-plan/practice/[taskId]]
+   │
+   ├─ A. LUỒNG KHỞI TẠO BÀI HỌC TỪ HUB KỸ NĂNG (/skills)
+   │      ├─ Người học bấm "Luyện tập ngay" trên bài học Ready
+   │      ↓
+   │   Server Action: startSkillPracticeAction(slug) [src/modules/skills/actions.ts]
+   │      ├─ Xác thực người dùng (auth.getUser())
+   │      ├─ Tìm content_item theo slug
+   │      ├─ Tìm hoặc tạo kế hoạch ngày hôm nay: getOrCreateTodayDailyPlan(userId)
+   │      ├─ Kiểm tra task đã có trong ngày chưa (chống tạo task trùng lặp)
+   │      ├─ Nếu chưa có ➔ INSERT INTO public.daily_plan_tasks (status: 'pending')
+   │      └─ Trả về taskId ➔ Client router chuyển hướng đến /daily-plan/practice/[taskId]
+   │
+   ├─ B. LUỒNG LUYỆN ĐỌC & NGHE HIỂU (READING & LISTENING - MULTIPLE CHOICE)
+   │      ├─ Step 1: Nghiên cứu bài học
+   │      │    ├─ Listening: Nghe audio thật (/audio/...wav), tùy chỉnh tốc độ 0.8x-1.2x, xem mẹo bắt từ khóa
+   │      │    └─ Reading: Đọc văn bản công sở (passage), từ vựng cốt lõi, chiến lược đọc nhanh
+   │      ├─ Step 2: Làm bài tập trắc nghiệm khách quan
+   │      │    ├─ Đọc câu hỏi và chọn đáp án
+   │      │    └─ Reading: Bảng văn bản tham khảo có thể thu gọn/mở rộng trực tiếp
+   │      ├─ Step 3: Nộp bài & Chấm điểm Server-side
+   │      │    ↓
+   │      │   Server Action: submitPracticeAction() [src/modules/daily-plan/actions.ts]
+   │      │      ├─ Server đối chiếu câu trả lời với bảng bí mật public.practice_exercise_answers
+   │      │      ├─ Tính điểm accuracy và lưu public.practice_submissions
+   │      │      ├─ Ghi public.learning_evidence & public.learning_events
+   │      │      ├─ Cập nhật daily_plan_tasks (status = 'completed') & cộng dồn completed_minutes
+   │      │      ├─ Kích hoạt recordStudyActivity() cập nhật Streak
+   │      │      └─ Mở khóa topic tiếp theo trong Learning Path: unlockNextTopicInLearningPath()
+   │      └─ Step 4: Trả kết quả, mở khóa transcript song ngữ (Listening) và hỏi AI Tutor đào sâu từng câu
+   │
+   ├─ C. LUỒNG LUYỆN VIẾT CÓ CHẤM ĐIỂM AI RUBRIC (WRITING PRACTICE)
+   │      ├─ Step 1: Đọc đề bài, tình huống công sở, checklist yêu cầu và Rubric 4 tiêu chí (100 điểm)
+   │      ├─ Step 2: Soạn thảo bài viết trên Textarea có bộ đếm từ và ký tự trực tiếp
+   │      ├─ Step 3: Nộp bài viết
+   │      │    ↓
+   │      │   Server Action: submitWritingPracticeAction() [src/modules/skills/actions.ts]
+   │      │      ├─ Zod validation: submitWritingInputSchema (tối thiểu 10 từ)
+   │      │      ├─ Kiểm tra Rate Limit AI (checkAIRateLimit - 15 req/5 min)
+   │      │      ├─ Đánh giá qua AI Provider (Structured Output) hoặc Fallback quy chuẩn
+   │      │      ├─ Nhận Rubric 4 tiêu chí: Task (25đ), Grammar (30đ), Lexical (25đ), Coherence (20đ)
+   │      │      ├─ Trích xuất lỗi ngữ pháp (lỗi cũ, cách sửa, giải thích tiếng Việt)
+   │      │      ├─ Đề xuất nâng cấp từ vựng & bản viết hoàn thiện tham khảo (Native Version)
+   │      │      ├─ Lưu submission vào public.practice_submissions & public.learning_evidence
+   │      │      ├─ Ghi log sử dụng AI (public.ai_usage_logs) không chứa secret
+   │      │      └─ Cập nhật task Daily Plan, Learning Path và Chuỗi học Streak
+   │      └─ Step 4: Hiển thị thẻ kết quả điểm số, Rubric meters, giải thích chi tiết và gợi ý bước tiếp theo
+   │
+   └─ D. LUỒNG LUYỆN NÓI THEO TRANSCRIPT-FIRST (SPEAKING PRACTICE)
+          ├─ Step 1: Đọc chủ đề, câu hỏi gợi ý (cue points), thời lượng mục tiêu (60-90s, 40-120 từ)
+          ├─ Step 2: Người học luyện nói to, sau đó nhập bản transcript trung thực vào khu vực thực hành
+          ├─ Step 3: Nộp transcript
+          │    ↓
+          │   Server Action: submitSpeakingPracticeAction() [src/modules/skills/actions.ts]
+          │      ├─ Zod validation: submitSpeakingInputSchema (tối thiểu 10 từ)
+          │      ├─ Kiểm tra Rate Limit AI
+          │      ├─ AI phân tích độ tự nhiên văn nói, tính liên kết câu hỏi, cấu trúc câu đàm thoại
+          │      ├─ Đưa ra điểm Rubric 4 tiêu chí: Relevance/Fluency (25đ), Spoken Grammar (30đ), Conversational Vocab (25đ), Naturalness (20đ)
+          │      ├─ Cung cấp câu trả lời mẫu bản xứ (Sample Spoken Answer) kèm các cụm từ đắt giá
+          │      ├─ Lưu submission, evidence, telemetry và cập nhật Streak
+          │      └─ Nếu AI quá tải ➔ Fallback heuristic phản hồi sư phạm an toàn không crash
+          └─ Step 4: Xem nhận xét phản xạ, bài mẫu và bấm luyện nói lại hoặc hoàn tất về Kế hoạch ngày
+```
+
+* **Entry points**: [src/app/(app)/skills/page.tsx](file:///d:/AI_Product_Development/src/app/(app)/skills/page.tsx), [src/app/(app)/daily-plan/practice/[taskId]/page.tsx](file:///d:/AI_Product_Development/src/app/(app)/daily-plan/practice/[taskId]/page.tsx), [src/modules/skills/actions.ts](file:///d:/AI_Product_Development/src/modules/skills/actions.ts).
+* **Dữ liệu đọc/ghi**:
+  * Đọc: `public.content_items`, `public.practice_exercises`, `public.practice_exercise_answers` (server-only), `public.daily_plan_tasks`.
+  * Ghi: `public.practice_submissions`, `public.learning_evidence`, `public.learning_events`, `public.daily_plan_tasks`, `public.daily_plans`, `public.profiles`, `public.ai_usage_logs`.
+* **Bảo mật & Quyền riêng tư**:
+  * Không bao giờ gửi đáp án trắc nghiệm (`practice_exercise_answers`) về trình duyệt trước khi nộp bài.
+  * AI Provider không gọi trực tiếp từ client và API key không bao giờ bị lộ ra ngoài server.
+  * Mọi bài viết và transcript đều được validate kích thước, chống injection và cô lập dữ liệu theo `user_id`.
+

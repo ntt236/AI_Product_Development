@@ -14,7 +14,7 @@ export class GeminiProvider implements AIProvider {
 
   constructor(apiKey?: string, model?: string) {
     this.apiKey = apiKey || process.env.GEMINI_API_KEY || '';
-    this.defaultModel = model || process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    this.defaultModel = model || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
   }
 
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
@@ -22,7 +22,7 @@ export class GeminiProvider implements AIProvider {
       throw new Error('AI_CONFIG_MISSING: Gemini API key is not configured.');
     }
 
-    const timeoutMs = input.timeoutMs ?? 10000;
+    const timeoutMs = input.timeoutMs ?? 25000;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -99,7 +99,7 @@ export class GeminiProvider implements AIProvider {
       throw new Error('AI_CONFIG_MISSING: Gemini API key is not configured.');
     }
 
-    const timeoutMs = input.timeoutMs ?? 10000;
+    const timeoutMs = input.timeoutMs ?? 25000;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -168,6 +168,22 @@ export class GeminiProvider implements AIProvider {
         cleanedText = cleanedText.slice(0, -3);
       }
       cleanedText = cleanedText.trim();
+
+      // Robustly slice from first JSON open bracket/brace to last
+      const firstBrace = cleanedText.indexOf('{');
+      const firstBracket = cleanedText.indexOf('[');
+      let startIdx = -1;
+      let endIdx = -1;
+      if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+        startIdx = firstBrace;
+        endIdx = cleanedText.lastIndexOf('}');
+      } else if (firstBracket !== -1) {
+        startIdx = firstBracket;
+        endIdx = cleanedText.lastIndexOf(']');
+      }
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        cleanedText = cleanedText.substring(startIdx, endIdx + 1);
+      }
 
       let parsed: unknown;
       try {

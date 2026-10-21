@@ -66,11 +66,13 @@ Phát triển theo vertical slice: hoàn thành một luồng có UI, dữ liệ
 - Từ vựng curated, sổ từ cá nhân, lịch review đơn giản.
 **Done khi:** từ đến hạn được hiển thị chính xác, review không tạo bản ghi trùng.
 
-## Phase 7 — Four skills
-- Listening/Reading content và câu hỏi.
-- Writing prompt + feedback.
-- Speaking transcript trước; phân tích audio sau khi pipeline sẵn sàng.
-**Done khi:** mỗi kỹ năng có ít nhất một flow hoàn chỉnh.
+## Phase 7 — Four skills [Hoàn thành]
+- Listening: Audio thực tế (`/audio/daily-conversations-introducing-yourself.wav`), tùy chỉnh tốc độ, câu hỏi gắn nội dung, khóa transcript trước khi nộp, server chấm điểm.
+- Reading: Văn bản công sở thực tế (`reading-workplace-announcements-messages`), 5 câu trắc nghiệm đọc hiểu, bảo mật answer key server-side.
+- Writing: Đề bài theo tình huống (`writing-introductory-email`), bộ đếm từ trực tiếp, chấm AI Rubric 4 tiêu chí (100 điểm), sửa lỗi ngữ pháp & bản mẫu hoàn thiện, fallback quy chuẩn.
+- Speaking: Phương pháp Transcript-First (`speaking-daily-life-introduction`), đánh giá phản xạ, từ nối đàm thoại bản xứ và bài nói mẫu.
+- Tích hợp toàn diện: Trang Four Skills Hub (`/skills`), Learning Path progressive unlock, Daily Plan tasks, Learning Streak, Learning Evidence.
+**Done khi:** mỗi kỹ năng có ít nhất một flow hoàn chỉnh và đã kiểm thử tự động đạt 142/142 tests.
 
 ## Phase 8 — TOEIC
 - Parts 1–7, luyện từng Part, mini test, review lỗi.

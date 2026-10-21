@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   CalendarCheck,
   Compass,
+  Headphones,
   BookMarked,
   Target,
   Flame,
@@ -19,7 +20,7 @@ import { cn } from '@/lib/utils';
 export interface NavbarProps {
   displayName?: string;
   email?: string;
-  activePath?: 'dashboard' | 'daily-plan' | 'learning-path' | 'assessment' | 'vocabulary';
+  activePath?: 'dashboard' | 'daily-plan' | 'learning-path' | 'assessment' | 'vocabulary' | 'skills';
   streak?: {
     currentStreak: number;
     hasStudiedToday: boolean;
@@ -49,6 +50,12 @@ export function Navbar({ displayName, email, activePath, streak }: NavbarProps) 
       href: '/learning-path',
       label: 'Lộ trình học',
       icon: Compass,
+    },
+    {
+      id: 'skills',
+      href: '/skills',
+      label: '4 Kỹ năng',
+      icon: Headphones,
     },
     {
       id: 'vocabulary',
