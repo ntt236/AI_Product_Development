@@ -2,8 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { matchTopicToContentItem, CURRICULUM_BANK } from '../../src/modules/learning-path/curriculum.js';
-import { generateDailyPlanProposal } from '../../src/modules/daily-plan/generator.js';
+import { matchTopicToContentItem, CURRICULUM_BANK } from '../../src/modules/learning-path/curriculum.ts';
+import { generateDailyPlanProposal } from '../../src/modules/daily-plan/generator.ts';
 
 describe('Phase 5 Supplementary — Listening Sample Lesson & Learning Lifecycle Suite', () => {
   const audioRelativePath = 'public/audio/daily-conversations-introducing-yourself.wav';

@@ -9,6 +9,7 @@ import {
   Headphones,
   BookMarked,
   Target,
+  Award,
   Flame,
   Menu,
   X,
@@ -20,7 +21,7 @@ import { cn } from '@/lib/utils';
 export interface NavbarProps {
   displayName?: string;
   email?: string;
-  activePath?: 'dashboard' | 'daily-plan' | 'learning-path' | 'assessment' | 'vocabulary' | 'skills';
+  activePath?: 'dashboard' | 'daily-plan' | 'learning-path' | 'assessment' | 'vocabulary' | 'skills' | 'toeic';
   streak?: {
     currentStreak: number;
     hasStudiedToday: boolean;
@@ -56,6 +57,12 @@ export function Navbar({ displayName, email, activePath, streak }: NavbarProps) 
       href: '/skills',
       label: '4 Kỹ năng',
       icon: Headphones,
+    },
+    {
+      id: 'toeic',
+      href: '/toeic',
+      label: 'Luyện thi TOEIC',
+      icon: Award,
     },
     {
       id: 'vocabulary',

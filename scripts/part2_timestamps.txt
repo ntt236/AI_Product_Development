@@ -1,0 +1,26 @@
+Number 7: 01:03
+Number 8: 01:21
+Number 9: 01:43
+Number 10: 02:02
+Number 11: 02:22
+Number 12: 02:42
+Number 13: 03:03
+Number 14: 03:25
+Number 15: 03:45
+Number 16: 04:08
+Number 17: 04:28
+Number 18: 04:49
+Number 19: 05:11
+Number 20: 05:33
+Number 21: 05:53
+Number 22: 06:15
+Number 23: 06:33
+Number 24: 06:56
+Number 25: 07:18
+Number 26: 07:40
+Number 27: 08:00
+Number 28: 08:21
+Number 29: 08:41
+Number 30: 09:01
+Number 31: 09:22
+Part 3 directions start at 09:41.
