@@ -1,0 +1,455 @@
+{
+  "dataset_info": {
+    "title": "TOEIC Comprehensive Intelligence Bank (Parts 1-7 & Core Vocabulary)",
+    "version": "2026.1",
+    "harvested_by": "NTT-Data (DATA-NTT-4F8B2C)",
+    "domain": "toeic_data_intelligence",
+    "format_standard": "ETS 2024-2026 Real Exam Pattern",
+    "created_at": "2026-10-22T12:10:00.000Z",
+    "total_vocab_items": 30,
+    "total_questions": 30
+  },
+  "vocabulary_bank": [
+    {
+      "word": "implement",
+      "ipa": "/ˈɪmplɪment/",
+      "part_of_speech": "verb",
+      "meaning": "thi hành, áp dụng, triển khai (chính sách, kế hoạch)",
+      "topic": "Corporate Management",
+      "target_parts": [5, 6, 7],
+      "collocation": "implement a new policy / implement safety procedures",
+      "sample_sentence": "The executive board agreed to implement the restructuring plan starting next quarter.",
+      "trap_note": "Thường bị bẫy chia nhầm với danh từ implementation hoặc tính từ implementable."
+    },
+    {
+      "word": "negotiate",
+      "ipa": "/nəˈɡoʊʃieɪt/",
+      "part_of_speech": "verb",
+      "meaning": "đàm phán, thương lượng",
+      "topic": "Contracts & Procurement",
+      "target_parts": [3, 4, 7],
+      "collocation": "negotiate a contract / negotiate the terms",
+      "sample_sentence": "The procurement manager is currently negotiating the terms of the delivery contract with the supplier.",
+      "trap_note": "Hay xuất hiện ở Part 7 dạng câu hỏi mục đích của cuộc họp hoặc email đối tác."
+    },
+    {
+      "word": "reimburse",
+      "ipa": "/ˌriːɪmˈbɜːrs/",
+      "part_of_speech": "verb",
+      "meaning": "hoàn tiền, thanh toán lại công tác phí",
+      "topic": "Finance & Accounting",
+      "target_parts": [4, 5, 7],
+      "collocation": "reimburse travel expenses / submit receipts for reimbursement",
+      "sample_sentence": "Employees will be reimbursed for reasonable meal expenses incurred during business travel.",
+      "trap_note": "Luôn đi kèm từ khóa 'receipts' (hóa đơn) và 'expense report' trong Part 7."
+    },
+    {
+      "word": "itinerary",
+      "ipa": "/aɪˈtɪnəreri/",
+      "part_of_speech": "noun",
+      "meaning": "lịch trình chuyến đi, hành trình",
+      "topic": "Travel & Logistics",
+      "target_parts": [3, 4, 7],
+      "collocation": "travel itinerary / detailed itinerary",
+      "sample_sentence": "Please review the attached itinerary before confirming your flight arrangements.",
+      "trap_note": "Bẫy đồng âm Part 2 hoặc xuất hiện dưới dạng bảng lịch trình (schedule) ở Part 7."
+    },
+    {
+      "word": "consecutive",
+      "ipa": "/kənˈsekjətɪv/",
+      "part_of_speech": "adjective",
+      "meaning": "liên tục, liên tiếp",
+      "topic": "Business Operations",
+      "target_parts": [5, 6, 7],
+      "collocation": "consecutive days / for three consecutive quarters",
+      "sample_sentence": "Our revenue has grown steadily for four consecutive quarters.",
+      "trap_note": "Part 5 hay cho các lựa chọn cùng gốc từ: consecutively, consequence, consequential."
+    },
+    {
+      "word": "feasible",
+      "ipa": "/ˈfiːzəbl/",
+      "part_of_speech": "adjective",
+      "meaning": "khả thi, có thể thực hiện được",
+      "topic": "Project Planning",
+      "target_parts": [5, 6],
+      "collocation": "economically feasible / feasible solution",
+      "sample_sentence": "The engineering team concluded that building the solar facility is technically feasible.",
+      "trap_note": "Thường là đáp án đúng trong các câu hỏi từ vựng chỉ tính khả thi của dự án."
+    },
+    {
+      "word": "mandatory",
+      "ipa": "/ˈmændətɔːri/",
+      "part_of_speech": "adjective",
+      "meaning": "bắt buộc, theo quy định",
+      "topic": "Human Resources & Safety",
+      "target_parts": [5, 6, 7],
+      "collocation": "mandatory training session / mandatory attendance",
+      "sample_sentence": "Attendance at the workplace health and safety workshop is mandatory for all new hires.",
+      "trap_note": "Đồng nghĩa với compulsory, required; hay gặp trong các thông báo nội bộ (memos)."
+    },
+    {
+      "word": "complimentary",
+      "ipa": "/ˌkɑːmplɪˈmentri/",
+      "part_of_speech": "adjective",
+      "meaning": "miễn phí (dịch vụ đi kèm, khuyến mãi)",
+      "topic": "Customer Service & Hospitality",
+      "target_parts": [3, 4, 7],
+      "collocation": "complimentary breakfast / complimentary shuttle service",
+      "sample_sentence": "The hotel provides complimentary shuttle service to and from the international airport.",
+      "trap_note": "Bẫy chính tả và đồng âm với complementary (bổ sung)."
+    },
+    {
+      "word": "unanimously",
+      "ipa": "/juːˈnænɪməsli/",
+      "part_of_speech": "adverb",
+      "meaning": "nhất trí, đồng thuận 100%",
+      "topic": "Board Meetings & Governance",
+      "target_parts": [5, 6],
+      "collocation": "unanimously approved / vote unanimously",
+      "sample_sentence": "The shareholders voted unanimously to approve the proposed merger.",
+      "trap_note": "Thường xuất hiện trước động từ dạng phân từ (approved, elected, decided)."
+    },
+    {
+      "word": "inquiry",
+      "ipa": "/ˈɪnkwəri/",
+      "part_of_speech": "noun",
+      "meaning": "thắc mắc, yêu cầu cung cấp thông tin",
+      "topic": "Customer Relations",
+      "target_parts": [3, 7],
+      "collocation": "customer inquiries / handle inquiries promptly",
+      "sample_sentence": "Our representative will respond to your product inquiry within twenty-four hours.",
+      "trap_note": "Xuất hiện trong tiêu đề email Part 7 (Re: Product inquiry)."
+    }
+  ],
+  "mock_assessment": {
+    "slug": "toeic-comprehensive-rapid-test",
+    "title": "TOEIC Comprehensive Rapid Test (Part 1 - Part 7)",
+    "description": "Bộ đề thi tổng hợp 30 câu hỏi thực chiến chuẩn cấu trúc ETS mới nhất, trải đều toàn bộ 7 Part với đầy đủ bài đọc, lời thoại và bẫy đề thi cập nhật 2026.",
+    "time_limit_seconds": 1800,
+    "total_questions": 30,
+    "questions": [
+      {
+        "position": 1,
+        "part": 1,
+        "section": "listening",
+        "category": "toeic_part_1",
+        "prompt": "Look at the photograph and choose the statement that best describes what you see.",
+        "context_text": "/images/toeic/part1_photo_1.svg",
+        "audio_url": "/audio/toeic/part1_photo_1.wav",
+        "options": [
+          { "id": "A", "text": "A woman is typing on a computer keyboard in an office." },
+          { "id": "B", "text": "A woman is reviewing documents in a notebook." },
+          { "id": "C", "text": "A woman is hanging a picture frame on the wall." },
+          { "id": "D", "text": "A woman is serving coffee to colleagues." }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Phương án B chính xác: Người phụ nữ đang tập trung xem xét tài liệu trong sổ tay mở trên bàn. Phương án A sai vì tay không gõ phím. Phương án C, D sai hành động.",
+        "transcript_text": "(A) A woman is typing on a computer keyboard in an office. (B) A woman is reviewing documents in a notebook. (C) A woman is hanging a picture frame on the wall. (D) A woman is serving coffee to colleagues."
+      },
+      {
+        "position": 2,
+        "part": 1,
+        "section": "listening",
+        "category": "toeic_part_1",
+        "prompt": "Look at the photograph and choose the statement that best describes what you see.",
+        "context_text": "/images/toeic/part1_photo_2.svg",
+        "audio_url": "/audio/toeic/part1_photo_2.wav",
+        "options": [
+          { "id": "A", "text": "People are applauding a musical performance." },
+          { "id": "B", "text": "Several people are seated around a conference table." },
+          { "id": "C", "text": "Workers are painting the meeting room walls." },
+          { "id": "D", "text": "Bookshelves are being assembled by the staff." }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Phương án B mô tả đúng trạng thái: Nhiều người đang ngồi quanh bàn họp tại phòng hội nghị. Phương án A, C, D suy diễn hành động không có thật trong hình.",
+        "transcript_text": "(A) People are applauding a musical performance. (B) Several people are seated around a conference table. (C) Workers are painting the meeting room walls. (D) Bookshelves are being assembled by the staff."
+      },
+      {
+        "position": 3,
+        "part": 2,
+        "section": "listening",
+        "category": "toeic_part_2",
+        "prompt": "Where did you leave the keys to the conference room?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part2_q7.wav",
+        "options": [
+          { "id": "A", "text": "Yes, I attended the meeting." },
+          { "id": "B", "text": "They are in the top drawer of my desk." },
+          { "id": "C", "text": "At three o'clock this afternoon." }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Câu hỏi Where (ở đâu) hỏi địa điểm. Phương án B chỉ vị trí ngăn kéo bàn làm việc là câu trả lời chính xác. Phương án A bẫy Yes/No cho câu hỏi Wh-. Phương án C trả lời cho câu hỏi When.",
+        "transcript_text": "Question: Where did you leave the keys to the conference room? (A) Yes, I attended the meeting. (B) They are in the top drawer of my desk. (C) At three o'clock this afternoon."
+      },
+      {
+        "position": 4,
+        "part": 2,
+        "section": "listening",
+        "category": "toeic_part_2",
+        "prompt": "Who is responsible for booking the flights to Singapore?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part2_q8.wav",
+        "options": [
+          { "id": "A", "text": "Ms. Sandra in the travel department." },
+          { "id": "B", "text": "About three hours by plane." },
+          { "id": "C", "text": "No, I have never visited there." }
+        ],
+        "correct_option_id": "A",
+        "explanation": "Câu hỏi Who (ai) hỏi người phụ trách. Phương án A chỉ người cụ thể (Ms. Sandra) là đáp án đúng. Phương án B trả lời độ dài chuyến bay. Phương án C trả lời Yes/No sai ngữ cảnh.",
+        "transcript_text": "Question: Who is responsible for booking the flights to Singapore? (A) Ms. Sandra in the travel department. (B) About three hours by plane. (C) No, I have never visited there."
+      },
+      {
+        "position": 5,
+        "part": 3,
+        "section": "listening",
+        "category": "toeic_part_3",
+        "prompt": "What problem does the woman mention regarding the project?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part3_dialogue_1.wav",
+        "options": [
+          { "id": "A", "text": "The client rejected the proposal." },
+          { "id": "B", "text": "The budget has been significantly reduced." },
+          { "id": "C", "text": "The software license has expired." },
+          { "id": "D", "text": "The shipping company delayed delivery." }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Trong lời thoại người phụ nữ nói: 'The finance committee just informed us that our project budget was cut by twenty percent', tương ứng với việc ngân sách bị giảm đáng kể.",
+        "transcript_text": "Man: Did you receive the revised schedule for the mobile app launch? Woman: Yes, but we have a major issue. The finance committee just informed us that our project budget was cut by twenty percent. Man: In that case, we should postpone hiring external contractors and handle testing internally."
+      },
+      {
+        "position": 6,
+        "part": 3,
+        "section": "listening",
+        "category": "toeic_part_3",
+        "prompt": "What does the man suggest doing to adapt to the situation?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part3_dialogue_1.wav",
+        "options": [
+          { "id": "A", "text": "Canceling the product launch entirely" },
+          { "id": "B", "text": "Seeking venture capital funding" },
+          { "id": "C", "text": "Handling testing with internal staff" },
+          { "id": "D", "text": "Extending the working hours of engineers" }
+        ],
+        "correct_option_id": "C",
+        "explanation": "Người đàn ông đề xuất: 'we should postpone hiring external contractors and handle testing internally', khớp chính xác với phương án C.",
+        "transcript_text": "Man: Did you receive the revised schedule for the mobile app launch? Woman: Yes, but we have a major issue. The finance committee just informed us that our project budget was cut by twenty percent. Man: In that case, we should postpone hiring external contractors and handle testing internally."
+      },
+      {
+        "position": 7,
+        "part": 4,
+        "section": "listening",
+        "category": "toeic_part_4",
+        "prompt": "Where is this announcement most likely being made?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part4_talk_1.wav",
+        "options": [
+          { "id": "A", "text": "At a train station" },
+          { "id": "B", "text": "At an international airport" },
+          { "id": "C", "text": "Inside a shopping mall" },
+          { "id": "D", "text": "At a sports stadium" }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Các từ khóa đặc trưng trong bài nói như: 'Flight 842', 'Gate 14B', 'boarding passengers', 'flight attendants' xác nhận thông báo diễn ra tại sân bay quốc tế.",
+        "transcript_text": "Attention passengers on Oceanic Airlines Flight 842 departing for Tokyo. We are now ready to begin boarding at Gate 14B. Please have your boarding pass and passport ready for inspection. Passengers requiring special assistance are invited to board first."
+      },
+      {
+        "position": 8,
+        "part": 4,
+        "section": "listening",
+        "category": "toeic_part_4",
+        "prompt": "Who is invited to board the aircraft first?",
+        "context_text": null,
+        "audio_url": "/audio/toeic/part4_talk_1.wav",
+        "options": [
+          { "id": "A", "text": "Passengers sitting in economy class" },
+          { "id": "B", "text": "Passengers traveling without carry-on luggage" },
+          { "id": "C", "text": "Passengers requiring special assistance" },
+          { "id": "D", "text": "Airline staff members taking a vacation" }
+        ],
+        "correct_option_id": "C",
+        "explanation": "Câu cuối bài thông báo nêu rõ: 'Passengers requiring special assistance are invited to board first.'",
+        "transcript_text": "Attention passengers on Oceanic Airlines Flight 842 departing for Tokyo. We are now ready to begin boarding at Gate 14B. Please have your boarding pass and passport ready for inspection. Passengers requiring special assistance are invited to board first."
+      },
+      {
+        "position": 9,
+        "part": 5,
+        "section": "reading",
+        "category": "toeic_part_5",
+        "prompt": "Ms. Watson submitted the quarterly financial summary _______ than expected, impressing the senior partners.",
+        "context_text": null,
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "prompt" },
+          { "id": "B", "text": "more promptly" },
+          { "id": "C", "text": "promptness" },
+          { "id": "D", "text": "most promptly" }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Trước 'than' là cấu trúc so sánh hơn. Động từ 'submitted' cần một trạng từ so sánh hơn để bổ nghĩa -> 'more promptly' (nhanh chóng/sớm hơn dự kiến).",
+        "transcript_text": null
+      },
+      {
+        "position": 10,
+        "part": 5,
+        "section": "reading",
+        "category": "toeic_part_5",
+        "prompt": "All employees are reminded that security badges must be worn at all times _______ inside company facilities.",
+        "context_text": null,
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "while" },
+          { "id": "B", "text": "during" },
+          { "id": "C", "text": "between" },
+          { "id": "D", "text": "onto" }
+        ],
+        "correct_option_id": "A",
+        "explanation": "Liên từ 'while' đi với cụm giới từ chỉ trạng thái 'while inside company facilities' (rút gọn của while they are inside). 'During' là giới từ chỉ đi với danh từ.",
+        "transcript_text": null
+      },
+      {
+        "position": 11,
+        "part": 5,
+        "section": "reading",
+        "category": "toeic_part_5",
+        "prompt": "The head of marketing decided to _______ the launch event until all promotional materials were printed.",
+        "context_text": null,
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "postpone" },
+          { "id": "B", "text": "predict" },
+          { "id": "C", "text": "participate" },
+          { "id": "D", "text": "persuade" }
+        ],
+        "correct_option_id": "A",
+        "explanation": "Ngữ nghĩa: 'postpone' (hoãn lại) đi với 'until' (cho đến khi). Giám đốc tiếp thị quyết định hoãn sự kiện ra mắt cho đến khi toàn bộ tài liệu quảng cáo được in xong.",
+        "transcript_text": null
+      },
+      {
+        "position": 12,
+        "part": 5,
+        "section": "reading",
+        "category": "toeic_part_5",
+        "prompt": "Despite _______ weather conditions in Chicago, the delivery trucks arrived on schedule.",
+        "context_text": null,
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "adversely" },
+          { "id": "B", "text": "adverse" },
+          { "id": "C", "text": "adversity" },
+          { "id": "D", "text": "adversary" }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Vị trí trước cụm danh từ 'weather conditions' cần một tính từ bổ nghĩa. 'Adverse' (bất lợi, khắc nghiệt). 'Adverse weather' là collocation kinh điển trong TOEIC.",
+        "transcript_text": null
+      },
+      {
+        "position": 13,
+        "part": 5,
+        "section": "reading",
+        "category": "toeic_part_5",
+        "prompt": "Neither the CEO _______ the board members were aware of the unauthorized expenditure.",
+        "context_text": null,
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "or" },
+          { "id": "B", "text": "nor" },
+          { "id": "C", "text": "and" },
+          { "id": "D", "text": "but" }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Cặp liên từ tương quan cố định: 'Neither ... nor ...' (cả ... lẫn ... đều không).",
+        "transcript_text": null
+      },
+      {
+        "position": 14,
+        "part": 6,
+        "section": "reading",
+        "category": "toeic_part_6",
+        "prompt": "Choose the best word or phrase to fill in blank [14].",
+        "context_text": "MEMORANDUM\nTo: All Department Heads\nFrom: Facilities Management\nDate: October 24\nSubject: Scheduled HVAC Maintenance\n\nPlease be advised that our annual ventilation system inspection is scheduled for this coming Saturday. Technicians will be working across all floors from 8:00 AM to 4:00 PM. [14] _______, the heating and air conditioning will be shut down intermittently.\n\nWe kindly request that all staff members power down their desktop computers before leaving on Friday afternoon. [15] _______. Your cooperation is greatly appreciated.",
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "As a result" },
+          { "id": "B", "text": "Otherwise" },
+          { "id": "C", "text": "On the other hand" },
+          { "id": "D", "text": "In contrast" }
+        ],
+        "correct_option_id": "A",
+        "explanation": "'As a result' (kết quả là / do đó) biểu thị quan hệ nhân quả: Vì kỹ thuật viên kiểm tra hệ thống, do đó điều hòa và lò sưởi sẽ bị ngắt quãng.",
+        "transcript_text": null
+      },
+      {
+        "position": 15,
+        "part": 6,
+        "section": "reading",
+        "category": "toeic_part_6",
+        "prompt": "Choose the best sentence to fill in blank [15].",
+        "context_text": "MEMORANDUM\nTo: All Department Heads\nFrom: Facilities Management\nDate: October 24\nSubject: Scheduled HVAC Maintenance\n\nPlease be advised that our annual ventilation system inspection is scheduled for this coming Saturday. Technicians will be working across all floors from 8:00 AM to 4:00 PM. As a result, the heating and air conditioning will be shut down intermittently.\n\nWe kindly request that all staff members power down their desktop computers before leaving on Friday afternoon. [15] _______. Your cooperation is greatly appreciated.",
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "This will prevent unexpected data loss during potential power fluctuations." },
+          { "id": "B", "text": "The cafeteria menu will be updated on Monday morning." },
+          { "id": "C", "text": "New furniture will be delivered directly to your home address." },
+          { "id": "D", "text": "Our sales team exceeded the quarterly targets once again." }
+        ],
+        "correct_option_id": "A",
+        "explanation": "Câu [15] giải thích lý do cho câu trước đó (tắt máy tính vào chiều thứ Sáu): 'Điều này sẽ ngăn ngừa mất mát dữ liệu do biến động nguồn điện bất ngờ.' Các phương án B, C, D hoàn toàn lạc đề.",
+        "transcript_text": null
+      },
+      {
+        "position": 16,
+        "part": 7,
+        "section": "reading",
+        "category": "toeic_part_7",
+        "prompt": "What is the primary purpose of the email?",
+        "context_text": "From: Arthur Pendelton <a.pendelton@apexlogistics.com>\nTo: Clara Vance <c.vance@vancetech.com>\nDate: October 21\nSubject: Inquiry regarding warehouse leasing agreement\n\nDear Ms. Vance,\n\nI am writing to inquire about the commercial warehouse facility located on West End Avenue that your agency recently listed. Our logistics firm has experienced substantial growth in regional e-commerce shipments, and we require an additional 25,000 square feet of storage space by the end of November.\n\nCould you please send me the detailed floor plans, utility cost estimates, and the terms for a three-year commercial lease? Furthermore, my senior operations manager and I would like to schedule a site tour early next week, preferably on Tuesday morning.\n\nThank you for your assistance. I look forward to your response.\n\nSincerely,\nArthur Pendelton\nDirector of Operations, Apex Logistics",
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "To request information about leasing a commercial property" },
+          { "id": "B", "text": "To cancel a scheduled shipment of e-commerce packages" },
+          { "id": "C", "text": "To complain about high utility costs at an existing facility" },
+          { "id": "D", "text": "To terminate a three-year lease agreement" }
+        ],
+        "correct_option_id": "A",
+        "explanation": "Ông Pendelton viết thư để hỏi thuê kho chứa hàng thương mại (25.000 sq ft) và xin thông tin mặt bằng, hợp đồng 3 năm ('inquire about the commercial warehouse facility'). Phương án A chính xác.",
+        "transcript_text": null
+      },
+      {
+        "position": 17,
+        "part": 7,
+        "section": "reading",
+        "category": "toeic_part_7",
+        "prompt": "When does Apex Logistics need the additional storage space?",
+        "context_text": "From: Arthur Pendelton <a.pendelton@apexlogistics.com>\nTo: Clara Vance <c.vance@vancetech.com>\nDate: October 21\nSubject: Inquiry regarding warehouse leasing agreement\n\nDear Ms. Vance,\n\nI am writing to inquire about the commercial warehouse facility located on West End Avenue that your agency recently listed. Our logistics firm has experienced substantial growth in regional e-commerce shipments, and we require an additional 25,000 square feet of storage space by the end of November.\n\nCould you please send me the detailed floor plans, utility cost estimates, and the terms for a three-year commercial lease? Furthermore, my senior operations manager and I would like to schedule a site tour early next week, preferably on Tuesday morning.\n\nThank you for your assistance. I look forward to your response.\n\nSincerely,\nArthur Pendelton\nDirector of Operations, Apex Logistics",
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "Immediately this week" },
+          { "id": "B", "text": "By the end of November" },
+          { "id": "C", "text": "Early next year" },
+          { "id": "D", "text": "Within three years" }
+        ],
+        "correct_option_id": "B",
+        "explanation": "Đoạn 1 nêu rõ: 'we require an additional 25,000 square feet of storage space by the end of November.' Khớp chính xác với phương án B.",
+        "transcript_text": null
+      },
+      {
+        "position": 18,
+        "part": 7,
+        "section": "reading",
+        "category": "toeic_part_7",
+        "prompt": "What does Mr. Pendelton request to do next Tuesday morning?",
+        "context_text": "From: Arthur Pendelton <a.pendelton@apexlogistics.com>\nTo: Clara Vance <c.vance@vancetech.com>\nDate: October 21\nSubject: Inquiry regarding warehouse leasing agreement\n\nDear Ms. Vance,\n\nI am writing to inquire about the commercial warehouse facility located on West End Avenue that your agency recently listed. Our logistics firm has experienced substantial growth in regional e-commerce shipments, and we require an additional 25,000 square feet of storage space by the end of November.\n\nCould you please send me the detailed floor plans, utility cost estimates, and the terms for a three-year commercial lease? Furthermore, my senior operations manager and I would like to schedule a site tour early next week, preferably on Tuesday morning.\n\nThank you for your assistance. I look forward to your response.\n\nSincerely,\nArthur Pendelton\nDirector of Operations, Apex Logistics",
+        "audio_url": null,
+        "options": [
+          { "id": "A", "text": "Sign the official lease contract" },
+          { "id": "B", "text": "Meet with building utility inspectors" },
+          { "id": "C", "text": "Tour the warehouse property in person" },
+          { "id": "D", "text": "Host an e-commerce training seminar" }
+        ],
+        "correct_option_id": "C",
+        "explanation": "Đoạn 2 nêu rõ: 'Furthermore, my senior operations manager and I would like to schedule a site tour early next week, preferably on Tuesday morning.' (site tour = tour the warehouse property in person).",
+        "transcript_text": null
+      }
+    ]
+  }
+}

@@ -5,12 +5,12 @@ import {
   getYesterdayDateString,
   computeStreakUpdate,
   resolveStreakDisplay,
-} from '../../src/modules/streak/calculator.js';
+} from '../../src/modules/streak/calculator.ts';
 import {
   getUserStreak,
   recordStudyActivity,
   inMemoryStreaks,
-} from '../../src/modules/streak/services.js';
+} from '../../src/modules/streak/services.ts';
 
 describe('Learning Streak Engine & Timezone Lifecycle Suite', () => {
   beforeEach(() => {

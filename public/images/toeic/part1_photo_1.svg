@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="deskGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bgGrad)"/>
+  <!-- Window frame in background -->
+  <rect x="80" y="40" width="440" height="160" rx="8" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <line x1="300" y1="40" x2="300" y2="200" stroke="#334155" stroke-width="2"/>
+  <line x1="80" y1="120" x2="520" y2="120" stroke="#334155" stroke-width="2"/>
+  <!-- City skyline silhouette -->
+  <path d="M100 200 L100 130 L140 130 L140 100 L180 100 L180 160 L220 160 L220 80 L270 80 L270 200 Z" fill="#0f172a" opacity="0.7"/>
+  <path d="M320 200 L320 110 L360 110 L360 140 L410 140 L410 70 L460 70 L460 200 Z" fill="#0f172a" opacity="0.7"/>
+  <!-- Desk surface -->
+  <path d="M 40 260 L 560 260 L 600 400 L 0 400 Z" fill="url(#deskGrad)" stroke="#475569" stroke-width="1.5"/>
+  <!-- Person working -->
+  <circle cx="300" cy="200" r="38" fill="#94a3b8"/>
+  <path d="M 230 330 C 230 250, 370 250, 370 330 Z" fill="#38bdf8" opacity="0.85"/>
+  <!-- Laptop computer -->
+  <rect x="240" y="275" width="120" height="75" rx="4" fill="#0284c7" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="245" y="280" width="110" height="65" rx="2" fill="#0f172a"/>
+  <rect x="255" y="290" width="90" height="45" fill="url(#glow)"/>
+  <polygon points="215,350 385,350 375,355 225,355" fill="#cbd5e1"/>
+  <!-- Coffee cup -->
+  <rect x="440" y="300" width="30" height="40" rx="4" fill="#f1f5f9"/>
+  <path d="M 470 310 C 485 310, 485 330, 470 330" stroke="#f1f5f9" stroke-width="3" fill="none"/>
+  <!-- Notepad and pen -->
+  <rect x="130" y="305" width="60" height="45" rx="3" fill="#f8fafc" stroke="#cbd5e1"/>
+  <line x1="140" y1="318" x2="180" y2="318" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="140" y1="328" x2="175" y2="328" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="140" y1="338" x2="165" y2="338" stroke="#94a3b8" stroke-width="2"/>
+  <!-- Label badge -->
+  <rect x="20" y="20" width="160" height="30" rx="6" fill="#0284c7" opacity="0.9"/>
+  <text x="100" y="40" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="13" text-anchor="middle">TOEIC Part 1 — Photo 1</text>
+</svg>
